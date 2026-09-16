@@ -6,9 +6,11 @@ dist/
 .env.local
 
 # *.json ci-dessus ignore tout JSON du repo (y compris package.json / tsconfig) ;
-# on rétablit les fichiers de config nécessaires au build du POC public/
+# on rétablit les fichiers de config nécessaires au build de public/ et workers/
 !public/package.json
 !public/package-lock.json
 !public/tsconfig.json
 !public/tsconfig.app.json
 !public/tsconfig.node.json
+!workers/package.json
+!workers/package-lock.json
