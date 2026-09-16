@@ -1,9 +1,11 @@
 # BINOFIT - Application de matching sportif
 
 ## Concept
+
 Application qui connecte des sportifs pour pratiquer ensemble de manière ponctuelle.
 
 ## Stack technique
+
 - Frontend: Vue 3 + Vite + TypeScript + Shadcn-Vue (/public)
 - Backend: Cloudflare Workers (/workers)
 - BDD données: Firebase Firestore
@@ -14,6 +16,7 @@ Application qui connecte des sportifs pour pratiquer ensemble de manière ponctu
 - Géolocalisation: Google Places API
 
 ## Structure
+
 - /public → Frontend PWA mobile-first
 - /workers → Backend API Cloudflare
 - /docs → Documentation technique
@@ -22,5 +25,6 @@ Application qui connecte des sportifs pour pratiquer ensemble de manière ponctu
 - /tests → Tests Playwright
 
 ## Commandes
+
 - cd public && npm run dev → Démarrer le frontend
 - cd workers && npx wrangler dev → Démarrer le backend
