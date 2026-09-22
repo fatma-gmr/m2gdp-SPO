@@ -2,13 +2,25 @@
 import { ref } from 'vue'
 import { useAuth } from '../composables/useAuth'
 
+/** Composable d'authentification BINOFIT */
 const { sendLoginLink } = useAuth()
 
+/** Champ e-mail réactif du formulaire */
 const email = ref('')
+
+/** Indicateur de chargement pendant l'envoi du mail */
 const loading = ref(false)
+
+/** Message d'erreur de saisie ou d'envoi */
 const error = ref('')
+
+/** Indicateur de confirmation d'envoi du lien magique */
 const linkSent = ref(false)
 
+/**
+ * Soumet la demande de connexion par lien magique.
+ * Vérifie la présence de l'e-mail puis déclenche l'appel Firebase Auth.
+ */
 async function onSubmit() {
   error.value = ''
   if (!email.value) {
@@ -27,6 +39,12 @@ async function onSubmit() {
   }
 }
 
+/**
+ * Convertit une erreur Firebase Auth en message lisible.
+ * 
+ * @param e L'exception capturée lors de la tentative d'envoi
+ * @returns Le message d'erreur en français
+ */
 function toErrorMessage(e: unknown): string {
   const code = (e as { code?: string } | undefined)?.code
   switch (code) {

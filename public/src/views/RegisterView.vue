@@ -3,8 +3,10 @@ import { reactive, ref } from 'vue'
 import { useAuth } from '../composables/useAuth'
 import { SPORTS, type Sport } from '../types/profile'
 
+/** Composable d'authentification BINOFIT */
 const { registerAndSendLink } = useAuth()
 
+/** État réactif du formulaire d'inscription */
 const form = reactive({
   prenom: '',
   nom: '',
@@ -13,10 +15,19 @@ const form = reactive({
   localisation: '',
 })
 
+/** Indicateur de chargement lors de la soumission */
 const loading = ref(false)
+
+/** Message d'erreur de validation ou d'envoi */
 const error = ref('')
+
+/** Indicateur de succès d'envoi du lien magique */
 const linkSent = ref(false)
 
+/**
+ * Soumet le formulaire d'inscription.
+ * Valide la présence de tous les champs, stocke le profil localement et déclenche l'envoi du mail Firebase.
+ */
 async function onSubmit() {
   error.value = ''
 
@@ -42,6 +53,12 @@ async function onSubmit() {
   }
 }
 
+/**
+ * Traduit les codes d'erreur Firebase Auth en messages utilisateur compréhensibles.
+ * 
+ * @param e L'exception capturée lors de l'appel Firebase
+ * @returns Message d'erreur formaté en français
+ */
 function toErrorMessage(e: unknown): string {
   const code = (e as { code?: string } | undefined)?.code
   switch (code) {
