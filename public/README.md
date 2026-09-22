@@ -1,12 +1,13 @@
 # BINOFIT — POC Inscription / Connexion
 
-POC (preuve de concept) réalisé avec **Vue 3 + TypeScript + Vite**, avec une authentification **Firebase Auth par lien magique (e-mail, sans mot de passe)**.
+POC (preuve de concept) réalisé avec **Vue 3 + TypeScript + Vite**, avec une authentification **Firebase Auth par lien magique (e-mail, sans mot de passe)** et un **Backend Cloudflare Worker API**.
 
 ## Fonctionnalités
 
 1. **Inscription** (`/inscription`) — prénom, nom, e-mail, sport pratiqué, localisation.
 2. **Connexion** (`/connexion`) — envoi d'un lien magique par e-mail, aucune saisie de mot de passe.
 3. **Accueil** (`/accueil`) — profil de l'utilisateur connecté, accessible uniquement après authentification.
+4. **Backend API Worker** (`workers/`) — API Cloudflare Worker avec support CORS et endpoint `/api/health`.
 
 ## Configuration Firebase (obligatoire avant de lancer le projet)
 
@@ -22,18 +23,28 @@ POC (preuve de concept) réalisé avec **Vue 3 + TypeScript + Vite**, avec une a
 
 ## Lancer le projet
 
+### Frontend PWA
 ```bash
+cd public
 npm install
 npm run dev
 ```
 
+### Backend Cloudflare Worker
+```bash
+cd workers
+npm install
+npx wrangler dev
+```
+
 ## Architecture du POC
 
-- `src/firebase.ts` — initialisation de Firebase App / Auth à partir des variables d'environnement.
-- `src/composables/useAuth.ts` — état d'authentification réactif (utilisateur, profil) + actions (inscription, envoi du lien, finalisation de connexion, déconnexion).
-- `src/services/profileStore.ts` — persistance du profil (prénom, nom, sport, localisation) en `localStorage`, indexée par e-mail.
-- `src/router/index.ts` — routes + garde de navigation (redirection selon l'état de connexion).
-- `src/views/` — `RegisterView`, `LoginView`, `FinishSignInView` (réception du lien magique), `HomeView` (profil).
+- `public/src/firebase.ts` — initialisation de Firebase App / Auth à partir des variables d'environnement.
+- `public/src/composables/useAuth.ts` — état d'authentification réactif (utilisateur, profil) + actions (inscription, envoi du lien, finalisation de connexion, déconnexion).
+- `public/src/services/profileStore.ts` — persistance du profil (prénom, nom, sport, localisation) en `localStorage`, indexée par e-mail.
+- `public/src/router/index.ts` — routes + garde de navigation (redirection selon l'état de connexion) + titres dynamiques de pages.
+- `public/src/views/` — `RegisterView`, `LoginView`, `FinishSignInView` (réception du lien magique), `HomeView` (profil).
+- `workers/src/index.ts` — point d'entrée Cloudflare Worker API (gestion des requêtes CORS et route `/api/health`).
 
 ### Limite connue (POC)
 
@@ -44,3 +55,4 @@ Firebase Auth ne stocke pas nativement le sport ou la localisation : ces champs 
 - Noir `#0A0A0A` (fond)
 - Vert lime `#4CC800` (accent, boutons, éléments actifs)
 - Design **mobile-first**, formulaires optimisés tactile.
+
