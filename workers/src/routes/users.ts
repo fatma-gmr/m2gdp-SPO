@@ -8,7 +8,15 @@ import { getDocument, listDocuments, patchDocument } from '../lib/firestore'
 import { haversineDistanceKm } from '../lib/geo'
 import { firestoreDocumentToUser, validateUserUpdate } from '../lib/userMapper'
 import { firebaseAuth } from '../middleware/auth'
-import { DAYS_OF_WEEK, LEVELS, SPORTS, type DayOfWeek, type Level, type Sport, type User } from '../types'
+import {
+  DAYS_OF_WEEK,
+  LEVELS,
+  SPORTS,
+  type DayOfWeek,
+  type Level,
+  type Sport,
+  type UserSearchResult,
+} from '../types'
 
 const USERS_COLLECTION = 'users'
 
@@ -44,6 +52,9 @@ function assertEnumOrUndefined<T extends string>(
  * Récupère l'ensemble des profils puis filtre/trie côté Worker (voir la note sur les
  * limites de requêtage Firestore dans /specs/data-model.md). Acceptable pour le volume
  * attendu du POC ; à revoir (geohash + index dédiés) si la base d'utilisateurs grossit.
+ *
+ * Quand lat/lng/maxKm sont fournis, chaque utilisateur retourné porte en plus
+ * `distanceKm` (distance à vol d'oiseau depuis (lat, lng), arrondie à 1 décimale).
  */
 usersRoute.get('/', async (c) => {
   const query = c.req.query()
@@ -64,7 +75,7 @@ usersRoute.get('/', async (c) => {
   }
 
   const documents = await listDocuments(c.env, USERS_COLLECTION)
-  let users: User[] = documents.map(firestoreDocumentToUser)
+  let users: UserSearchResult[] = documents.map(firestoreDocumentToUser)
 
   if (sport !== undefined) {
     users = users.filter((user) => user.sports.some((practice) => practice.sport === sport))
@@ -82,7 +93,7 @@ usersRoute.get('/', async (c) => {
       .map((user) => ({ user, distanceKm: haversineDistanceKm(origin, user.location) }))
       .filter(({ distanceKm }) => distanceKm <= maxKm)
       .sort((a, b) => a.distanceKm - b.distanceKm)
-      .map(({ user }) => user)
+      .map(({ user, distanceKm }) => ({ ...user, distanceKm: Math.round(distanceKm * 10) / 10 }))
   }
 
   return c.json(users)

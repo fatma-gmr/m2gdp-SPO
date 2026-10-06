@@ -70,12 +70,12 @@
         ],
         "responses": {
           "200": {
-            "description": "Liste des profils correspondant aux critères",
+            "description": "Liste des profils correspondant aux critères. Chaque profil porte `distanceKm` si (et seulement si) lat/lng/maxKm ont été fournis.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/User" }
+                  "items": { "$ref": "#/components/schemas/UserSearchResult" }
                 }
               }
             }
@@ -463,6 +463,23 @@
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" }
         }
+      },
+      "UserSearchResult": {
+        "description": "Résultat de GET /users : un User enrichi de distanceKm quand la recherche est géolocalisée.",
+        "allOf": [
+          { "$ref": "#/components/schemas/User" },
+          {
+            "type": "object",
+            "properties": {
+              "distanceKm": {
+                "type": "number",
+                "format": "double",
+                "description": "Distance à vol d'oiseau depuis (lat, lng), arrondie à 1 décimale. Présent uniquement si lat et lng ont été fournis.",
+                "example": 3.4
+              }
+            }
+          }
+        ]
       },
       "UserUpdate": {
         "type": "object",

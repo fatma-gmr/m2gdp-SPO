@@ -66,6 +66,14 @@ export type UserUpdate = Partial<
   Pick<User, 'firstName' | 'lastName' | 'avatarUrl' | 'bio' | 'location' | 'sports' | 'availability'>
 >
 
+/**
+ * Résultat de GET /users : un `User` enrichi de `distanceKm` (arrondi à 1 décimale)
+ * quand la recherche est géolocalisée (lat/lng fournis). Absent sinon.
+ */
+export interface UserSearchResult extends User {
+  distanceKm?: number
+}
+
 export const ACTIVITY_STATUSES = ['en_attente', 'acceptee', 'refusee', 'terminee'] as const
 export type ActivityStatus = (typeof ACTIVITY_STATUSES)[number]
 
