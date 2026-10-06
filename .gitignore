@@ -4,6 +4,8 @@ node_modules/
 dist/
 .env
 .env.local
+.dev.vars
+.wrangler/
 
 # *.json ci-dessus ignore tout JSON du repo (y compris package.json / tsconfig) ;
 # on rétablit les fichiers de config nécessaires au build de public/ et workers/
@@ -14,3 +16,7 @@ dist/
 !public/tsconfig.node.json
 !workers/package.json
 !workers/package-lock.json
+!workers/tsconfig.json
+
+# Spécifications (OpenAPI, schémas JSON) : doivent rester versionnées
+!specs/*.json

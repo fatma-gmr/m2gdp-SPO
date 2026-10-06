@@ -1,0 +1,581 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "BINOFIT API",
+    "description": "API Cloudflare Workers de BINOFIT, application de matching sportif. Authentification via jeton Firebase Auth (lien magique).",
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.binofit.app",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:8787",
+      "description": "Développement local (wrangler dev)"
+    }
+  ],
+  "security": [
+    { "bearerAuth": [] }
+  ],
+  "tags": [
+    { "name": "users", "description": "Profils sportifs et recherche de partenaires" },
+    { "name": "activities", "description": "Sessions sportives ponctuelles" },
+    { "name": "conversations", "description": "Conversations entre utilisateurs" },
+    { "name": "messages", "description": "Messages échangés dans une conversation" }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "tags": ["users"],
+        "summary": "Rechercher des utilisateurs à proximité",
+        "description": "Retourne les profils publics des utilisateurs correspondant aux critères de géolocalisation et de pratique sportive. `lat`, `lng` et `maxKm` doivent être fournis ensemble pour activer le filtre géographique.",
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "description": "Latitude du point de recherche",
+            "schema": { "type": "number", "format": "double" }
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "description": "Longitude du point de recherche",
+            "schema": { "type": "number", "format": "double" }
+          },
+          {
+            "name": "maxKm",
+            "in": "query",
+            "description": "Rayon de recherche en kilomètres autour de (lat, lng)",
+            "schema": { "type": "number", "format": "double", "minimum": 0 }
+          },
+          {
+            "name": "sport",
+            "in": "query",
+            "description": "Filtrer sur une discipline pratiquée",
+            "schema": { "$ref": "#/components/schemas/Sport" }
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "description": "Filtrer sur le niveau de pratique pour le sport donné",
+            "schema": { "$ref": "#/components/schemas/Level" }
+          },
+          {
+            "name": "availability",
+            "in": "query",
+            "description": "Filtrer sur un jour de disponibilité",
+            "schema": { "$ref": "#/components/schemas/DayOfWeek" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des profils correspondant aux critères",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["users"],
+        "summary": "Récupérer un profil utilisateur",
+        "parameters": [
+          { "$ref": "#/components/parameters/UserId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profil utilisateur",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "tags": ["users"],
+        "summary": "Mettre à jour un profil utilisateur",
+        "description": "Met à jour tout ou partie du profil. Un utilisateur ne peut mettre à jour que son propre profil (id == uid du jeton d'authentification).",
+        "parameters": [
+          { "$ref": "#/components/parameters/UserId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profil mis à jour",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/User" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/activities": {
+      "post": {
+        "tags": ["activities"],
+        "summary": "Créer une activité sportive",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ActivityCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Activité créée",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Activity" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "get": {
+        "tags": ["activities"],
+        "summary": "Lister les activités",
+        "description": "Sans paramètre, retourne les activités ouvertes à proximité (implémentation ultérieure). Avec `userId`, retourne les activités créées par cet utilisateur ou auxquelles il participe.",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "description": "Filtrer les activités liées à cet utilisateur (créateur ou participant)",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des activités",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Activity" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/activities/{id}/status": {
+      "patch": {
+        "tags": ["activities"],
+        "summary": "Changer le statut d'une activité",
+        "description": "Réservé au créateur de l'activité. Exemples de transitions : `ouverte` → `complete`, `ouverte`/`complete` → `annulee`, `ouverte`/`complete` → `en_cours` → `terminee`.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Identifiant de l'activité",
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ActivityStatusUpdate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Activité mise à jour",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Activity" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/conversations": {
+      "get": {
+        "tags": ["conversations"],
+        "summary": "Lister les conversations de l'utilisateur authentifié",
+        "description": "Retourne les conversations auxquelles l'utilisateur courant (déduit du jeton d'authentification) participe, triées par `updatedAt` décroissant.",
+        "responses": {
+          "200": {
+            "description": "Liste des conversations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Conversation" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/conversations/{id}/messages": {
+      "get": {
+        "tags": ["messages"],
+        "summary": "Lister les messages d'une conversation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Identifiant de la conversation",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Nombre maximum de messages à retourner",
+            "schema": { "type": "integer", "minimum": 1, "maximum": 200, "default": 50 }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "description": "Horodatage ISO 8601 pour paginer les messages plus anciens que cette date",
+            "schema": { "type": "string", "format": "date-time" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des messages, triés par `sentAt` croissant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Message" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/messages": {
+      "post": {
+        "tags": ["messages"],
+        "summary": "Envoyer un message",
+        "description": "Crée un message dans une conversation existante. L'auteur (`senderId`) est déduit du jeton d'authentification.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/MessageCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Message créé",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Message" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Jeton d'identité Firebase Authentication"
+      }
+    },
+    "parameters": {
+      "UserId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "description": "Identifiant de l'utilisateur (uid Firebase Auth)",
+        "schema": { "type": "string" }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Requête invalide",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Jeton d'authentification manquant ou invalide",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "L'utilisateur authentifié n'a pas le droit d'effectuer cette action",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Ressource introuvable",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": {
+          "error": { "type": "string", "description": "Message d'erreur lisible" },
+          "code": { "type": "string", "description": "Code d'erreur machine" }
+        }
+      },
+      "Sport": {
+        "type": "string",
+        "enum": [
+          "musculation",
+          "course_a_pied",
+          "football",
+          "basketball",
+          "natation",
+          "cyclisme",
+          "yoga",
+          "boxe",
+          "crossfit",
+          "tennis",
+          "autre"
+        ]
+      },
+      "Level": {
+        "type": "string",
+        "enum": ["debutant", "intermediaire", "avance", "expert"]
+      },
+      "DayOfWeek": {
+        "type": "string",
+        "enum": ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
+      },
+      "ActivityStatus": {
+        "type": "string",
+        "enum": ["ouverte", "complete", "en_cours", "terminee", "annulee"]
+      },
+      "GeoPoint": {
+        "type": "object",
+        "required": ["lat", "lng"],
+        "properties": {
+          "lat": { "type": "number", "format": "double" },
+          "lng": { "type": "number", "format": "double" },
+          "city": { "type": "string" }
+        }
+      },
+      "SportPractice": {
+        "type": "object",
+        "required": ["sport", "level"],
+        "properties": {
+          "sport": { "$ref": "#/components/schemas/Sport" },
+          "level": { "$ref": "#/components/schemas/Level" }
+        }
+      },
+      "AvailabilitySlot": {
+        "type": "object",
+        "required": ["dayOfWeek", "startTime", "endTime"],
+        "properties": {
+          "dayOfWeek": { "$ref": "#/components/schemas/DayOfWeek" },
+          "startTime": { "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$", "example": "18:00" },
+          "endTime": { "type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$", "example": "20:00" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "required": ["id", "email", "firstName", "lastName", "location", "sports", "availability", "createdAt", "updatedAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "avatarUrl": { "type": "string", "format": "uri", "nullable": true },
+          "bio": { "type": "string", "nullable": true },
+          "location": { "$ref": "#/components/schemas/GeoPoint" },
+          "sports": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SportPractice" }
+          },
+          "availability": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AvailabilitySlot" }
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "UserUpdate": {
+        "type": "object",
+        "description": "Champs modifiables d'un profil utilisateur. Tous les champs sont optionnels.",
+        "properties": {
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "avatarUrl": { "type": "string", "format": "uri", "nullable": true },
+          "bio": { "type": "string", "nullable": true },
+          "location": { "$ref": "#/components/schemas/GeoPoint" },
+          "sports": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/SportPractice" }
+          },
+          "availability": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AvailabilitySlot" }
+          }
+        }
+      },
+      "Activity": {
+        "type": "object",
+        "required": [
+          "id", "creatorId", "sport", "level", "title", "location", "startAt",
+          "durationMinutes", "maxParticipants", "participantIds", "status",
+          "createdAt", "updatedAt"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "creatorId": { "type": "string" },
+          "sport": { "$ref": "#/components/schemas/Sport" },
+          "level": { "$ref": "#/components/schemas/Level" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "location": { "$ref": "#/components/schemas/GeoPoint" },
+          "startAt": { "type": "string", "format": "date-time" },
+          "durationMinutes": { "type": "integer", "minimum": 1 },
+          "maxParticipants": { "type": "integer", "minimum": 1 },
+          "participantIds": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "status": { "$ref": "#/components/schemas/ActivityStatus" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ActivityCreate": {
+        "type": "object",
+        "required": ["sport", "level", "title", "location", "startAt", "durationMinutes", "maxParticipants"],
+        "properties": {
+          "sport": { "$ref": "#/components/schemas/Sport" },
+          "level": { "$ref": "#/components/schemas/Level" },
+          "title": { "type": "string" },
+          "description": { "type": "string", "nullable": true },
+          "location": { "$ref": "#/components/schemas/GeoPoint" },
+          "startAt": { "type": "string", "format": "date-time" },
+          "durationMinutes": { "type": "integer", "minimum": 1 },
+          "maxParticipants": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "ActivityStatusUpdate": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": { "$ref": "#/components/schemas/ActivityStatus" }
+        }
+      },
+      "LastMessagePreview": {
+        "type": "object",
+        "required": ["text", "senderId", "sentAt"],
+        "properties": {
+          "text": { "type": "string" },
+          "senderId": { "type": "string" },
+          "sentAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Conversation": {
+        "type": "object",
+        "required": ["id", "participantIds", "createdAt", "updatedAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "participantIds": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "activityId": { "type": "string", "nullable": true },
+          "lastMessage": {
+            "allOf": [{ "$ref": "#/components/schemas/LastMessagePreview" }],
+            "nullable": true
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Message": {
+        "type": "object",
+        "required": ["id", "conversationId", "senderId", "text", "sentAt", "readBy"],
+        "properties": {
+          "id": { "type": "string" },
+          "conversationId": { "type": "string" },
+          "senderId": { "type": "string" },
+          "text": { "type": "string" },
+          "sentAt": { "type": "string", "format": "date-time" },
+          "readBy": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "MessageCreate": {
+        "type": "object",
+        "required": ["conversationId", "text"],
+        "properties": {
+          "conversationId": { "type": "string" },
+          "text": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        }
+      }
+    }
+  }
+}
