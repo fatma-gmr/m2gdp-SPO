@@ -65,3 +65,39 @@ export interface User {
 export type UserUpdate = Partial<
   Pick<User, 'firstName' | 'lastName' | 'avatarUrl' | 'bio' | 'location' | 'sports' | 'availability'>
 >
+
+export const ACTIVITY_STATUSES = ['en_attente', 'acceptee', 'refusee', 'terminee'] as const
+export type ActivityStatus = (typeof ACTIVITY_STATUSES)[number]
+
+export const MEDIA_TYPES = ['image', 'video'] as const
+export type MediaType = (typeof MEDIA_TYPES)[number]
+
+export interface Lieu {
+  nom: string
+  lat: number
+  lng: number
+}
+
+export interface Media {
+  url: string
+  type: MediaType
+}
+
+/**
+ * Une activité est une proposition ponctuelle d'un utilisateur (`createdBy`) à un
+ * autre (`guestId`) — pas une annonce ouverte avec quota de places. `guestId` doit
+ * toujours être différent de `createdBy`.
+ */
+export interface Activity {
+  id: string
+  createdBy: string
+  guestId: string
+  sport: Sport
+  startAt: string
+  lieu: Lieu
+  message: string
+  status: ActivityStatus
+  conversationId?: string | null
+  createdAt: string
+  media?: Media | null
+}

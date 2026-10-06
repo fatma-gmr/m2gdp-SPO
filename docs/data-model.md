@@ -4,10 +4,10 @@ Diagramme Entité-Association correspondant au modèle décrit dans `/specs/data
 
 ```mermaid
 erDiagram
-    USER ||--o{ ACTIVITY : "crée (creatorId)"
-    USER }o--o{ ACTIVITY : "participe (participantIds)"
+    USER ||--o{ ACTIVITY : "propose (createdBy)"
+    USER ||--o{ ACTIVITY : "est invité (guestId)"
     USER }o--o{ CONVERSATION : "participe (participantIds)"
-    ACTIVITY ||--o{ CONVERSATION : "origine (activityId, optionnel)"
+    ACTIVITY |o--o| CONVERSATION : "conversationId (optionnel)"
     CONVERSATION ||--o{ MESSAGE : "contient"
     USER ||--o{ MESSAGE : "envoie (senderId)"
     USER ||--o{ FAVORITE : "possède (userId)"
@@ -30,19 +30,16 @@ erDiagram
 
     ACTIVITY {
         string id
-        string creatorId
+        string createdBy
+        string guestId
         Sport sport
-        Level level
-        string title
-        string description
-        GeoPoint location
         string startAt
-        number durationMinutes
-        number maxParticipants
-        string_array participantIds
+        Lieu lieu
+        string message
         ActivityStatus status
+        string conversationId
         string createdAt
-        string updatedAt
+        Media media
     }
 
     CONVERSATION {
@@ -74,10 +71,10 @@ erDiagram
 
 ## Notes de lecture
 
-- `USER ||--o{ ACTIVITY` : un utilisateur peut créer plusieurs activités (relation 1—N via `creatorId`).
-- `USER }o--o{ ACTIVITY` : relation N—N de participation (`activities.participantIds`).
+- `USER ||--o{ ACTIVITY` (propose) : un utilisateur peut créer plusieurs activités, en tant que créateur (`createdBy`).
+- `USER ||--o{ ACTIVITY` (est invité) : un utilisateur peut recevoir plusieurs propositions, en tant qu'invité (`guestId`) — chaque activité n'a qu'un seul créateur et un seul invité, jamais de liste de participants.
 - `USER }o--o{ CONVERSATION` : une conversation a plusieurs participants, un utilisateur a plusieurs conversations.
-- `ACTIVITY ||--o{ CONVERSATION` : une conversation peut optionnellement découler d'une activité (`conversations.activityId`).
+- `ACTIVITY |o--o| CONVERSATION` : une activité peut optionnellement avoir une conversation associée (`activities.conversationId`), et réciproquement (`conversations.activityId`) — relation 1—1 optionnelle, dupliquée des deux côtés car Firestore ne permet pas les jointures.
 - `CONVERSATION ||--o{ MESSAGE` : une conversation contient plusieurs messages (stockés dans Firebase Realtime Database).
 - `FAVORITE` cible soit un `USER`, soit une `ACTIVITY`, selon `targetType` (relation polymorphe représentée par les deux liens en pointillés).
 

@@ -20,7 +20,7 @@
   ],
   "tags": [
     { "name": "users", "description": "Profils sportifs et recherche de partenaires" },
-    { "name": "activities", "description": "Sessions sportives ponctuelles" },
+    { "name": "activities", "description": "Propositions ponctuelles d'un utilisateur à un autre" },
     { "name": "conversations", "description": "Conversations entre utilisateurs" },
     { "name": "messages", "description": "Messages échangés dans une conversation" }
   ],
@@ -139,7 +139,8 @@
     "/activities": {
       "post": {
         "tags": ["activities"],
-        "summary": "Créer une activité sportive",
+        "summary": "Proposer une activité à un autre utilisateur",
+        "description": "Crée une proposition ponctuelle de `createdBy` (déduit du jeton d'authentification) vers `guestId`. `guestId` doit être différent de `createdBy`. Le statut initial est toujours `en_attente`.",
         "requestBody": {
           "required": true,
           "content": {
@@ -164,12 +165,12 @@
       "get": {
         "tags": ["activities"],
         "summary": "Lister les activités",
-        "description": "Sans paramètre, retourne les activités ouvertes à proximité (implémentation ultérieure). Avec `userId`, retourne les activités créées par cet utilisateur ou auxquelles il participe.",
+        "description": "Avec `userId`, retourne les propositions où cet utilisateur est créateur (`createdBy`) ou invité (`guestId`).",
         "parameters": [
           {
             "name": "userId",
             "in": "query",
-            "description": "Filtrer les activités liées à cet utilisateur (créateur ou participant)",
+            "description": "Filtrer les activités liées à cet utilisateur (créateur ou invité)",
             "schema": { "type": "string" }
           }
         ],
@@ -192,8 +193,8 @@
     "/activities/{id}/status": {
       "patch": {
         "tags": ["activities"],
-        "summary": "Changer le statut d'une activité",
-        "description": "Réservé au créateur de l'activité. Exemples de transitions : `ouverte` → `complete`, `ouverte`/`complete` → `annulee`, `ouverte`/`complete` → `en_cours` → `terminee`.",
+        "summary": "Répondre à une proposition ou la clôturer",
+        "description": "Transitions attendues : l'invité (`guestId`) fait passer `en_attente` → `acceptee` ou `en_attente` → `refusee` ; le créateur ou l'invité fait passer `acceptee` → `terminee` une fois la session passée.",
         "parameters": [
           {
             "name": "id",
@@ -408,7 +409,11 @@
       },
       "ActivityStatus": {
         "type": "string",
-        "enum": ["ouverte", "complete", "en_cours", "terminee", "annulee"]
+        "enum": ["en_attente", "acceptee", "refusee", "terminee"]
+      },
+      "MediaType": {
+        "type": "string",
+        "enum": ["image", "video"]
       },
       "GeoPoint": {
         "type": "object",
@@ -478,45 +483,57 @@
           }
         }
       },
+      "Lieu": {
+        "type": "object",
+        "required": ["nom", "lat", "lng"],
+        "properties": {
+          "nom": { "type": "string", "example": "Parc de la Tête d'Or" },
+          "lat": { "type": "number", "format": "double" },
+          "lng": { "type": "number", "format": "double" }
+        }
+      },
+      "Media": {
+        "type": "object",
+        "required": ["url", "type"],
+        "properties": {
+          "url": { "type": "string", "format": "uri" },
+          "type": { "$ref": "#/components/schemas/MediaType" }
+        }
+      },
       "Activity": {
         "type": "object",
-        "required": [
-          "id", "creatorId", "sport", "level", "title", "location", "startAt",
-          "durationMinutes", "maxParticipants", "participantIds", "status",
-          "createdAt", "updatedAt"
-        ],
+        "description": "Proposition ponctuelle d'un utilisateur (createdBy) à un autre (guestId) — pas une annonce ouverte avec quota de places.",
+        "required": ["id", "createdBy", "guestId", "sport", "startAt", "lieu", "message", "status", "createdAt"],
         "properties": {
           "id": { "type": "string" },
-          "creatorId": { "type": "string" },
+          "createdBy": { "type": "string", "description": "uid de l'utilisateur à l'origine de la proposition" },
+          "guestId": { "type": "string", "description": "uid de l'utilisateur invité, toujours différent de createdBy" },
           "sport": { "$ref": "#/components/schemas/Sport" },
-          "level": { "$ref": "#/components/schemas/Level" },
-          "title": { "type": "string" },
-          "description": { "type": "string", "nullable": true },
-          "location": { "$ref": "#/components/schemas/GeoPoint" },
           "startAt": { "type": "string", "format": "date-time" },
-          "durationMinutes": { "type": "integer", "minimum": 1 },
-          "maxParticipants": { "type": "integer", "minimum": 1 },
-          "participantIds": {
-            "type": "array",
-            "items": { "type": "string" }
-          },
+          "lieu": { "$ref": "#/components/schemas/Lieu" },
+          "message": { "type": "string" },
           "status": { "$ref": "#/components/schemas/ActivityStatus" },
+          "conversationId": { "type": "string", "nullable": true },
           "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
+          "media": {
+            "allOf": [{ "$ref": "#/components/schemas/Media" }],
+            "nullable": true
+          }
         }
       },
       "ActivityCreate": {
         "type": "object",
-        "required": ["sport", "level", "title", "location", "startAt", "durationMinutes", "maxParticipants"],
+        "required": ["guestId", "sport", "startAt", "lieu", "message"],
         "properties": {
+          "guestId": { "type": "string", "description": "uid de l'utilisateur invité, doit différer de l'utilisateur authentifié" },
           "sport": { "$ref": "#/components/schemas/Sport" },
-          "level": { "$ref": "#/components/schemas/Level" },
-          "title": { "type": "string" },
-          "description": { "type": "string", "nullable": true },
-          "location": { "$ref": "#/components/schemas/GeoPoint" },
           "startAt": { "type": "string", "format": "date-time" },
-          "durationMinutes": { "type": "integer", "minimum": 1 },
-          "maxParticipants": { "type": "integer", "minimum": 1 }
+          "lieu": { "$ref": "#/components/schemas/Lieu" },
+          "message": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "media": {
+            "allOf": [{ "$ref": "#/components/schemas/Media" }],
+            "nullable": true
+          }
         }
       },
       "ActivityStatusUpdate": {
