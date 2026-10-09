@@ -1,68 +1,57 @@
 /**
  * BINOFIT - Backend Cloudflare Worker API
- * 
- * Ce fichier constitue le point d'entrée de l'API Cloudflare Worker pour BINOFIT.
- * Il gère les requêtes HTTP entrantes, les en-têtes CORS et fournit des endpoints de santé (healthcheck).
+ *
+ * Point d'entrée de l'API (Hono) : CORS, healthcheck, montage des routes et
+ * gestion centralisée des erreurs. Voir /specs/openapi.json pour le contrat.
  */
+import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import type { AppBindings } from './env'
+import { ApiError } from './lib/apiError'
+import { activitiesRoute } from './routes/activities'
+import { conversationsRoute } from './routes/conversations'
+import { favoritesRoute } from './routes/favorites'
+import { messagesRoute } from './routes/messages'
+import { usersRoute } from './routes/users'
 
-export interface Env {
-  // Définition des variables d'environnement Cloudflare Worker (ex: DB, BUCKET, SECRETS)
-  ENVIRONMENT?: string
-}
+export type { Env } from './env'
 
-/** En-têtes CORS par défaut pour permettre les requêtes depuis le frontend PWA BINOFIT */
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
+const ALLOWED_ORIGINS = ['https://binofit-a36cf.web.app', 'http://localhost:5173']
 
-export default {
-  /**
-   * Handler principal de requêtes HTTP pour Cloudflare Worker BINOFIT.
-   * 
-   * @param request La requête HTTP entrante
-   * @param env Le dictionnaire des variables d'environnement et bindings Cloudflare
-   * @param ctx Le contexte d'exécution du Worker
-   * @returns Une promesse contenant la réponse HTTP à renvoyer au client
-   */
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url)
+const app = new Hono<AppBindings>()
 
-    // Gestion du preflight CORS (OPTIONS)
-    if (request.method === 'OPTIONS') {
-      return new Response(null, {
-        status: 204,
-        headers: corsHeaders,
-      })
-    }
+app.use(
+  '*',
+  cors({
+    origin: (origin) => (ALLOWED_ORIGINS.includes(origin) ? origin : ''),
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 86400,
+  }),
+)
 
-    // Endpoint d'état du service API (Healthcheck)
-    if (url.pathname === '/api/health') {
-      return new Response(
-        JSON.stringify({
-          status: 'ok',
-          service: 'BINOFIT API Worker',
-          timestamp: new Date().toISOString(),
-        }),
-        {
-          status: 200,
-          headers: {
-            ...corsHeaders,
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-        },
-      )
-    }
+app.get('/api/health', (c) =>
+  c.json({
+    status: 'ok',
+    service: 'BINOFIT API Worker',
+    timestamp: new Date().toISOString(),
+  }),
+)
 
-    // Réponse par défaut pour la racine
-    return new Response('BINOFIT API OK', {
-      status: 200,
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'text/plain; charset=utf-8',
-      },
-    })
-  },
-}
+app.route('/users', usersRoute)
+app.route('/activities', activitiesRoute)
+app.route('/conversations', conversationsRoute)
+app.route('/messages', messagesRoute)
+app.route('/favorites', favoritesRoute)
 
+app.notFound((c) => c.json({ error: 'Route introuvable', code: 'not_found' }, 404))
+
+app.onError((error, c) => {
+  if (error instanceof ApiError) {
+    return c.json({ error: error.message, code: error.code }, error.status as 400 | 401 | 403 | 404 | 409 | 500 | 502)
+  }
+  console.error('[BINOFIT API] Erreur non gérée:', error)
+  return c.json({ error: 'Erreur interne du serveur', code: 'internal_error' }, 500)
+})
+
+export default app

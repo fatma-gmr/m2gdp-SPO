@@ -1,0 +1,7 @@
+# Copier ce fichier en ".dev.vars" (ignoré par git) pour wrangler dev en local.
+# Valeurs à récupérer depuis la clé de compte de service Firebase/Google Cloud
+# (Console Firebase > Paramètres du projet > Comptes de service > Générer une nouvelle clé privée).
+# Ne JAMAIS commiter le fichier ".dev.vars" ni la clé JSON du compte de service.
+
+FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxxx@binofit-a36cf.iam.gserviceaccount.com"
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEv...\n-----END PRIVATE KEY-----\n"

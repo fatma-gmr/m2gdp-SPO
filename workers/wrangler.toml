@@ -1,3 +1,11 @@
 name = "binofit-api"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
+
+# Variables non sensibles (identifiant du projet Firebase, public dans la config
+# frontend). Les identifiants du compte de service, eux, sont des secrets Wrangler
+# (voir README.md de ce dossier) — jamais ici, jamais dans le code.
+[vars]
+FIREBASE_PROJECT_ID = "binofit-a36cf"
+FIREBASE_DATABASE_URL = "https://binofit-a36cf-default-rtdb.europe-west1.firebasedatabase.app"
+ENVIRONMENT = "development"
