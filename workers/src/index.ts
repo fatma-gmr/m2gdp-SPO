@@ -8,6 +8,10 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import type { AppBindings } from './env'
 import { ApiError } from './lib/apiError'
+import { activitiesRoute } from './routes/activities'
+import { conversationsRoute } from './routes/conversations'
+import { favoritesRoute } from './routes/favorites'
+import { messagesRoute } from './routes/messages'
 import { usersRoute } from './routes/users'
 
 export type { Env } from './env'
@@ -35,12 +39,16 @@ app.get('/api/health', (c) =>
 )
 
 app.route('/users', usersRoute)
+app.route('/activities', activitiesRoute)
+app.route('/conversations', conversationsRoute)
+app.route('/messages', messagesRoute)
+app.route('/favorites', favoritesRoute)
 
 app.notFound((c) => c.json({ error: 'Route introuvable', code: 'not_found' }, 404))
 
 app.onError((error, c) => {
   if (error instanceof ApiError) {
-    return c.json({ error: error.message, code: error.code }, error.status as 400 | 401 | 403 | 404 | 500 | 502)
+    return c.json({ error: error.message, code: error.code }, error.status as 400 | 401 | 403 | 404 | 409 | 500 | 502)
   }
   console.error('[BINOFIT API] Erreur non gérée:', error)
   return c.json({ error: 'Erreur interne du serveur', code: 'internal_error' }, 500)

@@ -7,4 +7,5 @@ compatibility_date = "2024-01-01"
 # (voir README.md de ce dossier) — jamais ici, jamais dans le code.
 [vars]
 FIREBASE_PROJECT_ID = "binofit-a36cf"
+FIREBASE_DATABASE_URL = "https://binofit-a36cf-default-rtdb.europe-west1.firebasedatabase.app"
 ENVIRONMENT = "development"

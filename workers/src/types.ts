@@ -109,3 +109,44 @@ export interface Activity {
   createdAt: string
   media?: Media | null
 }
+
+export type ActivityCreate = Pick<Activity, 'guestId' | 'sport' | 'startAt' | 'lieu' | 'message'> & {
+  media?: Media | null
+}
+
+export interface LastMessagePreview {
+  text: string
+  senderId: string
+  sentAt: string
+}
+
+/** Métadonnées d'une conversation (Firestore) ; le contenu est dans la Realtime Database. */
+export interface Conversation {
+  id: string
+  participantIds: string[]
+  activityId?: string | null
+  lastMessage?: LastMessagePreview | null
+  createdAt: string
+  updatedAt: string
+}
+
+/** Message stocké dans la Realtime Database sous `messages/{conversationId}/{id}`. */
+export interface Message {
+  id: string
+  conversationId: string
+  senderId: string
+  text: string
+  sentAt: string
+  readBy: string[]
+}
+
+export const FAVORITE_TARGET_TYPES = ['user', 'activity'] as const
+export type FavoriteTargetType = (typeof FAVORITE_TARGET_TYPES)[number]
+
+export interface Favorite {
+  id: string
+  userId: string
+  targetType: FavoriteTargetType
+  targetId: string
+  createdAt: string
+}

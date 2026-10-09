@@ -8,6 +8,8 @@
 export interface Env {
   ENVIRONMENT?: string
   FIREBASE_PROJECT_ID: string
+  /** URL de la Realtime Database (messages), ex. https://<projet>-default-rtdb.<région>.firebasedatabase.app */
+  FIREBASE_DATABASE_URL: string
   FIREBASE_CLIENT_EMAIL: string
   FIREBASE_PRIVATE_KEY: string
 }

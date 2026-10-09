@@ -1,6 +1,6 @@
 /**
- * BINOFIT API — authentification du Worker auprès de Google Cloud (Firestore REST API)
- * via un compte de service, par échange OAuth2 "JWT bearer" (RFC 7523).
+ * BINOFIT API — authentification du Worker auprès de Google Cloud (API REST Firestore
+ * et Realtime Database) via un compte de service, par échange OAuth2 "JWT bearer" (RFC 7523).
  *
  * On ne peut pas utiliser les SDK Node Firebase Admin dans un Worker : on signe donc
  * nous-mêmes un JWT RS256 avec la clé privée du compte de service (Web Crypto API),
@@ -11,7 +11,17 @@ import { ApiError } from './apiError'
 import { base64ToUint8Array, uint8ArrayToBase64Url } from './base64'
 
 const TOKEN_ENDPOINT = 'https://oauth2.googleapis.com/token'
-const FIRESTORE_SCOPE = 'https://www.googleapis.com/auth/datastore'
+/**
+ * Un seul access_token couvre les deux bases :
+ * - `datastore` → API REST Firestore ;
+ * - `firebase.database` + `userinfo.email` → API REST Realtime Database (les deux
+ *   scopes sont exigés par Firebase pour authentifier un compte de service).
+ */
+const GOOGLE_SCOPES = [
+  'https://www.googleapis.com/auth/datastore',
+  'https://www.googleapis.com/auth/firebase.database',
+  'https://www.googleapis.com/auth/userinfo.email',
+].join(' ')
 
 interface CachedToken {
   accessToken: string
@@ -64,7 +74,7 @@ async function createSignedAssertion(env: Env): Promise<string> {
   const header = { alg: 'RS256', typ: 'JWT' }
   const claims = {
     iss: env.FIREBASE_CLIENT_EMAIL,
-    scope: FIRESTORE_SCOPE,
+    scope: GOOGLE_SCOPES,
     aud: TOKEN_ENDPOINT,
     iat: now,
     exp: now + 3600,
@@ -85,8 +95,8 @@ async function createSignedAssertion(env: Env): Promise<string> {
   return `${unsignedToken}.${uint8ArrayToBase64Url(new Uint8Array(signature))}`
 }
 
-/** Retourne un access_token OAuth2 valide (scope Firestore), en le mettant en cache. */
-export async function getFirestoreAccessToken(env: Env): Promise<string> {
+/** Retourne un access_token OAuth2 valide (Firestore + Realtime Database), en le mettant en cache. */
+export async function getGoogleAccessToken(env: Env): Promise<string> {
   const now = Math.floor(Date.now() / 1000)
   if (cachedToken && cachedToken.expiresAt - 60 > now) {
     return cachedToken.accessToken
@@ -104,8 +114,8 @@ export async function getFirestoreAccessToken(env: Env): Promise<string> {
 
   if (!response.ok) {
     const detail = await response.text().catch(() => '')
-    console.error('[BINOFIT API] Échec d\'obtention du jeton Firestore:', response.status, detail)
-    throw new ApiError(502, 'firestore_auth_failed', "Impossible d'obtenir un jeton d'accès Firestore")
+    console.error('[BINOFIT API] Échec d\'obtention du jeton Google:', response.status, detail)
+    throw new ApiError(502, 'google_auth_failed', "Impossible d'obtenir un jeton d'accès Google")
   }
 
   const data = (await response.json()) as { access_token: string; expires_in: number }

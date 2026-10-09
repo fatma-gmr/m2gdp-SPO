@@ -71,7 +71,12 @@ async function verifyFirebaseIdToken(env: Env, idToken: string): Promise<Firebas
   }
   const [headerPart, payloadPart, signaturePart] = parts as [string, string, string]
 
-  const header = decodeJwtPart<{ alg: string; kid: string }>(headerPart)
+  let header: { alg: string; kid: string }
+  try {
+    header = decodeJwtPart<{ alg: string; kid: string }>(headerPart)
+  } catch {
+    throw new ApiError(401, 'invalid_token', "Jeton d'authentification invalide")
+  }
   if (header.alg !== 'RS256') {
     throw new ApiError(401, 'invalid_token', 'Algorithme de signature non supporté')
   }
@@ -82,7 +87,12 @@ async function verifyFirebaseIdToken(env: Env, idToken: string): Promise<Firebas
     throw new ApiError(401, 'invalid_token', 'Clé de signature du jeton inconnue')
   }
 
-  const signature = base64UrlToUint8Array(signaturePart)
+  let signature: Uint8Array
+  try {
+    signature = base64UrlToUint8Array(signaturePart)
+  } catch {
+    throw new ApiError(401, 'invalid_token', "Jeton d'authentification invalide")
+  }
   const signedData = new TextEncoder().encode(`${headerPart}.${payloadPart}`)
   const isValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, signature, signedData)
   if (!isValid) {

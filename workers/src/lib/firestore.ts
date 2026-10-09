@@ -8,7 +8,7 @@
  */
 import type { Env } from '../env'
 import { ApiError } from './apiError'
-import { getFirestoreAccessToken } from './serviceAccountAuth'
+import { getGoogleAccessToken } from './serviceAccountAuth'
 
 type FirestoreValue =
   | { stringValue: string }
@@ -32,7 +32,7 @@ function firestoreBaseUrl(env: Env): string {
 }
 
 async function authorizedFetch(env: Env, url: string, init?: RequestInit): Promise<Response> {
-  const accessToken = await getFirestoreAccessToken(env)
+  const accessToken = await getGoogleAccessToken(env)
   return fetch(url, {
     ...init,
     headers: {
@@ -164,4 +164,80 @@ export async function patchDocument(
     throw new ApiError(502, 'firestore_error', `Erreur Firestore (${response.status}) sur ${collection}/${id}`)
   }
   return (await response.json()) as FirestoreDocument
+}
+
+/**
+ * Crée un document. Sans `id`, Firestore génère un identifiant aléatoire.
+ * Un `id` déjà existant provoque une erreur 409.
+ */
+export async function createDocument(
+  env: Env,
+  collection: string,
+  fields: Record<string, unknown>,
+  id?: string,
+): Promise<FirestoreDocument> {
+  const url = new URL(`${firestoreBaseUrl(env)}/${collection}`)
+  if (id) url.searchParams.set('documentId', id)
+
+  const response = await authorizedFetch(env, url.toString(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fields: encodeFirestoreFields(fields) }),
+  })
+
+  if (response.status === 409) {
+    throw new ApiError(409, 'already_exists', `Le document ${collection}/${id} existe déjà`)
+  }
+  if (!response.ok) {
+    throw new ApiError(502, 'firestore_error', `Erreur Firestore (${response.status}) sur ${collection}`)
+  }
+  return (await response.json()) as FirestoreDocument
+}
+
+/** Supprime un document (sans erreur s'il n'existe pas). */
+export async function deleteDocument(env: Env, collection: string, id: string): Promise<void> {
+  const response = await authorizedFetch(env, `${firestoreBaseUrl(env)}/${collection}/${id}`, {
+    method: 'DELETE',
+  })
+  if (!response.ok) {
+    throw new ApiError(502, 'firestore_error', `Erreur Firestore (${response.status}) sur ${collection}/${id}`)
+  }
+}
+
+/**
+ * Retourne les documents d'une collection dont `fieldPath` vérifie `op` (égalité ou
+ * appartenance à un tableau). Un seul filtre par requête : ces requêtes sont couvertes
+ * par les index mono-champ automatiques de Firestore, sans index composite à déclarer.
+ * Le tri éventuel est fait côté Worker.
+ */
+export async function queryDocuments(
+  env: Env,
+  collection: string,
+  fieldPath: string,
+  op: 'EQUAL' | 'ARRAY_CONTAINS',
+  value: unknown,
+): Promise<FirestoreDocument[]> {
+  const response = await authorizedFetch(env, `${firestoreBaseUrl(env)}:runQuery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId: collection }],
+        where: { fieldFilter: { field: { fieldPath }, op, value: encodeFirestoreValue(value) } },
+      },
+    }),
+  })
+
+  if (!response.ok) {
+    throw new ApiError(502, 'firestore_error', `Erreur Firestore (${response.status}) sur la requête ${collection}`)
+  }
+
+  // runQuery renvoie un élément par résultat, plus un élément sans `document` si vide.
+  const results = (await response.json()) as { document?: FirestoreDocument }[]
+  return results.flatMap((result) => (result.document ? [result.document] : []))
+}
+
+/** Convertit un document Firestore en entité de domaine `{ id, ...champs }`. */
+export function firestoreDocumentToEntity<T extends { id: string }>(doc: FirestoreDocument): T {
+  return { id: documentIdFromName(doc.name), ...decodeFirestoreFields(doc.fields ?? {}) } as T
 }

@@ -22,7 +22,8 @@
     { "name": "users", "description": "Profils sportifs et recherche de partenaires" },
     { "name": "activities", "description": "Propositions ponctuelles d'un utilisateur à un autre" },
     { "name": "conversations", "description": "Conversations entre utilisateurs" },
-    { "name": "messages", "description": "Messages échangés dans une conversation" }
+    { "name": "messages", "description": "Messages échangés dans une conversation" },
+    { "name": "favorites", "description": "Utilisateurs et activités mis en favori" }
   ],
   "paths": {
     "/users": {
@@ -159,18 +160,19 @@
             }
           },
           "400": { "$ref": "#/components/responses/BadRequest" },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
         }
       },
       "get": {
         "tags": ["activities"],
         "summary": "Lister les activités",
-        "description": "Avec `userId`, retourne les propositions où cet utilisateur est créateur (`createdBy`) ou invité (`guestId`).",
+        "description": "Retourne les propositions où `userId` est créateur (`createdBy`) ou invité (`guestId`), de la plus récente à la plus ancienne. `userId` vaut par défaut l'utilisateur authentifié et ne peut pas désigner un autre utilisateur (403).",
         "parameters": [
           {
             "name": "userId",
             "in": "query",
-            "description": "Filtrer les activités liées à cet utilisateur (créateur ou invité)",
+            "description": "Filtrer les activités liées à cet utilisateur (créateur ou invité) ; doit être l'utilisateur authentifié",
             "schema": { "type": "string" }
           }
         ],
@@ -186,7 +188,8 @@
               }
             }
           },
-          "401": { "$ref": "#/components/responses/Unauthorized" }
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
         }
       }
     },
@@ -194,7 +197,7 @@
       "patch": {
         "tags": ["activities"],
         "summary": "Répondre à une proposition ou la clôturer",
-        "description": "Transitions attendues : l'invité (`guestId`) fait passer `en_attente` → `acceptee` ou `en_attente` → `refusee` ; le créateur ou l'invité fait passer `acceptee` → `terminee` une fois la session passée.",
+        "description": "Transitions attendues : l'invité (`guestId`) fait passer `en_attente` → `acceptee` ou `en_attente` → `refusee` ; le créateur ou l'invité fait passer `acceptee` → `terminee` une fois la session passée. Toute autre transition, ou tout autre utilisateur, reçoit 403.",
         "parameters": [
           {
             "name": "id",
@@ -246,6 +249,41 @@
             }
           },
           "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["conversations"],
+        "summary": "Ouvrir une conversation avec un autre utilisateur",
+        "description": "Crée une conversation 1-à-1 entre l'utilisateur authentifié et `participantId`, éventuellement liée à une activité dont ils sont le créateur et l'invité (l'activité reçoit alors `conversationId`). Si une conversation existe déjà pour cette paire et cette activité, elle est renvoyée avec le statut 200.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ConversationCreate" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conversation déjà existante",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Conversation" }
+              }
+            }
+          },
+          "201": {
+            "description": "Conversation créée",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Conversation" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
         }
       }
     },
@@ -320,6 +358,75 @@
           "404": { "$ref": "#/components/responses/NotFound" }
         }
       }
+    },
+    "/favorites": {
+      "get": {
+        "tags": ["favorites"],
+        "summary": "Lister les favoris de l'utilisateur authentifié",
+        "description": "Retourne les favoris de l'utilisateur courant (déduit du jeton d'authentification), du plus récent au plus ancien.",
+        "responses": {
+          "200": {
+            "description": "Liste des favoris",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Favorite" }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["favorites"],
+        "summary": "Ajouter un utilisateur ou une activité aux favoris",
+        "description": "Le propriétaire (`userId`) est déduit du jeton d'authentification. Un couple (`userId`, `targetType`, `targetId`) est unique.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/FavoriteCreate" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Favori créé",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Favorite" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/favorites/{targetId}": {
+      "delete": {
+        "tags": ["favorites"],
+        "summary": "Retirer une cible des favoris",
+        "description": "Supprime le(s) favori(s) de l'utilisateur authentifié pointant vers `targetId`.",
+        "parameters": [
+          {
+            "name": "targetId",
+            "in": "path",
+            "required": true,
+            "description": "Identifiant de l'utilisateur ou de l'activité mis en favori",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "204": { "description": "Favori supprimé" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
     }
   },
   "components": {
@@ -367,6 +474,14 @@
       },
       "NotFound": {
         "description": "Ressource introuvable",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "La ressource existe déjà",
         "content": {
           "application/json": {
             "schema": { "$ref": "#/components/schemas/Error" }
@@ -587,6 +702,21 @@
           "updatedAt": { "type": "string", "format": "date-time" }
         }
       },
+      "ConversationCreate": {
+        "type": "object",
+        "required": ["participantId"],
+        "properties": {
+          "participantId": {
+            "type": "string",
+            "description": "uid de l'autre participant, doit différer de l'utilisateur authentifié"
+          },
+          "activityId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Activité dont les deux participants sont le créateur et l'invité"
+          }
+        }
+      },
       "Message": {
         "type": "object",
         "required": ["id", "conversationId", "senderId", "text", "sentAt", "readBy"],
@@ -608,6 +738,29 @@
         "properties": {
           "conversationId": { "type": "string" },
           "text": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        }
+      },
+      "FavoriteTargetType": {
+        "type": "string",
+        "enum": ["user", "activity"]
+      },
+      "Favorite": {
+        "type": "object",
+        "required": ["id", "userId", "targetType", "targetId", "createdAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "userId": { "type": "string", "description": "uid du propriétaire du favori" },
+          "targetType": { "$ref": "#/components/schemas/FavoriteTargetType" },
+          "targetId": { "type": "string", "description": "users.id ou activities.id selon targetType" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "FavoriteCreate": {
+        "type": "object",
+        "required": ["targetType", "targetId"],
+        "properties": {
+          "targetType": { "$ref": "#/components/schemas/FavoriteTargetType" },
+          "targetId": { "type": "string" }
         }
       }
     }
