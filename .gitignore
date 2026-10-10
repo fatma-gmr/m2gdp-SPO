@@ -20,3 +20,4 @@ dist/
 
 # Spécifications (OpenAPI, schémas JSON) : doivent rester versionnées
 !specs/*.json
+!public/firebase.json
