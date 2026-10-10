@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://api.binofit.app",
+      "url": "https://binofit-api.siamak036.workers.dev",
       "description": "Production"
     },
     {

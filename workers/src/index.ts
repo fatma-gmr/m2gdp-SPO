@@ -10,6 +10,7 @@ import type { AppBindings } from './env'
 import { ApiError } from './lib/apiError'
 import { activitiesRoute } from './routes/activities'
 import { conversationsRoute } from './routes/conversations'
+import { docsRoute } from './routes/docs'
 import { favoritesRoute } from './routes/favorites'
 import { messagesRoute } from './routes/messages'
 import { usersRoute } from './routes/users'
@@ -38,6 +39,8 @@ app.get('/api/health', (c) =>
   }),
 )
 
+// Routes publiques (sans jeton) : GET /docs (Swagger UI) et GET /openapi.json.
+app.route('/', docsRoute)
 app.route('/users', usersRoute)
 app.route('/activities', activitiesRoute)
 app.route('/conversations', conversationsRoute)
