@@ -1,26 +1,25 @@
 /**
  * BINOFIT API — routes /conversations (voir /specs/openapi.json).
  *
- * Les métadonnées des conversations sont dans Firestore ; leurs messages sont dans
- * la Realtime Database sous `messages/{conversationId}/{messageId}`.
+ * Tables Supabase : `conversations` (métadonnées), `participants` (participantIds) et
+ * `messages` (contenu, d'où est aussi calculé lastMessage).
  */
 import { Hono } from 'hono'
 import type { AppBindings } from '../env'
 import { ApiError } from '../lib/apiError'
-import { CONVERSATIONS_COLLECTION, getConversationForParticipant } from '../lib/conversationAccess'
+import { getConversation, getConversationForParticipant, listConversationsOf } from '../lib/conversationAccess'
 import {
-  createDocument,
-  firestoreDocumentToEntity,
-  getDocument,
-  patchDocument,
-  queryDocuments,
-} from '../lib/firestore'
-import { getValue } from '../lib/realtimeDb'
+  ACTIVITY_SELECT,
+  MESSAGE_SELECT,
+  rowToActivity,
+  rowToMessage,
+  type ActivityRow,
+  type MessageRow,
+} from '../lib/dbMapper'
+import { databaseError, getSupabase, rowExists, unwrap } from '../lib/supabase'
 import { firebaseAuth } from '../middleware/auth'
-import type { Activity, Conversation, Message } from '../types'
+import { requireProfile } from '../middleware/profile'
 
-const USERS_COLLECTION = 'users'
-const ACTIVITIES_COLLECTION = 'activities'
 const MESSAGES_DEFAULT_LIMIT = 50
 const MESSAGES_MAX_LIMIT = 200
 
@@ -28,11 +27,6 @@ export const conversationsRoute = new Hono<AppBindings>()
 
 // Toutes les routes /conversations exigent un utilisateur authentifié.
 conversationsRoute.use('*', firebaseAuth())
-
-async function listConversationsOf(env: AppBindings['Bindings'], uid: string): Promise<Conversation[]> {
-  const documents = await queryDocuments(env, CONVERSATIONS_COLLECTION, 'participantIds', 'ARRAY_CONTAINS', uid)
-  return documents.map((doc) => firestoreDocumentToEntity<Conversation>(doc))
-}
 
 /** GET /conversations — conversations de l'utilisateur du jeton, triées par `updatedAt` décroissant. */
 conversationsRoute.get('/', async (c) => {
@@ -48,7 +42,7 @@ conversationsRoute.get('/', async (c) => {
  * Si la conversation existe déjà (même paire, même activité), elle est renvoyée (200)
  * au lieu d'en créer un doublon (201).
  */
-conversationsRoute.post('/', async (c) => {
+conversationsRoute.post('/', requireProfile(), async (c) => {
   const authUser = c.get('authUser')
 
   const body = await c.req.json().catch(() => {
@@ -66,17 +60,21 @@ conversationsRoute.post('/', async (c) => {
     throw new ApiError(400, 'invalid_participant', 'Vous ne pouvez pas ouvrir une conversation avec vous-même')
   }
 
-  const participant = await getDocument(c.env, USERS_COLLECTION, participantId)
-  if (!participant) {
+  if (!(await rowExists(c.env, 'users', participantId))) {
     throw new ApiError(404, 'user_not_found', 'Utilisateur introuvable')
   }
 
+  const supabase = getSupabase(c.env)
+
   if (activityId !== null) {
-    const activityDoc = await getDocument(c.env, ACTIVITIES_COLLECTION, activityId)
-    if (!activityDoc) {
+    const activityRow = unwrap(
+      await supabase.from('activities').select(ACTIVITY_SELECT).eq('id', activityId).maybeSingle(),
+      'activities',
+    )
+    if (!activityRow) {
       throw new ApiError(404, 'activity_not_found', 'Activité introuvable')
     }
-    const activity = firestoreDocumentToEntity<Activity>(activityDoc)
+    const activity = rowToActivity(activityRow as unknown as ActivityRow)
     const pair = [activity.createdBy, activity.guestId]
     if (!pair.includes(authUser.uid) || !pair.includes(participantId)) {
       throw new ApiError(403, 'forbidden', "Cette activité ne concerne pas ces deux utilisateurs")
@@ -91,22 +89,29 @@ conversationsRoute.post('/', async (c) => {
     return c.json(existing, 200)
   }
 
+  // Le lien activité ↔ conversation est porté par conversations.activity_id : l'activité
+  // expose ensuite conversationId sans écriture supplémentaire.
   const now = new Date().toISOString()
-  const doc = await createDocument(c.env, CONVERSATIONS_COLLECTION, {
-    participantIds: [authUser.uid, participantId],
-    activityId,
-    lastMessage: null,
-    createdAt: now,
-    updatedAt: now,
-  })
-  const conversation = firestoreDocumentToEntity<Conversation>(doc)
+  const created = unwrap(
+    await supabase
+      .from('conversations')
+      .insert({ activity_id: activityId, created_at: now, updated_at: now })
+      .select('id')
+      .single(),
+    'conversations',
+  )
 
-  // Lien bidirectionnel activité ↔ conversation (voir /specs/data-model.md).
-  if (activityId !== null) {
-    await patchDocument(c.env, ACTIVITIES_COLLECTION, activityId, { conversationId: conversation.id })
+  const { error } = await supabase.from('participants').insert([
+    { conversation_id: created.id, user_id: authUser.uid },
+    { conversation_id: created.id, user_id: participantId },
+  ])
+  if (error) {
+    // Pas de transaction via PostgREST : on retire la conversation orpheline.
+    await supabase.from('conversations').delete().eq('id', created.id)
+    throw databaseError(error, 'participants')
   }
 
-  return c.json(conversation, 201)
+  return c.json(await getConversation(c.env, created.id), 201)
 })
 
 /**
@@ -131,14 +136,10 @@ conversationsRoute.get('/:id/messages', async (c) => {
 
   await getConversationForParticipant(c.env, id, authUser.uid)
 
-  // Lecture complète du nœud puis filtre/tri en mémoire : une requête orderBy/limit
-  // côté Realtime Database exigerait un `.indexOn: "sentAt"` dans les règles.
-  const stored = (await getValue<Record<string, Omit<Message, 'id'>>>(c.env, `messages/${id}`)) ?? {}
-  const messages = Object.entries(stored)
-    .map(([messageId, data]) => ({ ...data, id: messageId, readBy: data.readBy ?? [] }))
-    .filter((message) => before === undefined || message.sentAt < before)
-    .sort((a, b) => a.sentAt.localeCompare(b.sentAt))
-    .slice(-limit)
+  // Les `limit` plus récents (tri décroissant en base), remis ensuite dans l'ordre chronologique.
+  let query = getSupabase(c.env).from('messages').select(MESSAGE_SELECT).eq('conversation_id', id)
+  if (before !== undefined) query = query.lt('sent_at', before)
 
-  return c.json(messages)
+  const rows = unwrap(await query.order('sent_at', { ascending: false }).limit(limit), 'messages')
+  return c.json((rows as MessageRow[]).map(rowToMessage).reverse())
 })

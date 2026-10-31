@@ -1,7 +1,7 @@
 # Copier ce fichier en ".dev.vars" (ignoré par git) pour wrangler dev en local.
-# Valeurs à récupérer depuis la clé de compte de service Firebase/Google Cloud
-# (Console Firebase > Paramètres du projet > Comptes de service > Générer une nouvelle clé privée).
-# Ne JAMAIS commiter le fichier ".dev.vars" ni la clé JSON du compte de service.
+# Clé secrète du projet Supabase (Dashboard Supabase > Project Settings > API Keys >
+# Secret keys). En production : `wrangler secret put SUPABASE_SECRET_KEY`.
+# Ne JAMAIS commiter le fichier ".dev.vars" ni cette clé.
+# (SUPABASE_URL n'est pas un secret : elle est dans [vars] de wrangler.toml.)
 
-FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxxx@binofit-a36cf.iam.gserviceaccount.com"
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEv...\n-----END PRIVATE KEY-----\n"
+SUPABASE_SECRET_KEY="sb_secret_xxxxxxxxxxxxxxxxxxxxxxxx"

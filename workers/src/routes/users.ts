@@ -4,9 +4,17 @@
 import { Hono } from 'hono'
 import type { AppBindings } from '../env'
 import { ApiError } from '../lib/apiError'
-import { createDocument, getDocument, listDocuments, patchDocument } from '../lib/firestore'
+import {
+  USER_SELECT,
+  availabilityToRows,
+  rowToUser,
+  sportsToRows,
+  userUpdateToRow,
+  type UserRow,
+} from '../lib/dbMapper'
 import { haversineDistanceKm } from '../lib/geo'
-import { firestoreDocumentToUser, validateUserCreate, validateUserUpdate } from '../lib/userMapper'
+import { UNIQUE_VIOLATION, databaseError, getSupabase, unwrap } from '../lib/supabase'
+import { validateUserCreate, validateUserUpdate } from '../lib/userMapper'
 import { firebaseAuth } from '../middleware/auth'
 import {
   DAYS_OF_WEEK,
@@ -15,10 +23,10 @@ import {
   type DayOfWeek,
   type Level,
   type Sport,
+  type User,
   type UserSearchResult,
+  type UserUpdate,
 } from '../types'
-
-const USERS_COLLECTION = 'users'
 
 export const usersRoute = new Hono<AppBindings>()
 
@@ -46,12 +54,41 @@ function assertEnumOrUndefined<T extends string>(
   return raw as T
 }
 
+async function getUser(env: AppBindings['Bindings'], id: string): Promise<User | null> {
+  const row = unwrap(await getSupabase(env).from('users').select(USER_SELECT).eq('id', id).maybeSingle(), 'users')
+  return row ? rowToUser(row as unknown as UserRow) : null
+}
+
+/** Remplace les sports et/ou créneaux de `userId` s'ils sont fournis (suppression puis insertion). */
+async function replaceUserCollections(
+  env: AppBindings['Bindings'],
+  userId: string,
+  { sports, availability }: Pick<UserUpdate, 'sports' | 'availability'>,
+): Promise<void> {
+  const supabase = getSupabase(env)
+  if (sports !== undefined) {
+    unwrap(await supabase.from('user_sports').delete().eq('user_id', userId), 'user_sports')
+    if (sports.length > 0) {
+      unwrap(await supabase.from('user_sports').insert(sportsToRows(userId, sports)), 'user_sports')
+    }
+  }
+  if (availability !== undefined) {
+    unwrap(await supabase.from('user_availability').delete().eq('user_id', userId), 'user_availability')
+    if (availability.length > 0) {
+      unwrap(
+        await supabase.from('user_availability').insert(availabilityToRows(userId, availability)),
+        'user_availability',
+      )
+    }
+  }
+}
+
 /**
  * GET /users?lat&lng&maxKm&sport&level&availability
  *
- * Récupère l'ensemble des profils puis filtre/trie côté Worker (voir la note sur les
- * limites de requêtage Firestore dans /specs/data-model.md). Acceptable pour le volume
- * attendu du POC ; à revoir (geohash + index dédiés) si la base d'utilisateurs grossit.
+ * Récupère l'ensemble des profils (avec sports et créneaux) puis filtre/trie côté
+ * Worker, distance de Haversine comprise. Acceptable pour le volume attendu du POC ;
+ * à déplacer dans Postgres (filtres + PostGIS/bounding box) si la base grossit.
  *
  * Quand lat/lng/maxKm sont fournis, chaque utilisateur retourné porte en plus
  * `distanceKm` (distance à vol d'oiseau depuis (lat, lng), arrondie à 1 décimale).
@@ -74,8 +111,8 @@ usersRoute.get('/', async (c) => {
     throw new ApiError(400, 'invalid_query', 'maxKm doit être positif')
   }
 
-  const documents = await listDocuments(c.env, USERS_COLLECTION)
-  let users: UserSearchResult[] = documents.map(firestoreDocumentToUser)
+  const rows = unwrap(await getSupabase(c.env).from('users').select(USER_SELECT), 'users')
+  let users: UserSearchResult[] = (rows as unknown as UserRow[]).map(rowToUser)
 
   if (sport !== undefined) {
     users = users.filter((user) => user.sports.some((practice) => practice.sport === sport))
@@ -102,11 +139,11 @@ usersRoute.get('/', async (c) => {
 /** GET /users/{id} */
 usersRoute.get('/:id', async (c) => {
   const id = c.req.param('id')
-  const doc = await getDocument(c.env, USERS_COLLECTION, id)
-  if (!doc) {
+  const user = await getUser(c.env, id)
+  if (!user) {
     throw new ApiError(404, 'user_not_found', 'Utilisateur introuvable')
   }
-  return c.json(firestoreDocumentToUser(doc))
+  return c.json(user)
 })
 
 /**
@@ -116,6 +153,8 @@ usersRoute.get('/:id', async (c) => {
  * L'e-mail n'est jamais lu dans le corps, il vient toujours du jeton.
  * - Profil inexistant : création (201) avec createdAt = updatedAt = maintenant.
  * - Profil existant : mise à jour partielle (200), updatedAt rafraîchi.
+ * sports et availability, quand ils sont fournis, remplacent entièrement les lignes
+ * de user_sports / user_availability.
  */
 usersRoute.put('/:id', async (c) => {
   const id = c.req.param('id')
@@ -130,28 +169,34 @@ usersRoute.put('/:id', async (c) => {
   })
 
   const now = new Date().toISOString()
-  const existing = await getDocument(c.env, USERS_COLLECTION, id)
+  const supabase = getSupabase(c.env)
+  const existing = await getUser(c.env, id)
 
   if (!existing) {
     const profile = validateUserCreate(body)
     if (!authUser.email) {
       throw new ApiError(400, 'missing_email', "Le jeton d'authentification ne contient pas d'e-mail")
     }
-    const createdDoc = await createDocument(
-      c.env,
-      USERS_COLLECTION,
-      { email: authUser.email, ...profile, createdAt: now, updatedAt: now },
-      id,
-    )
-    return c.json(firestoreDocumentToUser(createdDoc), 201)
+    const { error } = await supabase
+      .from('users')
+      .insert({ id, email: authUser.email, ...userUpdateToRow(profile), created_at: now, updated_at: now })
+    if (error?.code === UNIQUE_VIOLATION) {
+      throw new ApiError(409, 'already_exists', `Le profil ${id} existe déjà`)
+    }
+    if (error) throw databaseError(error, 'users')
+    await replaceUserCollections(c.env, id, profile)
+    return c.json(await getUser(c.env, id), 201)
   }
 
   const updates = validateUserUpdate(body)
-  const updatedDoc = await patchDocument(c.env, USERS_COLLECTION, id, {
-    ...updates,
-    ...(authUser.email ? { email: authUser.email } : {}),
-    updatedAt: now,
-  })
+  unwrap(
+    await supabase
+      .from('users')
+      .update({ ...userUpdateToRow(updates), ...(authUser.email ? { email: authUser.email } : {}), updated_at: now })
+      .eq('id', id),
+    'users',
+  )
+  await replaceUserCollections(c.env, id, updates)
 
-  return c.json(firestoreDocumentToUser(updatedDoc))
+  return c.json(await getUser(c.env, id))
 })

@@ -232,6 +232,7 @@
           },
           "400": { "$ref": "#/components/responses/BadRequest" },
           "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/ProfileRequired" },
           "404": { "$ref": "#/components/responses/NotFound" }
         }
       },
@@ -353,7 +354,18 @@
           },
           "400": { "$ref": "#/components/responses/BadRequest" },
           "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
+          "403": {
+            "description": "Profil manquant (`code`: `profile_required`) : l'utilisateur du jeton n'a pas encore de profil dans `users` (à créer via PUT /users/{id}) ; vérifié avant toute autre validation. Ou activité ne concernant pas ces deux utilisateurs (`code`: `forbidden`).",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "examples": {
+                  "profile_required": { "value": { "error": "Complète ton profil pour continuer", "code": "profile_required" } },
+                  "forbidden": { "value": { "error": "Cette activité ne concerne pas ces deux utilisateurs", "code": "forbidden" } }
+                }
+              }
+            }
+          },
           "404": { "$ref": "#/components/responses/NotFound" }
         }
       }
@@ -473,6 +485,7 @@
           },
           "400": { "$ref": "#/components/responses/BadRequest" },
           "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/ProfileRequired" },
           "404": { "$ref": "#/components/responses/NotFound" },
           "409": { "$ref": "#/components/responses/Conflict" }
         }
@@ -540,6 +553,15 @@
         "content": {
           "application/json": {
             "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      },
+      "ProfileRequired": {
+        "description": "L'utilisateur du jeton n'a pas encore de profil dans `users` (à créer via PUT /users/{id}) ; vérifié avant toute autre validation",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "Complète ton profil pour continuer", "code": "profile_required" }
           }
         }
       },
@@ -790,17 +812,13 @@
       },
       "Message": {
         "type": "object",
-        "required": ["id", "conversationId", "senderId", "text", "sentAt", "readBy"],
+        "required": ["id", "conversationId", "senderId", "text", "sentAt"],
         "properties": {
           "id": { "type": "string" },
           "conversationId": { "type": "string" },
           "senderId": { "type": "string" },
           "text": { "type": "string" },
-          "sentAt": { "type": "string", "format": "date-time" },
-          "readBy": {
-            "type": "array",
-            "items": { "type": "string" }
-          }
+          "sentAt": { "type": "string", "format": "date-time" }
         }
       },
       "MessageCreate": {

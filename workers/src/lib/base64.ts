@@ -3,7 +3,7 @@
  * `atob`/`btoa`, disponibles dans le runtime Cloudflare Workers).
  */
 
-/** Décode une chaîne base64 standard (utilisée pour le corps PEM d'une clé privée). */
+/** Décode une chaîne base64 standard. */
 export function base64ToUint8Array(base64: string): Uint8Array {
   const binary = atob(base64)
   const bytes = new Uint8Array(binary.length)
@@ -18,15 +18,6 @@ export function base64UrlToUint8Array(base64url: string): Uint8Array {
   const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/')
   const paddingLength = (4 - (base64.length % 4)) % 4
   return base64ToUint8Array(base64 + '='.repeat(paddingLength))
-}
-
-/** Encode des octets en base64url (sans padding), format attendu par les JWT. */
-export function uint8ArrayToBase64Url(bytes: Uint8Array): string {
-  let binary = ''
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte)
-  }
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
 /** Décode la partie base64url d'un JWT (header ou payload) en objet JSON. */

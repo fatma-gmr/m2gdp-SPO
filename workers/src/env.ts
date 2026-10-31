@@ -1,17 +1,17 @@
 /**
  * BINOFIT API — variables d'environnement et bindings Cloudflare Worker.
  *
- * FIREBASE_CLIENT_EMAIL et FIREBASE_PRIVATE_KEY proviennent du compte de service
- * Firebase/Google Cloud et DOIVENT être configurés comme secrets Wrangler
- * (`wrangler secret put ...`), jamais commités ni codés en dur. Voir README.md.
+ * SUPABASE_SECRET_KEY donne un accès complet à la base Supabase : elle DOIT être
+ * configurée comme secret Wrangler (`wrangler secret put SUPABASE_SECRET_KEY`, et
+ * `.dev.vars` en local, voir .dev.vars.example), jamais commitée ni codée en dur.
  */
 export interface Env {
   ENVIRONMENT?: string
+  /** Sert uniquement à vérifier les jetons Firebase Auth (audience/émetteur). */
   FIREBASE_PROJECT_ID: string
-  /** URL de la Realtime Database (messages), ex. https://<projet>-default-rtdb.<région>.firebasedatabase.app */
-  FIREBASE_DATABASE_URL: string
-  FIREBASE_CLIENT_EMAIL: string
-  FIREBASE_PRIVATE_KEY: string
+  /** URL du projet Supabase, ex. https://<ref>.supabase.co (non sensible, wrangler.toml). */
+  SUPABASE_URL: string
+  SUPABASE_SECRET_KEY: string
 }
 
 export interface AuthUser {

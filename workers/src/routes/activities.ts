@@ -9,18 +9,10 @@ import {
   validateActivityStatusUpdate,
 } from '../lib/activityMapper'
 import { ApiError } from '../lib/apiError'
-import {
-  createDocument,
-  firestoreDocumentToEntity,
-  getDocument,
-  patchDocument,
-  queryDocuments,
-} from '../lib/firestore'
+import { ACTIVITY_SELECT, activityCreateToRow, rowToActivity, type ActivityRow } from '../lib/dbMapper'
+import { getSupabase, rowExists, unwrap } from '../lib/supabase'
 import { firebaseAuth } from '../middleware/auth'
-import type { Activity } from '../types'
-
-const ACTIVITIES_COLLECTION = 'activities'
-const USERS_COLLECTION = 'users'
+import { requireProfile } from '../middleware/profile'
 
 export const activitiesRoute = new Hono<AppBindings>()
 
@@ -31,7 +23,7 @@ activitiesRoute.use('*', firebaseAuth())
  * POST /activities — `createdBy` est l'utilisateur du jeton, le statut initial est
  * toujours `en_attente`.
  */
-activitiesRoute.post('/', async (c) => {
+activitiesRoute.post('/', requireProfile(), async (c) => {
   const authUser = c.get('authUser')
 
   const body = await c.req.json().catch(() => {
@@ -42,20 +34,20 @@ activitiesRoute.post('/', async (c) => {
   if (input.guestId === authUser.uid) {
     throw new ApiError(400, 'invalid_guest', 'Vous ne pouvez pas vous proposer une activité à vous-même')
   }
-  const guest = await getDocument(c.env, USERS_COLLECTION, input.guestId)
-  if (!guest) {
+  if (!(await rowExists(c.env, 'users', input.guestId))) {
     throw new ApiError(404, 'user_not_found', 'Utilisateur invité introuvable')
   }
 
-  const doc = await createDocument(c.env, ACTIVITIES_COLLECTION, {
-    ...input,
-    createdBy: authUser.uid,
-    status: 'en_attente',
-    conversationId: null,
-    createdAt: new Date().toISOString(),
-  })
+  const row = unwrap(
+    await getSupabase(c.env)
+      .from('activities')
+      .insert({ ...activityCreateToRow(input, authUser.uid), status: 'en_attente', created_at: new Date().toISOString() })
+      .select(ACTIVITY_SELECT)
+      .single(),
+    'activities',
+  )
 
-  return c.json(firestoreDocumentToEntity<Activity>(doc), 201)
+  return c.json(rowToActivity(row as unknown as ActivityRow), 201)
 })
 
 /**
@@ -71,14 +63,15 @@ activitiesRoute.get('/', async (c) => {
     throw new ApiError(403, 'forbidden', 'Vous ne pouvez consulter que vos propres activités')
   }
 
-  // Deux requêtes mono-champ plutôt qu'un filtre OR : aucun index composite requis.
+  // Deux filtres .eq() plutôt qu'un .or() : l'uid n'est jamais interpolé dans la syntaxe PostgREST.
+  const supabase = getSupabase(c.env)
   const [created, invited] = await Promise.all([
-    queryDocuments(c.env, ACTIVITIES_COLLECTION, 'createdBy', 'EQUAL', userId),
-    queryDocuments(c.env, ACTIVITIES_COLLECTION, 'guestId', 'EQUAL', userId),
+    supabase.from('activities').select(ACTIVITY_SELECT).eq('created_by', userId),
+    supabase.from('activities').select(ACTIVITY_SELECT).eq('guest_id', userId),
   ])
 
-  const activities = [...created, ...invited]
-    .map((doc) => firestoreDocumentToEntity<Activity>(doc))
+  const activities = [...unwrap(created, 'activities'), ...unwrap(invited, 'activities')]
+    .map((row) => rowToActivity(row as unknown as ActivityRow))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 
   return c.json(activities)
@@ -94,11 +87,15 @@ activitiesRoute.patch('/:id/status', async (c) => {
   })
   const nextStatus = validateActivityStatusUpdate(body)
 
-  const doc = await getDocument(c.env, ACTIVITIES_COLLECTION, id)
-  if (!doc) {
+  const supabase = getSupabase(c.env)
+  const row = unwrap(
+    await supabase.from('activities').select(ACTIVITY_SELECT).eq('id', id).maybeSingle(),
+    'activities',
+  )
+  if (!row) {
     throw new ApiError(404, 'activity_not_found', 'Activité introuvable')
   }
-  const activity = firestoreDocumentToEntity<Activity>(doc)
+  const activity = rowToActivity(row as unknown as ActivityRow)
 
   if (!canTransitionStatus(activity, authUser.uid, nextStatus)) {
     throw new ApiError(
@@ -108,6 +105,9 @@ activitiesRoute.patch('/:id/status', async (c) => {
     )
   }
 
-  const updatedDoc = await patchDocument(c.env, ACTIVITIES_COLLECTION, id, { status: nextStatus })
-  return c.json(firestoreDocumentToEntity<Activity>(updatedDoc))
+  const updated = unwrap(
+    await supabase.from('activities').update({ status: nextStatus }).eq('id', id).select(ACTIVITY_SELECT).single(),
+    'activities',
+  )
+  return c.json(rowToActivity(updated as unknown as ActivityRow))
 })

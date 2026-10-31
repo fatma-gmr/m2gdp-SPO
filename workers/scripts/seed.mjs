@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * BINOFIT — Script de seed Firestore + Realtime Database (projet binofit-a36cf).
+ * BINOFIT — Script de seed Supabase (Postgres, schéma /specs/schema.sql).
  *
- * Remplit des données fictives réalistes autour de Lyon : 35 users, 90 activities,
- * 12 conversations (5 à 10 messages chacune, écrits dans Realtime Database) et
- * 20 favorites. Les noms de champs et valeurs d'énumération suivent exactement
+ * Remplit des données fictives réalistes autour de Lyon : 35 users (avec user_sports
+ * et user_availability), 90 activities, 12 conversations (2 participants chacune,
+ * 5 à 10 messages) et 20 favorites. Les valeurs d'énumération suivent exactement
  * /specs/data-model.md (voir les constantes SPORTS/LEVELS/DAYS_OF_WEEK/ACTIVITY_STATUSES
  * ci-dessous, dupliquées depuis workers/src/types.ts — à garder synchronisées si le
  * modèle évolue, un script .mjs ne pouvant pas importer directement du TypeScript).
@@ -14,22 +14,24 @@
  * guestId est toujours différent de createdBy, et la date startAt est cohérente avec
  * le statut (passée pour terminee, future pour en_attente/acceptee, mélange pour refusee).
  *
- * Idempotent : tous les documents ont un id fixe (ex. "user-001", "activity-037",
- * "conversation-04", "message-03") et sont écrits avec `set`/`update` (remplacement),
- * jamais avec un id auto-généré. Relancer le script ne crée donc jamais de doublons.
+ * Relançable : toutes les lignes ont un id fixe (ex. "user-001", "activity-037",
+ * "conversation-04", "conversation-04-message-03") ou une clé naturelle (user_sports,
+ * participants) et sont écrites par upsert, dans l'ordre des clés étrangères. Seule
+ * user_availability (id d'identité généré par Postgres) est supprimée puis réinsérée
+ * pour les users du seed. Relancer le script ne crée donc jamais de doublons.
  *
- * Identifiants : lus depuis GOOGLE_APPLICATION_CREDENTIALS (chemin vers le JSON du
- * compte de service), jamais copiés ni codés en dur dans ce fichier.
+ * Identifiants : SUPABASE_URL et SUPABASE_SECRET_KEY lus depuis l'environnement,
+ * jamais codés en dur dans ce fichier.
  *
- * Usage :
- *   GOOGLE_APPLICATION_CREDENTIALS=/chemin/vers/service-account.json npm run seed
+ * Usage (depuis workers/, la clé est lue dans .dev.vars sans être affichée) :
+ *   SUPABASE_URL=https://<ref>.supabase.co node --env-file=.dev.vars scripts/seed.mjs
  */
-import { readFileSync } from 'node:fs'
-import admin from 'firebase-admin'
+// Client PostgREST seul (celui qu'embarque supabase-js) : pas de client Realtime, donc
+// pas besoin de WebSocket natif (absent avant Node 22).
+import { PostgrestClient } from '@supabase/postgrest-js'
 
 // --- Configuration -----------------------------------------------------------
 
-const PROJECT_ID = 'binofit-a36cf'
 const SEED = 20261006 // graine fixe : rend la génération pseudo-aléatoire reproductible
 
 const USERS_COUNT = 35
@@ -333,7 +335,6 @@ function generateActivities(rng, users, now) {
       lieu,
       message: pick(rng, INVITATION_TEMPLATES)(sportLabel),
       status,
-      conversationId: null,
       createdAt,
       media: generateMedia(rng),
     })
@@ -370,35 +371,24 @@ function generateConversations(rng, users, activities, now) {
       cursor = new Date(cursor.getTime() + randInt(rng, 5, 240) * 60_000)
 
       messages.push({
-        id: `message-${String(m + 1).padStart(2, '0')}`,
+        id: `${id}-message-${String(m + 1).padStart(2, '0')}`,
         conversationId: id,
         senderId: sender.id,
         text: template(sportLabel),
         sentAt: cursor.toISOString(),
-        // Le dernier message n'a pas encore été lu par le destinataire (simulation réaliste).
-        readBy: m === messageCount - 1 ? [sender.id] : [userA.id, userB.id],
       })
     }
 
     messagesByConversation[id] = messages
-    const lastMessage = messages[messages.length - 1]
 
-    // Lien bidirectionnel : l'activité porte aussi conversationId (voir /specs/data-model.md).
-    if (linkedActivity) {
-      linkedActivity.conversationId = id
-    }
-
+    // conversationId de l'activité et lastMessage ne sont pas stockés : l'API les déduit
+    // de conversations.activity_id et de la table messages.
     conversations.push({
       id,
       participantIds: [userA.id, userB.id],
       activityId: linkedActivity?.id ?? null,
-      lastMessage: {
-        text: lastMessage.text,
-        senderId: lastMessage.senderId,
-        sentAt: lastMessage.sentAt,
-      },
       createdAt: messages[0].sentAt,
-      updatedAt: lastMessage.sentAt,
+      updatedAt: messages[messages.length - 1].sentAt,
     })
   }
 
@@ -435,66 +425,125 @@ function generateFavorites(rng, users, activities, now) {
   return favorites
 }
 
-// --- Écriture Firestore / Realtime Database ------------------------------------
+// --- Conversion domaine (camelCase) → lignes Postgres (snake_case) -----------
 
-async function writeCollection(db, collectionName, documents) {
-  for (const batchDocs of chunk(documents, 400)) {
-    const batch = db.batch()
-    for (const { id, ...data } of batchDocs) {
-      batch.set(db.collection(collectionName).doc(id), data)
-    }
-    await batch.commit()
+function userToRows(user) {
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      first_name: user.firstName,
+      last_name: user.lastName,
+      bio: user.bio,
+      avatar_url: user.avatarUrl,
+      city: user.location.city,
+      lat: user.location.lat,
+      lng: user.location.lng,
+      created_at: user.createdAt,
+      updated_at: user.updatedAt,
+    },
+    sports: user.sports.map(({ sport, level }) => ({ user_id: user.id, sport, level })),
+    availability: user.availability.map(({ dayOfWeek, startTime, endTime }) => ({
+      user_id: user.id,
+      day_of_week: dayOfWeek,
+      start_time: startTime,
+      end_time: endTime,
+    })),
   }
-  console.log(`  ✓ ${collectionName}: ${documents.length} document(s) écrits (Firestore)`)
 }
 
-async function writeMessages(rtdb, messagesByConversation) {
-  const updates = {}
-  let count = 0
-  for (const [conversationId, messages] of Object.entries(messagesByConversation)) {
-    for (const { id, ...data } of messages) {
-      updates[`messages/${conversationId}/${id}`] = data
-      count++
-    }
+function activityToRow(activity) {
+  return {
+    id: activity.id,
+    created_by: activity.createdBy,
+    guest_id: activity.guestId,
+    sport: activity.sport,
+    start_at: activity.startAt,
+    lieu_nom: activity.lieu.nom,
+    lieu_lat: activity.lieu.lat,
+    lieu_lng: activity.lieu.lng,
+    message: activity.message,
+    status: activity.status,
+    media_url: activity.media?.url ?? null,
+    media_type: activity.media?.type ?? null,
+    created_at: activity.createdAt,
   }
-  await rtdb.ref().update(updates)
-  console.log(`  ✓ messages: ${count} message(s) écrits (Realtime Database)`)
+}
+
+function conversationToRows(conversation) {
+  return {
+    conversation: {
+      id: conversation.id,
+      activity_id: conversation.activityId,
+      created_at: conversation.createdAt,
+      updated_at: conversation.updatedAt,
+    },
+    participants: conversation.participantIds.map((userId) => ({
+      conversation_id: conversation.id,
+      user_id: userId,
+    })),
+  }
+}
+
+function messageToRow(message) {
+  return {
+    id: message.id,
+    conversation_id: message.conversationId,
+    sender_id: message.senderId,
+    text: message.text,
+    sent_at: message.sentAt,
+  }
+}
+
+function favoriteToRow(favorite) {
+  return {
+    id: favorite.id,
+    user_id: favorite.userId,
+    target_type: favorite.targetType,
+    target_id: favorite.targetId,
+    created_at: favorite.createdAt,
+  }
+}
+
+// --- Écriture Supabase -----------------------------------------------------------
+
+function failOn(error, table) {
+  if (error) {
+    throw new Error(`${table}: ${error.code ?? ''} ${error.message}${error.details ? ` (${error.details})` : ''}`)
+  }
+}
+
+async function upsertRows(supabase, table, rows, onConflict) {
+  for (const batch of chunk(rows, 500)) {
+    const { error } = await supabase.from(table).upsert(batch, { onConflict })
+    failOn(error, table)
+  }
+  console.log(`  ✓ ${table}: ${rows.length} ligne(s) écrites`)
+}
+
+/** user_availability n'a pas d'id fixe (identité générée) : on remplace les créneaux des users du seed. */
+async function replaceAvailability(supabase, userIds, rows) {
+  const { error } = await supabase.from('user_availability').delete().in('user_id', userIds)
+  failOn(error, 'user_availability')
+  for (const batch of chunk(rows, 500)) {
+    const { error: insertError } = await supabase.from('user_availability').insert(batch)
+    failOn(insertError, 'user_availability')
+  }
+  console.log(`  ✓ user_availability: ${rows.length} ligne(s) écrites`)
 }
 
 // --- Point d'entrée --------------------------------------------------------
 
 async function main() {
-  const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
-  if (!credentialsPath) {
-    console.error(
-      "GOOGLE_APPLICATION_CREDENTIALS doit pointer vers le fichier JSON de la clé de compte de service Firebase.",
-    )
+  const { SUPABASE_URL, SUPABASE_SECRET_KEY } = process.env
+  if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
+    console.error('SUPABASE_URL et SUPABASE_SECRET_KEY doivent être définies dans l\'environnement.')
     process.exit(1)
   }
 
-  const serviceAccount = JSON.parse(readFileSync(credentialsPath, 'utf8'))
-  if (serviceAccount.project_id !== PROJECT_ID) {
-    console.warn(
-      `⚠️  La clé de compte de service correspond au projet "${serviceAccount.project_id}", pas "${PROJECT_ID}". Vérifie GOOGLE_APPLICATION_CREDENTIALS.`,
-    )
-  }
-
-  const databaseURL =
-    process.env.FIREBASE_DATABASE_URL ?? `https://${PROJECT_ID}-default-rtdb.europe-west1.firebasedatabase.app`
-  if (!process.env.FIREBASE_DATABASE_URL) {
-    console.warn(
-      `⚠️  FIREBASE_DATABASE_URL non fourni, utilisation de la valeur par défaut: ${databaseURL}. Vérifie qu'elle correspond à ta Realtime Database (console Firebase > Realtime Database > URL).`,
-    )
-  }
-
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    projectId: PROJECT_ID,
-    databaseURL,
+  const supabase = new PostgrestClient(`${SUPABASE_URL.replace(/\/+$/, '')}/rest/v1`, {
+    headers: { apikey: SUPABASE_SECRET_KEY },
   })
-
-  const db = admin.firestore()
-  const rtdb = admin.database()
 
   const now = new Date()
   const rng = mulberry32(SEED)
@@ -504,21 +553,35 @@ async function main() {
   const { conversations, messagesByConversation } = generateConversations(rng, users, activities, now)
   const favorites = generateFavorites(rng, users, activities, now)
 
-  console.log(`Seed BINOFIT → projet ${PROJECT_ID}`)
-  console.log(`  users: ${users.length}, activities: ${activities.length}, conversations: ${conversations.length}, favorites: ${favorites.length}`)
+  const userRows = users.map(userToRows)
+  const conversationRows = conversations.map(conversationToRows)
+  const messages = Object.values(messagesByConversation).flat()
+
+  console.log(`Seed BINOFIT → ${SUPABASE_URL}`)
+  console.log(
+    `  users: ${users.length}, activities: ${activities.length}, conversations: ${conversations.length}, messages: ${messages.length}, favorites: ${favorites.length}`,
+  )
   console.log('Écriture en cours...')
 
-  await writeCollection(db, 'users', users)
-  await writeCollection(db, 'activities', activities)
-  await writeCollection(db, 'conversations', conversations)
-  await writeCollection(db, 'favorites', favorites)
-  await writeMessages(rtdb, messagesByConversation)
+  // Ordre imposé par les clés étrangères : users → (user_sports, user_availability,
+  // activities) → conversations → (participants, messages) ; favorites en dernier.
+  await upsertRows(supabase, 'users', userRows.map((rows) => rows.user), 'id')
+  await upsertRows(supabase, 'user_sports', userRows.flatMap((rows) => rows.sports), 'user_id,sport')
+  await replaceAvailability(
+    supabase,
+    users.map((user) => user.id),
+    userRows.flatMap((rows) => rows.availability),
+  )
+  await upsertRows(supabase, 'activities', activities.map(activityToRow), 'id')
+  await upsertRows(supabase, 'conversations', conversationRows.map((rows) => rows.conversation), 'id')
+  await upsertRows(supabase, 'participants', conversationRows.flatMap((rows) => rows.participants), 'conversation_id,user_id')
+  await upsertRows(supabase, 'messages', messages.map(messageToRow), 'id')
+  await upsertRows(supabase, 'favorites', favorites.map(favoriteToRow), 'id')
 
   console.log('Seed terminé avec succès.')
-  process.exit(0)
 }
 
 main().catch((error) => {
-  console.error('Échec du seed:', error)
+  console.error('Échec du seed:', error.message ?? error)
   process.exit(1)
 })

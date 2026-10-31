@@ -1,9 +1,8 @@
 /**
- * Conversion entre documents Firestore et le type de domaine `User`, et validation
- * des mises à jour partielles reçues sur PUT /users/{id}.
+ * Validation des créations et mises à jour partielles reçues sur PUT /users/{id}.
+ * (La conversion lignes Postgres ↔ `User` est dans dbMapper.ts.)
  */
 import { ApiError } from './apiError'
-import { decodeFirestoreFields, documentIdFromName, type FirestoreDocument } from './firestore'
 import {
   DAYS_OF_WEEK,
   LEVELS,
@@ -11,17 +10,11 @@ import {
   type AvailabilitySlot,
   type GeoPoint,
   type SportPractice,
-  type User,
   type UserCreate,
   type UserUpdate,
 } from '../types'
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/
-
-export function firestoreDocumentToUser(doc: FirestoreDocument): User {
-  const data = decodeFirestoreFields(doc.fields ?? {}) as Omit<User, 'id'>
-  return { id: documentIdFromName(doc.name), ...data }
-}
 
 function isGeoPoint(value: unknown): value is GeoPoint {
   return (
@@ -101,6 +94,10 @@ export function validateUserUpdate(body: unknown): UserUpdate {
   if ('sports' in input) {
     if (!Array.isArray(input.sports) || !input.sports.every(isSportPractice)) {
       throw new ApiError(400, 'invalid_body', 'sports doit être un tableau de { sport, level } valides')
+    }
+    // Un seul niveau par sport (clé primaire (user_id, sport) de user_sports).
+    if (new Set(input.sports.map((practice) => practice.sport)).size !== input.sports.length) {
+      throw new ApiError(400, 'invalid_body', 'sports ne doit pas contenir deux fois le même sport')
     }
     update.sports = input.sports
   }

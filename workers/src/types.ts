@@ -123,7 +123,10 @@ export interface LastMessagePreview {
   sentAt: string
 }
 
-/** Métadonnées d'une conversation (Firestore) ; le contenu est dans la Realtime Database. */
+/**
+ * Conversation : participantIds vient de la table `participants`, lastMessage est
+ * calculé depuis la table `messages`.
+ */
 export interface Conversation {
   id: string
   participantIds: string[]
@@ -133,14 +136,13 @@ export interface Conversation {
   updatedAt: string
 }
 
-/** Message stocké dans la Realtime Database sous `messages/{conversationId}/{id}`. */
+/** Message stocké dans la table `messages`. */
 export interface Message {
   id: string
   conversationId: string
   senderId: string
   text: string
   sentAt: string
-  readBy: string[]
 }
 
 export const FAVORITE_TARGET_TYPES = ['user', 'activity'] as const

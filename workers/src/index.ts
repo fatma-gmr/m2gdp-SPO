@@ -17,7 +17,7 @@ import { usersRoute } from './routes/users'
 
 export type { Env } from './env'
 
-const ALLOWED_ORIGINS = ['https://binofit-a36cf.web.app', 'http://localhost:5173']
+const ALLOWED_ORIGINS = ['https://binofit-a36cf.web.app', 'https://bino-fit.vercel.app', 'http://localhost:5173']
 
 const app = new Hono<AppBindings>()
 

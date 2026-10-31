@@ -21,6 +21,8 @@
     "wrangler": "^4.132.0"
   },
   "dependencies": {
+    "@supabase/postgrest-js": "2.117.0",
+    "@supabase/supabase-js": "2.117.0",
     "hono": "^4.13.13"
   }
 }

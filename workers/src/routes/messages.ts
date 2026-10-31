@@ -7,11 +7,10 @@
 import { Hono } from 'hono'
 import type { AppBindings } from '../env'
 import { ApiError } from '../lib/apiError'
-import { CONVERSATIONS_COLLECTION, getConversationForParticipant } from '../lib/conversationAccess'
-import { patchDocument } from '../lib/firestore'
-import { pushValue } from '../lib/realtimeDb'
+import { getConversationForParticipant } from '../lib/conversationAccess'
+import { MESSAGE_SELECT, rowToMessage, type MessageRow } from '../lib/dbMapper'
+import { getSupabase, unwrap } from '../lib/supabase'
 import { firebaseAuth } from '../middleware/auth'
-import type { Message } from '../types'
 
 const TEXT_MAX_LENGTH = 2000
 
@@ -22,7 +21,8 @@ messagesRoute.use('*', firebaseAuth())
 
 /**
  * POST /messages — `senderId` est l'utilisateur du jeton, qui doit participer à la
- * conversation. Met aussi à jour l'aperçu `lastMessage` de la conversation (Firestore).
+ * conversation. Rafraîchit aussi `updatedAt` de la conversation (tri de la liste) ;
+ * `lastMessage` est recalculé depuis la table messages à la lecture.
  */
 messagesRoute.post('/', async (c) => {
   const authUser = c.get('authUser')
@@ -41,19 +41,18 @@ messagesRoute.post('/', async (c) => {
 
   await getConversationForParticipant(c.env, conversationId, authUser.uid)
 
-  const data: Omit<Message, 'id'> = {
-    conversationId,
-    senderId: authUser.uid,
-    text,
-    sentAt: new Date().toISOString(),
-    readBy: [authUser.uid],
-  }
-  const id = await pushValue(c.env, `messages/${conversationId}`, data)
+  const supabase = getSupabase(c.env)
+  const sentAt = new Date().toISOString()
+  const row = unwrap(
+    await supabase
+      .from('messages')
+      .insert({ conversation_id: conversationId, sender_id: authUser.uid, text, sent_at: sentAt })
+      .select(MESSAGE_SELECT)
+      .single(),
+    'messages',
+  )
 
-  await patchDocument(c.env, CONVERSATIONS_COLLECTION, conversationId, {
-    lastMessage: { text, senderId: data.senderId, sentAt: data.sentAt },
-    updatedAt: data.sentAt,
-  })
+  unwrap(await supabase.from('conversations').update({ updated_at: sentAt }).eq('id', conversationId), 'conversations')
 
-  return c.json({ id, ...data } satisfies Message, 201)
+  return c.json(rowToMessage(row as MessageRow), 201)
 })
