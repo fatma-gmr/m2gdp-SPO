@@ -1,5 +1,9 @@
 # BINOFIT — Diagramme du modèle de données
 
+Voir aussi : [specs/data-model.md](../specs/data-model.md) (description des champs) et
+[specs/schema.sql](../specs/schema.sql) (schéma de référence). Diagramme de classes UML :
+[docs/diagramme-uml.md](diagramme-uml.md).
+
 Diagramme Entité-Association correspondant au modèle décrit dans `/specs/data-model.md`
 et au schéma `/specs/schema.sql` (Supabase Postgres). Les noms sont ceux des colonnes
 en base (`snake_case`).
@@ -11,13 +15,13 @@ erDiagram
     USERS ||--o{ ACTIVITIES : "propose (created_by)"
     USERS ||--o{ ACTIVITIES : "est invité (guest_id)"
     ACTIVITIES |o--o{ CONVERSATIONS : "activity_id (optionnel)"
-    CONVERSATIONS ||--|{ PARTICIPANTS : "a pour membres"
+    CONVERSATIONS ||--o{ PARTICIPANTS : "a pour membres (conversation_id)"
     USERS ||--o{ PARTICIPANTS : "participe (user_id)"
     CONVERSATIONS ||--o{ MESSAGES : "contient (conversation_id)"
     USERS ||--o{ MESSAGES : "envoie (sender_id)"
     USERS ||--o{ FAVORITES : "possède (user_id)"
-    FAVORITES }o..|| USERS : "cible (target_id, si target_type=user)"
-    FAVORITES }o..|| ACTIVITIES : "cible (target_id, si target_type=activity)"
+    FAVORITES }o..o| USERS : "cible (target_id, si target_type=user)"
+    FAVORITES }o..o| ACTIVITIES : "cible (target_id, si target_type=activity)"
 
     USERS {
         text id PK
@@ -102,12 +106,15 @@ erDiagram
 - `ACTIVITIES |o--o{ CONVERSATIONS` : une conversation peut découler d'une activité
   (`activity_id`, mis à `null` si l'activité est supprimée). Le champ API
   `activity.conversationId` est déduit de ce lien, il n'est pas stocké.
-- `CONVERSATIONS ||--|{ PARTICIPANTS` / `USERS ||--o{ PARTICIPANTS` : relation N—N entre
-  utilisateurs et conversations ; `participantIds` dans l'API vient de cette table.
+- `CONVERSATIONS ||--o{ PARTICIPANTS` / `USERS ||--o{ PARTICIPANTS` : relation N—N entre
+  utilisateurs et conversations ; `participantIds` dans l'API vient de cette table. Le
+  schéma n'impose pas de nombre minimal de participants ; c'est l'API qui crée toujours
+  des conversations à 2 participants.
 - `CONVERSATIONS ||--o{ MESSAGES` : les messages sont dans Postgres ; `lastMessage` dans
   l'API est le message le plus récent de la conversation.
 - `FAVORITES` cible soit un `USERS`, soit une `ACTIVITIES`, selon `target_type` (relation
-  polymorphe sans clé étrangère, représentée par les deux liens en pointillés) ; le
+  polymorphe sans clé étrangère, représentée par les deux liens en pointillés `o|` :
+  zéro ou une cible de chaque type pour un favori donné) ; le
   triplet (`user_id`, `target_type`, `target_id`) est unique.
 
 ## Répartition par base de données

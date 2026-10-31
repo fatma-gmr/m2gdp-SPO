@@ -18,8 +18,8 @@ Application qui connecte des sportifs pour pratiquer ensemble de manière ponctu
 
 - /public → Frontend PWA mobile-first
 - /workers → Backend API Cloudflare
-- /docs → Documentation technique
-- /specs → Spécifications OpenAPI (openapi.json), schéma SQL (schema.sql) et modèle de données (data-model.md)
+- /docs → Documentation technique : guide-technique.md (architecture, lancement, déploiement, variables, workflow git), data-model.md (diagramme Entité-Association), diagramme-uml.md (diagramme de classes UML)
+- /specs → Spécifications OpenAPI (openapi.json, source de vérité ; openapi.yml généré par workers/scripts/openapi-to-yaml.mjs), schéma SQL (schema.sql) et modèle de données (data-model.md)
 - Maquettes : `BINOFIT v4 Wireframes.dc.html` à la racine
 - /tests et /design : n'existent pas encore dans le dépôt (tests Playwright prévus)
 
