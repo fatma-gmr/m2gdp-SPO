@@ -5,14 +5,16 @@ import { ArrowLeft } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import AthleteCard from '../components/AthleteCard.vue'
 import { api } from '../services/api'
-import { DAYS, DAY_LABELS, LEVEL_LABELS, SPORT_LABELS } from '../services/labels'
+import { DAYS, DAY_LABELS, LEVEL_LABELS, SEXE_LABELS, SPORT_LABELS } from '../services/labels'
+import { ageFromBirthDate } from '../services/age'
 import { centerOf } from '../services/location'
 import { fetchUser } from '../services/users'
-import type { DayOfWeek, Level, Sport, User, UserSearchResult } from '../types/api'
+import type { DayOfWeek, Level, Sexe, Sport, User, UserSearchResult } from '../types/api'
 
 const RADIUS_OPTIONS = [1, 3, 5, 10]
 const SPORTS = Object.keys(SPORT_LABELS) as Sport[]
 const LEVELS = Object.keys(LEVEL_LABELS) as Level[]
+const SEXES = Object.keys(SEXE_LABELS) as Sexe[]
 
 const router = useRouter()
 const { user } = useAuth()
@@ -22,14 +24,39 @@ const maxKm = ref(10)
 const sport = ref<Sport | null>(null)
 const level = ref<Level | null>(null)
 const availability = ref<DayOfWeek | null>(null)
+const sexe = ref<Sexe | null>(null)
+const ageMin = ref<number | null>(null)
+const ageMax = ref<number | null>(null)
 
-const results = ref<UserSearchResult[]>([])
+/** Résultats renvoyés par l'API (distance, sport, niveau, disponibilité déjà filtrés côté serveur). */
+const rawResults = ref<UserSearchResult[]>([])
 const loading = ref(true)
 const errorMessage = ref('')
 let requestId = 0
 
 const hasFilters = computed(
-  () => maxKm.value !== 10 || sport.value !== null || level.value !== null || availability.value !== null,
+  () =>
+    maxKm.value !== 10 ||
+    sport.value !== null ||
+    level.value !== null ||
+    availability.value !== null ||
+    sexe.value !== null ||
+    ageMin.value !== null ||
+    ageMax.value !== null,
+)
+
+/** Sexe et âge sont filtrés ici : un profil sans ces informations est exclu dès qu'on filtre dessus. */
+const results = computed(() =>
+  rawResults.value.filter((p) => {
+    if (sexe.value && p.sexe !== sexe.value) return false
+    if (ageMin.value !== null || ageMax.value !== null) {
+      const age = ageFromBirthDate(p.birthDate)
+      if (age === null) return false
+      if (ageMin.value !== null && age < ageMin.value) return false
+      if (ageMax.value !== null && age > ageMax.value) return false
+    }
+    return true
+  }),
 )
 
 function resetFilters() {
@@ -37,6 +64,9 @@ function resetFilters() {
   sport.value = null
   level.value = null
   availability.value = null
+  sexe.value = null
+  ageMin.value = null
+  ageMax.value = null
 }
 
 async function search() {
@@ -55,7 +85,7 @@ async function search() {
     })
     if (id !== requestId) return
     const uid = user.value?.uid
-    results.value = list.filter((p) => p.id !== uid)
+    rawResults.value = list.filter((p) => p.id !== uid)
   } catch (error) {
     if (id !== requestId) return
     errorMessage.value =
@@ -184,6 +214,49 @@ onMounted(async () => {
         </div>
       </section>
 
+      <section class="filter">
+        <h2 class="filter__title">Sexe</h2>
+        <div class="chips" role="radiogroup" aria-label="Sexe">
+          <button
+            type="button"
+            class="chip"
+            :class="{ 'is-active': sexe === null }"
+            :aria-checked="sexe === null"
+            role="radio"
+            @click="sexe = null"
+          >
+            Tous
+          </button>
+          <button
+            v-for="v in SEXES"
+            :key="v"
+            type="button"
+            class="chip"
+            :class="{ 'is-active': sexe === v }"
+            :aria-checked="sexe === v"
+            role="radio"
+            @click="sexe = sexe === v ? null : v"
+          >
+            {{ SEXE_LABELS[v] }}
+          </button>
+        </div>
+      </section>
+
+      <section class="filter">
+        <h2 class="filter__title">Âge</h2>
+        <div class="age-range">
+          <label>
+            <span>Min</span>
+            <input v-model.number="ageMin" type="number" min="16" max="99" placeholder="16" aria-label="Âge minimum" />
+          </label>
+          <span class="age-range__sep" aria-hidden="true">–</span>
+          <label>
+            <span>Max</span>
+            <input v-model.number="ageMax" type="number" min="16" max="99" placeholder="99" aria-label="Âge maximum" />
+          </label>
+        </div>
+      </section>
+
       <div v-if="loading" class="state">
         <span class="spinner spinner--muted" aria-hidden="true"></span>
         <span>Recherche en cours…</span>
@@ -210,6 +283,37 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.age-range {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.age-range label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.age-range input {
+  height: 44px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 15px;
+}
+
+.age-range__sep {
+  padding-bottom: 12px;
+  color: var(--color-text-muted);
 }
 
 .filter {
@@ -263,7 +367,7 @@ onMounted(async () => {
 .chip.is-active {
   background: var(--color-lime);
   border-color: var(--color-lime);
-  color: #0a0a0a;
+  color: var(--primary-foreground);
 }
 
 .chip:disabled {

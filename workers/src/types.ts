@@ -31,6 +31,9 @@ export const DAYS_OF_WEEK = [
 ] as const
 export type DayOfWeek = (typeof DAYS_OF_WEEK)[number]
 
+export const SEXES = ['femme', 'homme', 'autre'] as const
+export type Sexe = (typeof SEXES)[number]
+
 export interface GeoPoint {
   lat: number
   lng: number
@@ -55,6 +58,10 @@ export interface User {
   lastName: string
   avatarUrl?: string | null
   bio?: string | null
+  /** Sexe déclaré, utilisé comme filtre de recherche. */
+  sexe?: Sexe | null
+  /** Date de naissance au format YYYY-MM-DD ; l'âge se calcule à partir d'elle. */
+  birthDate?: string | null
   location: GeoPoint
   sports: SportPractice[]
   availability: AvailabilitySlot[]
@@ -63,7 +70,10 @@ export interface User {
 }
 
 export type UserUpdate = Partial<
-  Pick<User, 'firstName' | 'lastName' | 'avatarUrl' | 'bio' | 'location' | 'sports' | 'availability'>
+  Pick<
+    User,
+    'firstName' | 'lastName' | 'avatarUrl' | 'bio' | 'sexe' | 'birthDate' | 'location' | 'sports' | 'availability'
+  >
 >
 
 /** Champs fournis par le client à la création du profil (PUT /users/{id} sur un profil inexistant). */

@@ -18,6 +18,8 @@ export type Sport =
 
 export type Level = 'debutant' | 'intermediaire' | 'avance' | 'expert'
 
+export type Sexe = 'femme' | 'homme' | 'autre'
+
 export type DayOfWeek =
   | 'lundi'
   | 'mardi'
@@ -64,6 +66,9 @@ export interface User {
   lastName: string
   avatarUrl?: string | null
   bio?: string | null
+  sexe?: Sexe | null
+  /** Date de naissance au format YYYY-MM-DD. */
+  birthDate?: string | null
   location: GeoPoint
   sports: SportPractice[]
   availability: AvailabilitySlot[]
@@ -82,6 +87,8 @@ export interface UserUpdate {
   lastName?: string
   avatarUrl?: string | null
   bio?: string | null
+  sexe?: Sexe | null
+  birthDate?: string | null
   location?: GeoPoint
   sports?: SportPractice[]
   availability?: AvailabilitySlot[]

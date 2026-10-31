@@ -220,7 +220,7 @@ onMounted(async () => {
 
 .segment__btn.is-active {
   background: var(--color-lime);
-  color: #0a0a0a;
+  color: var(--primary-foreground);
 }
 
 .activity-list {

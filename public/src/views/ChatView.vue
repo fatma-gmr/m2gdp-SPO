@@ -203,7 +203,7 @@ onMounted(load)
 .bubble--me {
   align-self: flex-end;
   background: var(--color-lime);
-  color: #0a0a0a;
+  color: var(--primary-foreground);
   border-bottom-right-radius: 6px;
 }
 
@@ -241,7 +241,7 @@ onMounted(load)
   border-radius: 50%;
   border: none;
   background: var(--color-lime);
-  color: #0a0a0a;
+  color: var(--primary-foreground);
   display: flex;
   align-items: center;
   justify-content: center;

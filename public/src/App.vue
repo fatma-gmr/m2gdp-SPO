@@ -17,6 +17,13 @@ const showNav = computed(() => route.meta.tab === true)
 <style scoped>
 .has-tabbar {
   min-height: 100svh;
-  padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 1024px) {
+  .has-tabbar {
+    padding-top: 96px;
+    padding-bottom: 0;
+  }
 }
 </style>

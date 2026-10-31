@@ -127,7 +127,7 @@ async function submit() {
 
       <div v-else-if="sent" class="confirm-box">
         <div class="confirm-box__icon">
-          <CheckCircle2 :size="30" aria-hidden="true" color="#4CC800" />
+          <CheckCircle2 :size="30" aria-hidden="true" color="#178A2E" />
         </div>
         <h1>Proposition envoyée !</h1>
         <p class="sent__text">
@@ -249,6 +249,6 @@ textarea:focus {
 }
 
 textarea::placeholder {
-  color: #6b6b6b;
+  color: var(--color-text-muted);
 }
 </style>

@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, CalendarPlus, MapPin, MessageCircle } from 'lucide-vue-next'
+import { ArrowLeft, CalendarPlus, MapPin, Send } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import { api, ApiError } from '../services/api'
 import { LEVEL_LABELS, SPORT_LABELS } from '../services/labels'
@@ -27,6 +27,16 @@ const loading = ref(true)
 const notFound = ref(false)
 const errorMessage = ref('')
 const contacting = ref(false)
+
+/** Messages suggérés pour démarrer la conversation ; le texte reste modifiable. */
+const STARTERS = [
+  'Salut ! Tu serais partant pour une séance cette semaine ?',
+  'Bonjour ! Tu t’entraînes souvent près de chez toi ?',
+  'Hello, ça te dit un match ce week-end ?',
+  'Salut ! On se fait une séance à deux ?',
+]
+const starter = ref('')
+const MESSAGE_MAX = 2000
 
 const athleteId = computed(() => String(route.params.id))
 const isMe = computed(() => currentUser.value?.uid === athleteId.value)
@@ -55,12 +65,19 @@ async function load() {
   }
 }
 
-async function contact() {
+/** Crée la conversation, y dépose le premier message, puis ouvre le chat. */
+async function startConversation() {
+  const text = starter.value.trim()
   if (!athlete.value || contacting.value) return
+  if (!text) {
+    errorMessage.value = 'Écris ou choisis un premier message.'
+    return
+  }
   contacting.value = true
   errorMessage.value = ''
   try {
     const conversation = await api.createConversation({ participantId: athlete.value.id })
+    await api.sendMessage({ conversationId: conversation.id, text })
     router.push({ name: 'conversation', params: { id: conversation.id } })
   } catch (error) {
     errorMessage.value =
@@ -154,15 +171,35 @@ watch(athleteId, load)
 
         <p v-if="errorMessage" class="alert alert-error">{{ errorMessage }}</p>
 
-        <div v-if="!isMe" class="athlete__actions">
-          <Button variant="outline"
-            type="button"
-            :disabled="contacting"
-            @click="contact"
-          >
-            <MessageCircle :size="18" aria-hidden="true" />
-            {{ contacting ? 'Ouverture…' : 'Contacter' }}
+        <section v-if="!isMe" class="athlete__section starter">
+          <h2>Démarrer la conversation</h2>
+          <div class="starter__chips">
+            <button
+              v-for="(msg, i) in STARTERS"
+              :key="i"
+              type="button"
+              class="starter__chip"
+              @click="starter = msg"
+            >
+              {{ msg }}
+            </button>
+          </div>
+          <label class="starter__field">
+            <span class="sr-only">Premier message</span>
+            <textarea
+              v-model="starter"
+              rows="3"
+              :maxlength="MESSAGE_MAX"
+              placeholder="Écris ton premier message…"
+            ></textarea>
+          </label>
+          <Button type="button" :disabled="contacting || !starter.trim()" @click="startConversation">
+            <Send :size="18" aria-hidden="true" />
+            {{ contacting ? 'Envoi…' : 'Envoyer et ouvrir la conversation' }}
           </Button>
+        </section>
+
+        <div v-if="!isMe" class="athlete__actions">
           <Button type="button" @click="proposeActivity">
             <CalendarPlus :size="18" aria-hidden="true" />
             Proposer une activité
@@ -174,6 +211,55 @@ watch(athleteId, load)
 </template>
 
 <style scoped>
+.starter__chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.starter__chip {
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.starter__chip:hover {
+  border-color: var(--color-lime);
+  background: var(--color-lime-soft);
+}
+
+.starter__field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 16px;
+  resize: vertical;
+}
+
+.starter__field textarea:focus {
+  outline: none;
+  border-color: var(--color-lime);
+  box-shadow: 0 0 0 3px var(--color-lime-soft);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
 .athlete__state {
   display: flex;
   flex-direction: column;
