@@ -1,5 +1,7 @@
 # BINOFIT — Modèle de données
 
+Diagramme : voir docs/data-model.md
+
 Ce document décrit les entités métier de BINOFIT, leurs champs, et leur stockage
 (voir `agents.md`). Le schéma de référence est `/specs/schema.sql`.
 
@@ -220,12 +222,18 @@ Voir le diagramme Entité-Association dans `/docs/data-model.md`.
 
 Format des erreurs de l'API : `{ "error": "<message>", "code": "<code>" }`.
 
-`profile_required` désigne le refus (403) d'une requête faite avec un jeton Firebase
-valide par un utilisateur qui n'a pas encore de ligne dans `users` (profil non créé via
-`PUT /users/{id}`).
+Un compte Firebase Auth peut exister sans ligne dans `users` (profil pas encore créé via
+`PUT /users/{id}`). Les créations qui référencent l'utilisateur sont alors refusées par le
+middleware `requireProfile()` (`workers/src/middleware/profile.ts`) :
 
-Cette erreur est renvoyée avant toute autre vérification par `POST /activities`,
-`POST /conversations` et `POST /favorites` (middleware `workers/src/middleware/profile.ts`).
-Réponse : `403 { "error": "Complète ton profil pour continuer", "code": "profile_required" }`.
-Le front doit alors rediriger vers l'écran Profil ; cette redirection n'est pas encore
-implémentée dans `public/`. Les autres 403 de l'API portent le code `forbidden`.
+- routes concernées : `POST /activities`, `POST /conversations` et `POST /favorites`,
+  où le middleware est placé juste après la vérification du jeton (`firebaseAuth()`) ;
+- vérifié avant toute autre validation (corps de la requête, existence de la cible,
+  droits) ;
+- réponse : `403 { "error": "Complète ton profil pour continuer", "code": "profile_required" }` ;
+- `GET /users/{id}` et `PUT /users/{id}` ne sont pas concernés : `PUT /users/{id}` sert
+  justement à créer le profil.
+
+Les autres 403 de l'API portent le code `forbidden`. Le front ne gère pas encore ce code
+(redirection vers l'écran Profil prévue). Détail des réponses par route :
+`specs/openapi.json`.

@@ -15,7 +15,22 @@ API REST de BINOFIT, écrite en TypeScript avec Hono et déployée sur Cloudflar
   `src/lib/dbMapper.ts`.
 
 Contrat complet : `specs/openapi.json`, servi sur `/docs` (Swagger UI) et `/openapi.json`.
-Modèle de données : `specs/data-model.md`.
+Modèle de données : `specs/data-model.md`, diagrammes `docs/data-model.md` (Entité-Association)
+et `docs/diagramme-uml.md` (classes UML). Lancement, déploiement et variables
+d'environnement de tout le projet : `docs/guide-technique.md`.
+
+### `specs/openapi.yml`
+
+`specs/openapi.yml` est **généré** depuis `specs/openapi.json`, qui reste la source de
+vérité : ne pas le modifier à la main. Après chaque modification du `.json`, régénérer
+depuis `workers/` :
+
+```bash
+node scripts/openapi-to-yaml.mjs
+```
+
+Le script (`scripts/openapi-to-yaml.mjs`) n'a aucune dépendance et conserve les clés,
+les valeurs et leur ordre.
 
 ## Routes
 
