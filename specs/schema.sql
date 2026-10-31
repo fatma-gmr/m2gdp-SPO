@@ -1,6 +1,7 @@
 create table users (
   id text primary key, email text, first_name text not null, last_name text not null,
   bio text, avatar_url text, city text, lat double precision not null, lng double precision not null,
+  sexe text check (sexe in ('femme','homme','autre')), birth_date date,
   created_at timestamptz not null default now(), updated_at timestamptz not null default now()
 );
 create table user_sports (
