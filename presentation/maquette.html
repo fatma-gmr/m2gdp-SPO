@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maquette — BINOFIT</title>
+  <meta name="description" content="Cinq écrans clés de l’application BINOFIT, de la première ouverture jusqu’au profil sportif.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='13' cy='10' r='4.5' fill='%23121512'/%3E%3Ccircle cx='35' cy='12' r='4.5' fill='%231A7F2A'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&family=Caveat:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="docs.css">
+  <style>
+    .maquette-hero {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      align-items: end;
+      padding: 48px 0 32px;
+    }
+    .maquette-hero h1 { font-family: var(--font-title); font-weight: 800; font-size: clamp(36px, 6vw, 56px); line-height: 1.05; letter-spacing: -1px; }
+    .maquette-hero h1 span { color: var(--primary); }
+    .maquette-intro { padding-left: 18px; border-left: 3px solid var(--primary); color: var(--body); }
+    .maquette-intro .script { display: block; margin-top: 8px; font-size: 26px; }
+
+    .screen-tabs {
+      display: flex;
+      gap: 6px;
+      padding: 6px;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow-x: auto;
+      white-space: nowrap;
+      margin-bottom: 24px;
+    }
+    .screen-tab {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 14px;
+      background: transparent;
+      color: var(--body);
+      font: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .screen-tab[aria-selected="true"] { background: var(--primary); color: #FFFFFF; }
+    .screen-tab__num { font-family: var(--font-title); font-size: 12px; opacity: 0.8; }
+
+    .viewer {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 40px;
+      align-items: center;
+      padding: clamp(20px, 4vw, 48px);
+      border-radius: 32px;
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+    }
+    .phone-col { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .phone-col__title { display: flex; align-items: center; gap: 10px; width: 300px; max-width: 100%; }
+    .phone-col__num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #FFFFFF;
+      font-family: var(--font-title);
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .phone-col__name { font-family: var(--font-title); font-weight: 700; font-size: 18px; }
+    .phone {
+      width: 300px;
+      max-width: 100%;
+      height: 640px;
+      border: 10px solid var(--ink);
+      border-radius: 46px;
+      overflow-y: auto;
+      background: var(--panel);
+      box-shadow: 0 30px 60px rgba(18, 21, 18, 0.18);
+    }
+    .phone img { display: block; width: 100%; height: auto; }
+    .phone-hint { font-size: 13px; color: var(--muted); }
+
+    .ux-col { display: flex; flex-direction: column; gap: 16px; }
+    .ux-col h2 { font-family: var(--font-title); font-weight: 800; font-size: clamp(28px, 4vw, 40px); line-height: 1.1; letter-spacing: -0.5px; }
+    .ux-col > p { color: var(--body); font-size: 17px; }
+    .ux-points { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .ux-points li { display: flex; gap: 10px; align-items: flex-start; color: var(--body); }
+    .ux-points svg { flex: 0 0 auto; margin-top: 3px; }
+    .ux-nav { display: flex; gap: 10px; padding-top: 8px; }
+    .ux-nav button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 48px;
+      padding: 0 20px;
+      border-radius: 14px;
+      border: 1.5px solid var(--primary);
+      background: #FFFFFF;
+      color: var(--primary);
+      font: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ux-nav button.is-primary { background: var(--primary); color: #FFFFFF; }
+    .ux-nav button:hover { filter: brightness(0.95); }
+
+    .overview { margin-top: 48px; }
+    .overview h2 { margin-bottom: 20px; font-family: var(--font-title); font-weight: 700; font-size: 28px; }
+    .overview__row { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; }
+    .thumb {
+      flex: 0 0 auto;
+      width: 168px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      text-align: left;
+      font: inherit;
+    }
+    .thumb__frame { display: block; height: 340px; border-radius: 26px; overflow: hidden; border: 6px solid var(--ink); background: #FFFFFF; }
+    .thumb[aria-current="true"] .thumb__frame { border-color: var(--primary); }
+    .thumb__label { font-size: 14px; font-weight: 600; color: var(--ink); }
+    .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+
+    .device-switch { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 16px; background: #FFFFFF; border: 1px solid var(--border); border-radius: 999px; }
+    .device-switch__btn { min-height: 40px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; color: var(--body); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+    .device-switch__btn[aria-pressed="true"] { background: var(--primary); color: #FFFFFF; }
+    /* Desktop : fenêtre d'ordinateur (barre de navigateur) au lieu du cadre téléphone */
+    .phone.is-desktop {
+      width: 100%;
+      max-width: 760px;
+      height: 520px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #FFFFFF;
+      box-shadow: 0 30px 60px rgba(18, 21, 18, 0.14);
+    }
+    .phone.is-desktop::before {
+      content: '';
+      display: block;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      height: 30px;
+      background:
+        radial-gradient(circle at 14px 15px, #E06C5F 4px, transparent 5px),
+        radial-gradient(circle at 30px 15px, #E6B94A 4px, transparent 5px),
+        radial-gradient(circle at 46px 15px, #5BC05E 4px, transparent 5px),
+        var(--panel);
+      border-bottom: 1px solid var(--border);
+    }
+    .phone.is-desktop img { width: 100%; height: auto; }
+    .thumb.is-desktop { width: 260px; }
+    .thumb.is-desktop .thumb__frame { height: 160px; border-width: 3px; border-radius: 12px; }
+    .viewer.is-desktop .phone-col__title { width: 100%; }
+    .viewer.is-desktop .phone-col { width: 100%; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .screen-tab, .ux-nav button { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="index.html" class="brand" aria-label="BINOFIT, accueil">
+      <img src="assets/logo-binofit-horizontal.png" alt="BINOFIT" style="height:48px;width:auto;display:block">
+    </a>
+    <nav class="site-nav" aria-label="Navigation principale">
+      <ul class="site-nav__list">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="maquette.html" aria-current="page" class="is-current">Maquette</a></li>
+        <li><a href="charte.html">Charte graphique</a></li>
+        <li><a href="parcours.html">Parcours utilisateurs</a></li>
+        <li><a href="po.html">PO</a></li>
+        <li><a href="dev.html">DEV</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="maquette-hero">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span class="eyebrow">Prototype mobile</span>
+      <h1>Trouve ton <span>binôme</span><br>près de chez toi.</h1>
+    </div>
+    <div class="maquette-intro">
+      <p>Cinq écrans clés de l’application, de la première ouverture jusqu’au profil sportif.</p>
+      <p class="script">Choisis un écran pour le parcourir.</p>
+    </div>
+  </section>
+
+  <div class="device-switch" role="group" aria-label="Type d’écran">
+    <button type="button" class="device-switch__btn" data-device="mobile" aria-pressed="true">Mobile</button>
+    <button type="button" class="device-switch__btn" data-device="desktop" aria-pressed="false">Desktop</button>
+  </div>
+
+  <div class="screen-tabs" role="tablist" aria-label="Écrans de la maquette" id="tabs"></div>
+
+  <section class="viewer" aria-live="polite">
+    <div class="phone-col">
+      <div class="phone-col__title">
+        <span class="phone-col__num" id="cur-num"></span>
+        <span class="phone-col__name" id="cur-name"></span>
+      </div>
+      <div class="phone">
+        <div class="img-ph" id="cur-img"></div>
+      </div>
+      <span class="phone-hint" id="cur-hint" hidden>Fais défiler l’écran dans le téléphone.</span>
+    </div>
+
+    <div class="ux-col">
+      <span class="eyebrow">Intention UX</span>
+      <h2 id="cur-headline"></h2>
+      <p id="cur-text"></p>
+      <ul class="ux-points" id="cur-points"></ul>
+      <div class="ux-nav">
+        <button type="button" id="prev" aria-label="Écran précédent">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+        </button>
+        <button type="button" id="next" class="is-primary">
+          Écran suivant
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="overview">
+    <h2>Vue d’ensemble</h2>
+    <div class="overview__row" id="thumbs"></div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <span>BINOFIT · le sport, c’est mieux à deux.</span>
+    <div class="site-footer__links">
+      <a href="#">Dépôt GitHub</a>
+      <a href="#">Application</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const SCREENS = [
+    {
+      num: '01', title: 'Bienvenue',
+      img: 'assets/screens/01-bienvenue.png',
+      headline: 'Le sport, c’est mieux à deux.',
+      text: 'Le premier écran pose la promesse en une phrase et une illustration : deux sportifs qui se tapent dans la main. Un seul bouton pour commencer.',
+      points: ['Promesse lisible en moins de cinq secondes.', 'Accroche manuscrite pour un ton motivant et humain.', 'Accès direct à la connexion pour les comptes existants.'],
+      scroll: false,
+      desktop: {
+        img: 'assets/screens/desktop-02-accueil-visiteur.png',
+        headline: 'Une page d’accueil claire pour les visiteurs.',
+        text: 'Avant de se connecter, le visiteur comprend l’idée, la méthode et les profils, puis crée son compte en un clic.',
+        points: ['Deux actions en haut : Se connecter et Créer un compte.', 'Trois étapes illustrées pour comprendre l’usage.', 'Témoignages des trois personas pour rassurer.'],
+        scroll: true
+      }
+    },
+    {
+      num: '02', title: 'Accueil',
+      img: 'assets/screens/02-accueil.png',
+      headline: 'Les binômes les plus proches, tout de suite.',
+      text: 'L’accueil va droit au but : une recherche, des raccourcis par sport et la liste des sportifs triés par distance.',
+      points: ['Raccourcis Running, Vélo, Tennis, Yoga, Muscu.', 'Distance en grand, en vert : le critère qui compte.', 'Rappel quand le profil n’est pas encore visible.'],
+      scroll: false,
+      desktop: {
+        img: 'assets/screens/desktop-01-decouvrir.png',
+        headline: 'Les sportifs proches en un coup d’œil.',
+        text: 'Sur grand écran, la recherche, les filtres et les profils tiennent sur une seule page, en grille de trois colonnes.',
+        points: ['Recherche, sports et rayon accessibles sans quitter l’écran.', 'Profils triés par distance, avec Voir le profil.', 'Carte d’aperçu et rappel pour compléter son profil.'],
+        scroll: true
+      }
+    },
+    {
+      num: '03', title: 'Carte',
+      img: 'assets/screens/03-carte.png',
+      headline: 'Voir qui s’entraîne autour de soi.',
+      text: 'La carte montre les sportifs dans le rayon choisi. Un appui sur un avatar ouvre une fiche courte pour voir le profil ou écrire.',
+      points: ['Filtres rayon, sport et niveau en haut d’écran.', 'Cercle du rayon pour comprendre la zone couverte.', 'Deux actions claires : Voir le profil ou Écrire.'],
+      scroll: false,
+      desktop: {
+        img: 'assets/screens/desktop-03-carte.png',
+        headline: 'La liste et la carte côte à côte.',
+        text: 'La liste des sportifs reste visible à gauche pendant que la carte montre le rayon et la position de chacun.',
+        points: ['Un clic sur un profil le repère sur la carte.', 'Fiche courte avec Voir le profil et Écrire.', 'Filtres de rayon, de sport et de niveau au-dessus de la liste.'],
+        scroll: false
+      }
+    },
+    {
+      num: '04', title: 'Messages',
+      img: 'assets/screens/04-messages.png',
+      headline: 'Un premier message sans pression.',
+      text: 'Même vide, la messagerie aide à démarrer : des suggestions de sportifs proches avec un bouton « Bonjour » prêt à envoyer.',
+      points: ['Onglets Conversations et Demandes.', 'État vide utile, jamais une impasse.', 'Un tap suffit pour briser la glace.'],
+      scroll: false,
+      desktop: {
+        img: 'assets/screens/desktop-04-messages.png',
+        headline: 'Une messagerie à deux volets.',
+        text: 'La liste des conversations est à gauche, la zone de discussion à droite, avec des suggestions de sportifs proches.',
+        points: ['Onglets Conversations et Demandes à gauche.', 'Suggestions avec un bouton Bonjour.', 'État vide qui invite à trouver un binôme.'],
+        scroll: false
+      }
+    },
+    {
+      num: '05', title: 'Profil',
+      img: 'assets/screens/05-profil.png',
+      headline: 'Un profil sportif complet en une page.',
+      text: 'Le profil rassemble ce qui permet de bien matcher : sports pratiqués, zone de recherche et disponibilités par jour et moment.',
+      points: ['Jauge de complétion : profil visible une fois rempli.', 'Sports en grille d’icônes, sélection multiple.', 'Disponibilités : jours de la semaine × matin, après-midi, soir.'],
+      scroll: true,
+      desktop: {
+        img: 'assets/screens/desktop-05-profil.png',
+        headline: 'Identité à gauche, formulaire à droite.',
+        text: 'La carte d’identité et la complétion restent visibles pendant qu’on remplit le formulaire.',
+        points: ['Progression et statut de visibilité du profil.', 'Sports en grille, niveau réglé pour chaque sport.', 'Disponibilités par jour, enregistrement en bas du formulaire.'],
+        scroll: true
+      }
+    }
+  ];
+
+  const check = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A7F2A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>';
+  let current = 0;
+  let device = 'mobile';
+
+  const tabs = document.getElementById('tabs');
+  const thumbs = document.getElementById('thumbs');
+  const viewer = document.querySelector('.viewer');
+  const phone = document.querySelector('.phone');
+
+  /** Contenu d'un écran selon le type choisi (mobile ou desktop). */
+  function content(screen) {
+    if (device === 'desktop' && screen.desktop) {
+      return { img: screen.desktop.img, headline: screen.desktop.headline, text: screen.desktop.text, points: screen.desktop.points, scroll: screen.desktop.scroll };
+    }
+    return { img: screen.img, headline: screen.headline, text: screen.text, points: screen.points, scroll: screen.scroll };
+  }
+
+  // Onglets et vignettes, construits à partir de la liste des écrans
+  SCREENS.forEach((screen, i) => {
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'screen-tab';
+    tab.setAttribute('role', 'tab');
+    tab.innerHTML = `<span class="screen-tab__num">${screen.num}</span>${screen.title}`;
+    tab.addEventListener('click', () => show(i));
+    tabs.appendChild(tab);
+
+    const thumb = document.createElement('button');
+    thumb.type = 'button';
+    thumb.className = 'thumb';
+    thumb.addEventListener('click', () => show(i));
+    thumbs.appendChild(thumb);
+  });
+
+  function renderThumbs() {
+    document.querySelectorAll('.thumb').forEach((thumb, i) => {
+      const screen = SCREENS[i];
+      const c = content(screen);
+      thumb.classList.toggle('is-desktop', device === 'desktop');
+      thumb.innerHTML = `<span class="thumb__frame"><img src="${c.img}" alt=""></span><span class="thumb__label">${screen.num} · ${screen.title}</span>`;
+    });
+  }
+
+  function show(index) {
+    const n = SCREENS.length;
+    current = (index + n) % n;
+    const s = SCREENS[current];
+    const c = content(s);
+
+    document.querySelectorAll('.screen-tab').forEach((tab, i) => {
+      tab.setAttribute('aria-selected', String(i === current));
+    });
+    document.querySelectorAll('.thumb').forEach((thumb, i) => {
+      thumb.setAttribute('aria-current', String(i === current));
+    });
+
+    document.getElementById('cur-num').textContent = s.num;
+    document.getElementById('cur-name').textContent = s.title;
+    document.getElementById('cur-img').innerHTML = `<img src="${c.img}" alt="Écran ${s.title} de l’application BINOFIT">`;
+    document.getElementById('cur-hint').hidden = !c.scroll;
+    document.getElementById('cur-headline').textContent = c.headline;
+    document.getElementById('cur-text').textContent = c.text;
+    document.getElementById('cur-points').innerHTML = c.points.map((p) => `<li>${check}<span>${p}</span></li>`).join('');
+  }
+
+  function setDevice(next) {
+    device = next;
+    const isDesktop = device === 'desktop';
+    phone.classList.toggle('is-desktop', isDesktop);
+    viewer.classList.toggle('is-desktop', isDesktop);
+    document.querySelectorAll('.device-switch__btn').forEach((btn) => {
+      btn.setAttribute('aria-pressed', String(btn.dataset.device === device));
+    });
+    renderThumbs();
+    show(current);
+  }
+
+  document.querySelectorAll('.device-switch__btn').forEach((btn) => {
+    btn.addEventListener('click', () => setDevice(btn.dataset.device));
+  });
+
+  document.getElementById('prev').addEventListener('click', () => show(current - 1));
+  document.getElementById('next').addEventListener('click', () => show(current + 1));
+
+  renderThumbs();
+  show(0);
+</script>
+  <script src="nav.js"></script>
+</body>
+</html>

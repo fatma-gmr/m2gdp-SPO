@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Parcours utilisateurs — BINOFIT</title>
+  <meta name="description" content="Parcours utilisateurs de BINOFIT : personas, storyboard, user journey map et value proposition canvas.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='13' cy='10' r='4.5' fill='%23121512'/%3E%3Ccircle cx='35' cy='12' r='4.5' fill='%231A7F2A'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&family=Caveat:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="index.html" class="brand" aria-label="BINOFIT, accueil">
+      <img src="assets/logo-binofit-horizontal.png" alt="BINOFIT" style="height:48px;width:auto;display:block">
+    </a>
+    <nav class="site-nav" aria-label="Pages du site">
+      <ul class="site-nav__list">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="maquette.html">Maquette</a></li>
+        <li><a href="charte.html">Charte graphique</a></li>
+        <li><a href="parcours.html" aria-current="page">Parcours utilisateurs</a></li>
+        <li><a href="po.html">PO</a></li>
+        <li><a href="dev.html">DEV</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="page-head">
+    <span class="eyebrow">Parcours utilisateurs</span>
+    <h1>Trois sportifs, <span style="color:var(--primary)">un même besoin.</span></h1>
+    <p>Des personas réalistes, le récit d’un parcours complet, la carte du parcours et la proposition de valeur.</p>
+  </div>
+
+  <nav class="sub-nav" aria-label="Sections du parcours">
+    <a href="#personas">Les personas</a>
+    <a href="#storyboard">Storyboard</a>
+    <a href="#journey">User Journey Map</a>
+    <a href="#canvas">Value Proposition Canvas</a>
+  </nav>
+
+  <!-- 01 PERSONAS -->
+  <section id="personas" class="block">
+    <span class="eyebrow">Personas</span>
+    <h2 class="persona-title">Trois regards, un même besoin.</h2>
+    <p class="persona-intro">Chaque persona montre comment l’application répond à une motivation, un frein et une attente précis.</p>
+
+    <div class="persona-board">
+      <div class="persona-list" role="tablist" aria-label="Personas">
+        <button type="button" class="persona-tab is-active" role="tab" aria-selected="true" data-persona="eva">
+          <strong>Eva</strong><span>28 ans · Lyon</span>
+        </button>
+        <button type="button" class="persona-tab" role="tab" aria-selected="false" data-persona="arthur">
+          <strong>Arthur</strong><span>34 ans · Lyon</span>
+        </button>
+        <button type="button" class="persona-tab" role="tab" aria-selected="false" data-persona="sacha">
+          <strong>Sacha</strong><span>21 ans · Lyon</span>
+        </button>
+      </div>
+
+      <div class="persona-detail" role="tabpanel">
+        <div class="persona-hero">
+          <div class="persona-photo" id="persona-photo" aria-hidden="true">[Photo]</div>
+          <div class="persona-hero__text">
+            <h3 id="persona-name"></h3>
+            <p id="persona-desc"></p>
+            <span class="persona-tag" id="persona-tag"></span>
+          </div>
+        </div>
+
+        <div class="persona-cards">
+          <div class="persona-card"><span class="label">Objectif</span><p id="persona-objectif"></p></div>
+          <div class="persona-card"><span class="label">Motivation</span><p id="persona-motivation"></p></div>
+          <div class="persona-card"><span class="label">Frein</span><p id="persona-frein"></p></div>
+          <div class="persona-card"><span class="label">Réponse de l’app</span><p id="persona-attente"></p></div>
+        </div>
+
+        <p class="persona-quote" id="persona-quote"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 STORYBOARD -->
+  <section id="storyboard" class="block">
+    <span class="tag-badge">02 / Raconter</span>
+    <h2>Storyboard</h2>
+    <p>Léo veut reprendre le sport près de chez lui. Douze étapes, de l’inscription à la routine partagée.</p>
+    <figure style="margin:0 0 40px">
+      <img src="assets/storyboard-leo.png" alt="Storyboard BINOFIT en 12 étapes : Léo télécharge l’application, crée son profil, explore les profils compatibles, envoie un message, planifie une séance, se rencontre, progresse ensemble, enchaîne les séances, élargit son cercle, atteint ses objectifs, et le sport les rapproche" style="display:block;width:100%;height:auto;border-radius:22px;border:1px solid var(--border);background:#FFFFFF">
+    </figure>
+    <h3>Le parcours d’Eva</h3>
+    <div class="storyboard">
+      <div class="story-card"><div class="story-card__top"><span class="story-num">1</span></div><h3>Eva emménage à Lyon.</h3><p>Nouvelle ville, nouveau job, sa raquette dort dans un placard.</p></div>
+      <div class="story-card"><div class="story-card__top"><span class="story-num">2</span></div><h3>Elle télécharge BinoFit.</h3><p>« Le sport, c’est mieux à deux » : elle appuie sur Commencer.</p></div>
+      <div class="story-card"><div class="story-card__top"><span class="story-num">3</span></div><h3>Elle complète son profil.</h3><p>Tennis, intermédiaire, Presqu’île, libre mardi et samedi soir.</p></div>
+      <div class="story-card"><div class="story-card__top"><span class="story-num">4</span></div><h3>Elle ouvre la carte.</h3><p>Rayon 10 km, Tennis : plusieurs profils apparaissent autour d’elle.</p></div>
+      <div class="story-card"><div class="story-card__top"><span class="story-num">5</span></div><h3>Elle écrit à une joueuse.</h3><p>« Bonjour ! Partante pour un match samedi ? »</p></div>
+      <div class="story-card"><div class="story-card__top"><span class="story-num">6</span></div><h3>La séance est calée.</h3><p>Samedi 18 h, courts du parc. Elle apparaît dans Mes activités.</p></div>
+      <div class="story-card"><div class="story-card__top"><span class="story-num">7</span></div><h3>Premier match.</h3><p>Même niveau, beaux échanges, aucun temps mort.</p></div>
+      <div class="story-card"><div class="story-card__top"><span class="story-num">8</span></div><h3>Le binôme continue.</h3><p>Elles se donnent rendez-vous chaque semaine.</p></div>
+    </div>
+  </section>
+
+  <!-- 03 USER JOURNEY MAP -->
+  <section id="journey" class="block">
+    <span class="tag-badge">03 / Accompagner</span>
+    <h2>User Journey Map</h2>
+    <p>Le parcours de Léo, jeune actif qui cherche un partenaire de même niveau pour s’entraîner régulièrement.</p>
+    <figure style="margin:0">
+      <img src="assets/journey-leo.png" alt="User Journey Map de Léo le motivé : onboarding, découverte, connexion, planification, rencontre et avis" style="display:block;width:100%;height:auto;border-radius:22px;border:1px solid var(--border);background:#FFFFFF">
+    </figure>
+  </section>
+
+  <!-- 04 VALUE PROPOSITION CANVAS -->
+  <section id="canvas" class="block">
+    <span class="tag-badge">04 / Apporter de la valeur</span>
+    <h2>Value Proposition Canvas</h2>
+    <p>La proposition de valeur (carré) face au profil client (cercle) : les jobs, les souffrances et les bénéfices attendus de Léo.</p>
+    <figure style="margin:0">
+      <img src="assets/value-proposition-canvas.png" alt="Value Proposition Canvas : proposition de valeur (produits et services, anti-douleurs, créateurs de gains) et profil client (jobs à réaliser, souffrances, bénéfices attendus)" style="display:block;width:100%;height:auto;border-radius:22px;border:1px solid var(--border);background:#FFFFFF">
+    </figure>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <span>BINOFIT · le sport, c’est mieux à deux.</span>
+    <div class="site-footer__links">
+      <a href="#">Dépôt GitHub</a>
+      <a href="#">Application</a>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+  // Personas : la liste à gauche affiche la fiche correspondante à droite.
+  const PERSONAS = {
+    eva: {
+      name: 'Eva, la joueuse qui cherche du monde',
+      photo: 'assets/avatar-eva.png',
+      desc: 'Joueuse de tennis intermédiaire, arrivée récemment à Lyon. Elle a la raquette, il lui manque un partenaire.',
+      tag: 'Nouvelle en ville',
+      objectif: 'Retrouver une pratique régulière du tennis.',
+      motivation: 'Rencontrer du monde dans sa nouvelle ville.',
+      frein: 'Ne connaît personne ; les clubs sont chers et complets.',
+      attente: 'Filtre Tennis + niveau, carte des joueurs proches, premier message en un tap.',
+      quote: '« J’ai la raquette, il me manque juste quelqu’un en face. »'
+    },
+    arthur: {
+      name: 'Arthur, le nageur des premières heures',
+      photo: 'assets/avatar-arthur.png',
+      desc: 'Nageur expert aux horaires décalés. Il s’entraîne tôt le matin et tient mieux le rythme à deux.',
+      tag: 'Expert régulier',
+      objectif: 'Garder un rythme d’entraînement soutenu.',
+      motivation: 'Un partenaire fiable pour tenir la cadence.',
+      frein: 'Ses créneaux ne collent pas à ceux de ses amis.',
+      attente: 'Disponibilités par jour et moment : il ne voit que les sportifs libres le matin.',
+      quote: '« Je nage tôt le matin, et seul c’est dur de tenir. »'
+    },
+    sacha: {
+      name: 'Sacha, le footballeur qui organise',
+      photo: 'assets/avatar-sacha.png',
+      desc: 'Étudiant avancé en football, toujours prêt à jouer. Il lui manque souvent deux joueurs pour compléter.',
+      tag: 'Étudiant passionné',
+      objectif: 'Jouer souvent, gratuitement, avec des gens de son niveau.',
+      motivation: 'Un match ce soir, sans attendre des semaines.',
+      frein: 'Les groupes se vident vite, organiser prend du temps.',
+      attente: 'Liste triée par distance et messagerie pour réunir du monde rapidement.',
+      quote: '« Un foot ce soir ? Il manque toujours deux joueurs. »'
+    }
+  };
+
+  function showPersona(key) {
+    const p = PERSONAS[key];
+    const photo = document.getElementById('persona-photo');
+    if (p.photo) {
+      photo.innerHTML = '<img src="' + p.photo + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+      photo.style.border = 'none';
+      photo.style.background = 'none';
+    } else {
+      photo.textContent = '[Photo]';
+      photo.style.border = '';
+      photo.style.background = '';
+    }
+    document.getElementById('persona-name').textContent = p.name;
+    document.getElementById('persona-desc').textContent = p.desc;
+    document.getElementById('persona-tag').textContent = p.tag;
+    document.getElementById('persona-objectif').textContent = p.objectif;
+    document.getElementById('persona-motivation').textContent = p.motivation;
+    document.getElementById('persona-frein').textContent = p.frein;
+    document.getElementById('persona-attente').textContent = p.attente;
+    document.getElementById('persona-quote').textContent = p.quote;
+    document.querySelectorAll('.persona-tab').forEach((tab) => {
+      const active = tab.dataset.persona === key;
+      tab.classList.toggle('is-active', active);
+      tab.setAttribute('aria-selected', String(active));
+    });
+  }
+
+  document.querySelectorAll('.persona-tab').forEach((tab) => {
+    tab.addEventListener('click', () => showPersona(tab.dataset.persona));
+  });
+  showPersona('eva');
+</script>
+  <script src="nav.js"></script>
+</body>
+</html>

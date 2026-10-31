@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DEV — BINOFIT</title>
+  <meta name="description" content="Côté technique de BINOFIT : état de l’application, fonctionnalités, modèle de données et spécification de l’API.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='13' cy='10' r='4.5' fill='%23121512'/%3E%3Ccircle cx='35' cy='12' r='4.5' fill='%231A7F2A'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&family=Caveat:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="index.html" class="brand" aria-label="BINOFIT, accueil">
+      <img src="assets/logo-binofit-horizontal.png" alt="BINOFIT" style="height:48px;width:auto;display:block">
+    </a>
+    <nav class="site-nav" aria-label="Pages du site">
+      <ul class="site-nav__list">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="maquette.html">Maquette</a></li>
+        <li><a href="charte.html">Charte graphique</a></li>
+        <li><a href="parcours.html">Parcours utilisateurs</a></li>
+        <li><a href="po.html">PO</a></li>
+        <li><a href="dev.html" aria-current="page">DEV</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ÉTAT -->
+  <section class="page-head">
+    <span class="eyebrow">Application</span>
+    <h1>Ce qui est en ligne</h1>
+    <div class="grid grid--4" style="margin-top:12px">
+      <div class="panel"><span class="label">Front</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">[Framework]</strong><span class="muted" style="font-size:14px">Application mobile-first, testée à 320 px.</span></div>
+      <div class="panel"><span class="label">Données</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">[Base de données]</strong><span class="muted" style="font-size:14px">Comptes, profils sportifs, messages et géolocalisation.</span></div>
+      <div class="panel"><span class="label">Hébergement</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">[Hébergeur]</strong><span class="muted" style="font-size:14px">Déploiement automatique à chaque push.</span></div>
+      <div class="panel"><span class="label">Tests</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">[Nombre] tests e2e</strong><span class="muted" style="font-size:14px">Un test par user story clé du scénario minimal.</span></div>
+    </div>
+    <div class="btn-row">
+      <a href="#" class="btn btn--primary">Ouvrir l’application</a>
+      <a href="#" class="btn btn--outline">Voir le dépôt GitHub</a>
+    </div>
+  </section>
+
+  <!-- FONCTIONNALITÉS -->
+  <section class="block">
+    <span class="tag-badge">Scénario cible</span>
+    <h2>Fonctionnalités</h2>
+    <div class="grid grid--4">
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Demandes de binôme</strong><span class="prio prio--should">SHOULD</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Planifier une séance</strong><span class="prio prio--should">SHOULD</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Mes activités et historique</strong><span class="prio prio--should">SHOULD</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Séance terminée</strong><span class="prio prio--should">SHOULD</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Avis après séance</strong><span class="prio prio--should">SHOULD</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Signaler / bloquer</strong><span class="prio prio--should">SHOULD</span></div>
+      <div class="panel panel--soft" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Photo de profil</strong><span class="prio prio--could">COULD</span></div>
+      <div class="panel panel--soft" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Binômes favoris</strong><span class="prio prio--could">COULD</span></div>
+      <div class="panel panel--soft" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Notifications</strong><span class="prio prio--could">COULD</span></div>
+      <div class="panel panel--soft" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Replanifier avec le même binôme</strong><span class="prio prio--could">COULD</span></div>
+    </div>
+  </section>
+
+  <!-- MODÈLE DE DONNÉES -->
+  <section class="block">
+    <span class="tag-badge">UML</span>
+    <h2>Modèle de données</h2>
+    <div class="legend">
+      <span><i style="border:2px solid var(--primary)"></i>Scénario minimal</span>
+      <span><i style="border:2px dashed var(--muted)"></i>Scénario cible</span>
+      <span><i style="border:2px solid var(--ink);background:var(--panel)"></i>Énumération</span>
+    </div>
+    <div class="panel">
+      <div class="class-grid">
+        <div class="class class--min"><div class="class__head"><strong>Utilisateur</strong></div><ul><li>+UUID id</li><li>+String prenom</li><li>+String nom</li><li>+String email</li><li>+String bio</li><li>+String photoUrl</li><li>+Double latitude</li><li>+Double longitude</li><li>+String zone</li><li>+Integer rayonKm</li><li>+Integer completion</li><li>+Boolean visible</li><li>+DateTime createdAt</li></ul></div>
+        <div class="class class--min"><div class="class__head"><strong>Sport</strong></div><ul><li>+UUID id</li><li>+String nom</li><li>+String icone</li></ul></div>
+        <div class="class class--min"><div class="class__head"><strong>UtilisateurSport</strong></div><ul><li>+UUID id</li><li>+UUID utilisateurId</li><li>+UUID sportId</li><li>+Niveau niveau</li></ul></div>
+        <div class="class class--min"><div class="class__head"><strong>Disponibilite</strong></div><ul><li>+UUID id</li><li>+UUID utilisateurId</li><li>+JourSemaine jour</li><li>+Moment moment</li></ul></div>
+        <div class="class class--min"><div class="class__head"><strong>Conversation</strong></div><ul><li>+UUID id</li><li>+UUID utilisateurAId</li><li>+UUID utilisateurBId</li><li>+DateTime createdAt</li></ul></div>
+        <div class="class class--min"><div class="class__head"><strong>Message</strong></div><ul><li>+UUID id</li><li>+UUID conversationId</li><li>+UUID auteurId</li><li>+String texte</li><li>+DateTime envoyeLe</li><li>+Boolean lu</li></ul></div>
+        <div class="class class--cible"><div class="class__head"><strong>DemandeBinome</strong></div><ul><li>+UUID id</li><li>+UUID demandeurId</li><li>+UUID destinataireId</li><li>+UUID sportId</li><li>+String message</li><li>+StatutDemande statut</li></ul></div>
+        <div class="class class--cible"><div class="class__head"><strong>Seance</strong></div><ul><li>+UUID id</li><li>+UUID demandeId</li><li>+UUID sportId</li><li>+DateTime debut</li><li>+String lieu</li><li>+StatutSeance statut</li></ul></div>
+        <div class="class class--cible"><div class="class__head"><strong>Avis</strong></div><ul><li>+UUID id</li><li>+UUID seanceId</li><li>+UUID auteurId</li><li>+UUID cibleId</li><li>+Integer note</li><li>+String commentaire</li></ul></div>
+        <div class="class class--cible"><div class="class__head"><strong>Favori</strong></div><ul><li>+UUID id</li><li>+UUID utilisateurId</li><li>+UUID favoriId</li></ul></div>
+        <div class="class class--enum"><div class="class__head"><small>«enumeration»</small><strong>Niveau</strong></div><ul><li>DEBUTANT</li><li>INTERMEDIAIRE</li><li>AVANCE</li><li>EXPERT</li></ul></div>
+        <div class="class class--enum"><div class="class__head"><small>«enumeration»</small><strong>JourSemaine</strong></div><ul><li>LUNDI … DIMANCHE</li></ul></div>
+        <div class="class class--enum"><div class="class__head"><small>«enumeration»</small><strong>Moment</strong></div><ul><li>MATIN</li><li>APRES_MIDI</li><li>SOIR</li></ul></div>
+        <div class="class class--enum"><div class="class__head"><small>«enumeration»</small><strong>StatutDemande</strong></div><ul><li>ENVOYEE</li><li>ACCEPTEE</li><li>REFUSEE</li><li>ANNULEE</li></ul></div>
+        <div class="class class--enum"><div class="class__head"><small>«enumeration»</small><strong>StatutSeance</strong></div><ul><li>PLANIFIEE</li><li>TERMINEE</li><li>ANNULEE</li></ul></div>
+      </div>
+      <h3 style="margin:28px 0 12px;font-family:var(--font-title);font-size:18px">Associations</h3>
+      <div class="relations">
+        <div class="relation"><strong>Utilisateur</strong><span class="mono">1</span><span class="muted">— pratique →</span><span class="mono">0..*</span><strong>UtilisateurSport</strong></div>
+        <div class="relation"><strong>Sport</strong><span class="mono">1</span><span class="muted">— concerne →</span><span class="mono">0..*</span><strong>UtilisateurSport</strong></div>
+        <div class="relation"><strong>Utilisateur</strong><span class="mono">1</span><span class="muted">— déclare →</span><span class="mono">0..*</span><strong>Disponibilite</strong></div>
+        <div class="relation"><strong>Utilisateur</strong><span class="mono">2</span><span class="muted">— participe à →</span><span class="mono">0..*</span><strong>Conversation</strong></div>
+        <div class="relation"><strong>Conversation</strong><span class="mono">1</span><span class="muted">— contient →</span><span class="mono">0..*</span><strong>Message</strong></div>
+        <div class="relation"><strong>Utilisateur</strong><span class="mono">1</span><span class="muted">— envoie / reçoit →</span><span class="mono">0..*</span><strong>DemandeBinome</strong></div>
+        <div class="relation"><strong>DemandeBinome</strong><span class="mono">1</span><span class="muted">— génère →</span><span class="mono">0..1</span><strong>Seance</strong></div>
+        <div class="relation"><strong>Seance</strong><span class="mono">1</span><span class="muted">— évaluée par →</span><span class="mono">0..2</span><strong>Avis</strong></div>
+        <div class="relation"><strong>Utilisateur</strong><span class="mono">1</span><span class="muted">— garde →</span><span class="mono">0..*</span><strong>Favori</strong></div>
+      </div>
+      <p class="ph-note" style="margin-top:16px">Scénario minimal : utilisateurs géolocalisés, sports et niveaux, disponibilités, conversations et messages. Scénario cible : demandes de binôme, séances, avis, favoris et signalements.</p>
+    </div>
+  </section>
+
+  <!-- API -->
+  <section class="block">
+    <span class="tag-badge">API</span>
+    <h2>Spécification OpenAPI</h2>
+    <p>Les routes du scénario minimal et du scénario cible.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Méthode</th><th>Route</th><th>Rôle</th><th>Scénario</th></tr></thead>
+        <tbody>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/auth/signup</td><td>Créer un compte</td><td>Minimal</td></tr>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/auth/login</td><td>Se connecter</td><td>Minimal</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/me</td><td>Lire son profil et sa complétion</td><td>Minimal</td></tr>
+          <tr><td><span class="method m-patch">PATCH</span></td><td class="mono">/me</td><td>Modifier prénom, nom, bio, zone, rayon</td><td>Minimal</td></tr>
+          <tr><td><span class="method m-put">PUT</span></td><td class="mono">/me/sports</td><td>Définir ses sports et niveaux</td><td>Minimal</td></tr>
+          <tr><td><span class="method m-put">PUT</span></td><td class="mono">/me/disponibilites</td><td>Définir ses disponibilités</td><td>Minimal</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/sports</td><td>Lister les sports</td><td>Minimal</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/sportifs?sport&amp;niveau&amp;rayon</td><td>Rechercher les sportifs proches, triés par distance</td><td>Minimal</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/sportifs/{id}</td><td>Voir un profil</td><td>Minimal</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/conversations</td><td>Lister ses conversations</td><td>Minimal</td></tr>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/conversations</td><td>Démarrer une conversation</td><td>Minimal</td></tr>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/conversations/{id}/messages</td><td>Envoyer un message</td><td>Minimal</td></tr>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/demandes</td><td>Envoyer une demande de binôme</td><td>Cible</td></tr>
+          <tr><td><span class="method m-patch">PATCH</span></td><td class="mono">/demandes/{id}</td><td>Accepter ou refuser</td><td>Cible</td></tr>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/seances</td><td>Planifier une séance</td><td>Cible</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/me/seances</td><td>Mes activités</td><td>Cible</td></tr>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/seances/{id}/avis</td><td>Noter son binôme</td><td>Cible</td></tr>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/favoris</td><td>Ajouter un favori</td><td>Cible</td></tr>
+          <tr><td><span class="method m-delete">DELETE</span></td><td class="mono">/favoris/{id}</td><td>Retirer un favori</td><td>Cible</td></tr>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/signalements</td><td>Signaler un profil</td><td>Cible</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="btn-row">
+      <a href="#" class="btn btn--primary">Télécharger le YAML</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <span>BINOFIT · le sport, c’est mieux à deux.</span>
+    <div class="site-footer__links">
+      <a href="#">Dépôt GitHub</a>
+      <a href="#">Application</a>
+    </div>
+  </div>
+</footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>
