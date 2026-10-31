@@ -7,51 +7,52 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --color-bg: #0a0a0a;
-  --color-surface: #141414;
-  --color-surface-2: #1e1e1e;
-  --color-border: #2a2a2a;
-  --color-lime: #4cc800;
-  --color-lime-dark: #3da300;
-  --color-lime-soft: rgba(76, 200, 0, 0.14);
-  --color-text: #ffffff;
-  --color-text-muted: #9a9a9a;
-  --color-danger: #ff5c5c;
-  --color-danger-soft: rgba(255, 92, 92, 0.12);
+  /* Thème clair (principal) — palette du redesign BINOFIT */
+  --color-bg: #F6F6F4;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F2F5EF;
+  --color-border: #E2E8DE;
+  --color-lime: #178A2E;
+  --color-lime-dark: #146B22;
+  --color-lime-soft: #DDF0DA;
+  --color-text: #121512;
+  --color-text-muted: #5B6358;
+  --color-danger: #C0392B;
+  --color-danger-soft: #FDECEA;
 
   --radius-lg: 22px;
   --radius-md: 14px;
   --radius-sm: 10px;
 
   --font-sans:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
     sans-serif;
 
-  color-scheme: dark;
+  color-scheme: light;
   color: var(--color-text);
   background: var(--color-bg);
   font: 16px/1.5 var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   --radius: 0.625rem;
-  --background: #0a0a0a;
-  --foreground: #ffffff;
-  --card: #141414;
-  --card-foreground: #ffffff;
-  --popover: #141414;
-  --popover-foreground: #ffffff;
-  --primary: #4cc800;
-  --primary-foreground: #0a0a0a;
-  --secondary: #1e1e1e;
-  --secondary-foreground: #ffffff;
-  --muted: #1e1e1e;
-  --muted-foreground: #9a9a9a;
-  --accent: #1e1e1e;
-  --accent-foreground: #ffffff;
-  --destructive: #ff5c5c;
-  --border: #2a2a2a;
-  --input: #2a2a2a;
-  --ring: #4cc800;
+  --background: #F6F6F4;
+  --foreground: #121512;
+  --card: #FFFFFF;
+  --card-foreground: #121512;
+  --popover: #FFFFFF;
+  --popover-foreground: #121512;
+  --primary: #178A2E;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F2F5EF;
+  --secondary-foreground: #121512;
+  --muted: #F2F5EF;
+  --muted-foreground: #5B6358;
+  --accent: #DDF0DA;
+  --accent-foreground: #146B22;
+  --destructive: #C0392B;
+  --border: #E2E8DE;
+  --input: #E2E8DE;
+  --ring: #178A2E;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -65,6 +66,40 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+}
+
+/* Thème sombre (variante du redesign) : appliqué quand l'élément porte la classe .dark */
+.dark {
+  --color-bg: #0F1411;
+  --color-surface: #1B1F1C;
+  --color-surface-2: #232A25;
+  --color-border: #2A2F2B;
+  --color-lime: #22C55E;
+  --color-lime-dark: #15803D;
+  --color-lime-soft: rgba(34, 197, 94, 0.14);
+  --color-text: #E5E7E5;
+  --color-text-muted: #A1A1A1;
+  --color-danger: #FF5C5C;
+  --color-danger-soft: rgba(255, 92, 92, 0.12);
+  color-scheme: dark;
+  --background: #0F1411;
+  --foreground: #E5E7E5;
+  --card: #1B1F1C;
+  --card-foreground: #E5E7E5;
+  --popover: #1B1F1C;
+  --popover-foreground: #E5E7E5;
+  --primary: #22C55E;
+  --primary-foreground: #0F1411;
+  --secondary: #232A25;
+  --secondary-foreground: #E5E7E5;
+  --muted: #232A25;
+  --muted-foreground: #A1A1A1;
+  --accent: #232A25;
+  --accent-foreground: #E5E7E5;
+  --destructive: #FF5C5C;
+  --border: #2A2F2B;
+  --input: #2A2F2B;
+  --ring: #22C55E;
 }
 
 *,
@@ -158,7 +193,7 @@ button {
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  color: #0a0a0a;
+  color: #FFFFFF;
   font-size: 16px;
   flex-shrink: 0;
 }
@@ -238,7 +273,7 @@ select {
 }
 
 input::placeholder {
-  color: #6b6b6b;
+  color: var(--color-text-muted);
 }
 
 input:focus,
@@ -296,14 +331,14 @@ select:disabled {
 
 .alert-error {
   background: var(--color-danger-soft);
-  color: #ff8a8a;
-  border: 1px solid rgba(255, 92, 92, 0.35);
+  color: var(--color-danger);
+  border: 1px solid rgba(192, 57, 43, 0.35);
 }
 
 .alert-success {
   background: var(--color-lime-soft);
-  color: #85e34a;
-  border: 1px solid rgba(76, 200, 0, 0.35);
+  color: var(--color-lime-dark);
+  border: 1px solid rgba(23, 138, 46, 0.35);
 }
 
 .spinner {
@@ -311,7 +346,7 @@ select:disabled {
   height: 18px;
   border-radius: 50%;
   border: 2.5px solid rgba(10, 10, 10, 0.25);
-  border-top-color: #0a0a0a;
+  border-top-color: var(--primary-foreground);
   animation: spin 0.7s linear infinite;
 }
 
@@ -414,7 +449,7 @@ select:disabled {
   height: 84px;
   border-radius: 50%;
   background: var(--color-lime);
-  color: #0a0a0a;
+  color: var(--primary-foreground);
   font-size: 30px;
   font-weight: 800;
   display: flex;
@@ -544,5 +579,22 @@ select:disabled {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* --- Desktop (≥ 1024 px) : navigation en haut, contenu large, colonnes --- */
+@media (min-width: 1024px) {
+  .screen {
+    padding: 0;
+  }
+
+  .screen__inner {
+    max-width: 1200px;
+    padding: 32px 24px 48px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 0;
   }
 }

@@ -1,4 +1,4 @@
-import type { ActivityStatus, DayOfWeek, Level, Sport } from '../types/api'
+import type { ActivityStatus, DayOfWeek, Level, Sexe, Sport } from '../types/api'
 
 /** Libellés français des sports, indexés par la valeur de l'API. */
 export const SPORT_LABELS: Record<Sport, string> = {
@@ -49,4 +49,11 @@ export const ACTIVITY_STATUS_LABELS: Record<ActivityStatus, string> = {
   acceptee: 'Acceptée',
   refusee: 'Refusée',
   terminee: 'Terminée',
+}
+
+/** Libellés français des sexes déclarés. */
+export const SEXE_LABELS: Record<Sexe, string> = {
+  femme: 'Femme',
+  homme: 'Homme',
+  autre: 'Autre',
 }

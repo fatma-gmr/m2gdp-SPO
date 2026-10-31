@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BINOFIT — Le sport, c'est mieux à deux.</title>
+  <meta name="description" content="BINOFIT met en relation des sportifs proches de chez eux pour pratiquer ensemble, ponctuellement.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='13' cy='10' r='4.5' fill='%23121512'/%3E%3Ccircle cx='35' cy='12' r='4.5' fill='%231A7F2A'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&family=Caveat:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="index.html" class="brand" aria-label="BINOFIT, accueil">
+      <img src="assets/logo-binofit-horizontal.png" alt="BINOFIT" style="height:48px;width:auto;display:block">
+    </a>
+    <nav class="site-nav" aria-label="Navigation principale">
+      <ul class="site-nav__list">
+        <li><a href="index.html" aria-current="page" class="is-current">Accueil</a></li>
+        <li><a href="maquette.html">Maquette</a></li>
+        <li><a href="charte.html">Charte graphique</a></li>
+        <li><a href="parcours.html">Parcours utilisateurs</a></li>
+        <li><a href="po.html">PO</a></li>
+        <li><a href="dev.html">DEV</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- HERO -->
+  <section id="accueil" class="hero">
+    <div class="hero__copy">
+      <span class="eyebrow">Application de binôme sportif</span>
+      <p class="script" style="font-size:34px;line-height:1.1">Trouvez votre binôme, dépassez-vous !</p>
+      <h1 class="h1">Le sport, c’est mieux<br><span class="flip-words" data-words='["à deux.", "à un binôme.", "à plusieurs."]' data-duration="3000" aria-live="polite"></span></h1>
+      <p class="lead">BinoFit met en relation des sportifs proches de chez eux pour pratiquer ensemble, ponctuellement : un footing ce soir, un match de tennis samedi, une séance de muscu à deux.</p>
+      <div class="hero__actions">
+        <a href="#" class="btn btn--primary">Ouvrir l’application</a>
+        <a href="#comment" class="btn btn--outline">Comment ça marche</a>
+      </div>
+    </div>
+    <div class="hero__visual">
+      <img src="assets/hero-tennis.png" alt="Deux joueurs de tennis qui font un échange sur un court dans un parc urbain" style="display:block;width:100%;height:auto;border-radius:32px">
+      
+    </div>
+  </section>
+
+  <!-- L'IDÉE -->
+  <section id="idee" class="section">
+    <div class="section-head">
+      <h2 class="h2">L’idée en une phrase</h2>
+      <p style="max-width:760px">Un sportif trouve, près de chez lui, une personne du même sport, du même niveau et disponible au même moment, pour une séance ensemble, sans engagement.</p>
+    </div>
+    <div class="pillars">
+      <article class="card">
+        <div class="icon-box"><img src="assets/icon-proche.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>
+        <h3 class="h3">Proche</h3>
+        <p>Un rayon de recherche et une carte du quartier : le binôme est à quelques minutes.</p>
+      </article>
+      <article class="card">
+        <div class="icon-box"><img src="assets/icon-compatible.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>
+        <h3 class="h3">Compatible</h3>
+        <p>Même sport, niveau proche, créneaux communs : on s’entraîne au bon rythme.</p>
+      </article>
+      <article class="card">
+        <div class="icon-box"><img src="assets/icon-ponctuel.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>
+        <h3 class="h3">Ponctuel</h3>
+        <p>Une séance à la fois. Pas d’abonnement de club, pas d’engagement.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- COMMENT ÇA MARCHE -->
+  <section id="comment" class="section">
+    <div class="section-head">
+      <h2 class="h2">Comment ça marche</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="step__num">1</div><h3>Je crée mon profil</h3><p>Sports pratiqués, niveau, zone de recherche et disponibilités de la semaine.</p></div>
+      <div class="step"><div class="step__num">2</div><h3>Je trouve un binôme</h3><p>Liste ou carte, filtrée par sport, niveau et rayon, du plus proche au plus loin.</p></div>
+      <div class="step"><div class="step__num">3</div><h3>Je lui écris</h3><p>Une demande, un « Bonjour », et on cale le lieu et l’heure dans la messagerie.</p></div>
+      <div class="step"><div class="step__num">4</div><h3>On s’entraîne</h3><p>La séance apparaît dans « Mes activités ». Et si ça colle, on remet ça.</p></div>
+    </div>
+  </section>
+
+  <!-- SPORTS -->
+  <section id="sports" class="section">
+    <div class="section-head">
+      <h2 class="h2">Tous les sports, un seul réflexe</h2>
+      <p>Les disciplines proposées dans l’application.</p>
+    </div>
+    <div class="sports">
+      <div class="sport"><div class="icon-box"><img src="assets/sport-running.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>Running</div>
+      <div class="sport"><div class="icon-box"><img src="assets/sport-velo.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>Vélo</div>
+      <div class="sport"><div class="icon-box"><img src="assets/sport-tennis.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>Tennis</div>
+      <div class="sport"><div class="icon-box"><img src="assets/sport-yoga.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>Yoga</div>
+      <div class="sport"><div class="icon-box"><img src="assets/sport-musculation.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>Musculation</div>
+      <div class="sport"><div class="icon-box"><img src="assets/sport-natation.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>Natation</div>
+      <div class="sport"><div class="icon-box"><img src="assets/sport-football.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>Football</div>
+      <div class="sport"><div class="icon-box"><img src="assets/sport-basket.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>Basket</div>
+      <div class="sport"><div class="icon-box"><img src="assets/sport-boxe.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>Boxe</div>
+      <div class="sport"><div class="icon-box"><img src="assets/sport-crossfit.png" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>CrossFit</div>
+    </div>
+  </section>
+
+  <!-- PROCHES -->
+  <section id="proches" class="section">
+    <div class="section-head" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px">
+      <h2 class="h2">Près de chez toi</h2>
+      <span class="muted" style="font-size:13px">Profils fictifs du prototype</span>
+    </div>
+    <div class="profiles">
+      <div class="profile">
+        <img class="img-ph--avatar" src="assets/avatar-arthur.png" alt="Photo d’Arthur" style="border:none;background:none;object-fit:cover;display:block">
+        <div class="profile__info"><strong>Arthur</strong><div class="profile__meta"><span class="tag">Natation</span>Expert</div></div>
+        <div class="profile__distance">0,3<span>km</span></div>
+      </div>
+      <div class="profile">
+        <img class="img-ph--avatar" src="assets/avatar-eva.png" alt="Photo d’Eva" style="border:none;background:none;object-fit:cover;display:block">
+        <div class="profile__info"><strong>Eva</strong><div class="profile__meta"><span class="tag">Tennis</span>Intermédiaire</div></div>
+        <div class="profile__distance">0,7<span>km</span></div>
+      </div>
+      <div class="profile">
+        <img class="img-ph--avatar" src="assets/avatar-sacha.png" alt="Photo de Sacha" style="border:none;background:none;object-fit:cover;display:block">
+        <div class="profile__info"><strong>Sacha</strong><div class="profile__meta"><span class="tag">Football</span>Avancé</div></div>
+        <div class="profile__distance">1,0<span>km</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BANDEAU -->
+  <section class="banner" aria-labelledby="banner-title">
+    <div class="banner__copy">
+      <p class="script">à deux, c’est mieux !</p>
+      <h2 id="banner-title">Ton prochain binôme est peut-être à 300 mètres.</h2>
+      <a href="#" class="btn">Ouvrir l’application</a>
+    </div>
+    <img src="assets/banner-coureurs.png" alt="Deux coureurs qui s’entraînent ensemble dans un parc urbain" style="display:block;width:100%;height:auto;border-radius:22px">
+  </section>
+
+  <!-- ÉQUIPE -->
+  <section id="equipe" class="section">
+    <div class="section-head">
+      <h2 class="h2">Réalisation de l’application</h2>
+      <p>Le projet a été construit en équipe, avec une répartition claire entre design, produit et développement.</p>
+    </div>
+    <div class="team">
+      <div class="team__card" style="border-top:4px solid #1A7F2A"><small>DESIGN</small><strong>[Prénom]</strong></div>
+      <div class="team__card" style="border-top:4px solid #F2A93B"><small>PO</small><strong>[Prénom]</strong></div>
+      <div class="team__card" style="border-top:4px solid #121512"><small>DÉVELOPPEMENT</small><strong>[Prénom] &amp; [Prénom]</strong></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <span>BINOFIT · le sport, c’est mieux à deux.</span>
+    <div class="site-footer__links">
+      <a href="#">Dépôt GitHub</a>
+      <a href="#">Application</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Apparition douce des blocs au scroll, désactivée si l'utilisateur réduit les animations.
+  const blocks = document.querySelectorAll('.card, .step, .profile, .team__card, .sport');
+  blocks.forEach((el) => el.classList.add('reveal'));
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    blocks.forEach((el) => observer.observe(el));
+  } else {
+    blocks.forEach((el) => el.classList.add('is-visible'));
+  }
+</script>
+<script>
+  // Port natif du composant FlipWords (Manu Arora) : mots qui s'enchaînent,
+  // lettres qui entrent une à une, mot sortant vers le haut à droite.
+  (function () {
+    const EXIT_MS = 500;
+
+    function render(word) {
+      const item = document.createElement('span');
+      item.className = 'flip-words__item';
+      word.split(' ').forEach((w, wordIndex) => {
+        const group = document.createElement('span');
+        group.className = 'flip-words__group';
+        [...w].forEach((ch, letterIndex) => {
+          const letter = document.createElement('span');
+          letter.className = 'flip-words__letter';
+          letter.style.animationDelay = `${wordIndex * 0.3 + letterIndex * 0.05}s`;
+          letter.textContent = ch;
+          group.appendChild(letter);
+        });
+        const space = document.createElement('span');
+        space.className = 'flip-words__letter';
+        space.innerHTML = '&nbsp;';
+        group.appendChild(space);
+        item.appendChild(group);
+      });
+      return item;
+    }
+
+    document.querySelectorAll('.flip-words').forEach((el) => {
+      const words = JSON.parse(el.dataset.words);
+      const duration = Number(el.dataset.duration) || 3000;
+      let index = 0;
+      let active = render(words[0]);
+      el.appendChild(active);
+
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || words.length < 2) return;
+
+      setInterval(() => {
+        const old = active;
+        old.classList.add('is-exit');
+        index = (index + 1) % words.length;
+        active = render(words[index]);
+        el.appendChild(active);
+        setTimeout(() => old.remove(), EXIT_MS);
+      }, duration);
+    });
+  })();
+</script>
+  <script src="nav.js"></script>
+</body>
+</html>

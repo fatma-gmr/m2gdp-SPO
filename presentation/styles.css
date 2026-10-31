@@ -1,0 +1,324 @@
+/* BINOFIT — site de présentation de l'application. Palette et typographie issues du design « BinoFit — Site vitrine ». */
+
+:root {
+  --bg: #FFFFFF;
+  --ink: #121512;
+  --body: #3D453B;
+  --muted: #5B6358;
+  --primary: #1A7F2A;
+  --primary-hover: #146B22;
+  --soft: #DDF0DA;
+  --panel: #F2F5EF;
+  --border: #E2E8DE;
+
+  --font-title: 'Poppins', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-script: 'Caveat', cursive;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+a { color: var(--primary); }
+a:hover { color: var(--primary-hover); }
+:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+
+h1, h2, h3, p { margin: 0; }
+img { display: block; max-width: 100%; }
+
+.container { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+
+/* Typographie */
+.eyebrow {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: #146B22;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.h1 { font-family: var(--font-title); font-weight: 800; font-size: clamp(40px, 7vw, 68px); line-height: 1.02; letter-spacing: -1.5px; }
+.h2 { font-family: var(--font-title); font-weight: 700; font-size: 32px; line-height: 1.15; letter-spacing: -0.5px; }
+.h3 { font-family: var(--font-title); font-weight: 700; font-size: 20px; }
+.script { font-family: var(--font-script); font-weight: 700; color: var(--primary); }
+.muted { color: var(--muted); }
+
+.section { padding: 56px 0; border-top: 1px solid var(--border); }
+.section-head { margin-bottom: 28px; }
+.section-head p { margin-top: 8px; color: var(--body); }
+
+/* Boutons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1.5px solid transparent;
+  transition: background-color 150ms ease-out, color 150ms ease-out;
+}
+.btn--primary { background: var(--primary); color: #FFFFFF; box-shadow: 0 8px 20px rgba(26, 127, 42, 0.25); }
+.btn--primary:hover { background: var(--primary-hover); color: #FFFFFF; }
+.btn--outline { background: #FFFFFF; color: var(--primary); border-color: var(--primary); }
+.btn--outline:hover { background: var(--soft); color: var(--primary-hover); }
+.btn--ghost { color: var(--ink); }
+
+/* En-tête */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid var(--border);
+}
+.site-header__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--ink); }
+.brand__name { font-family: var(--font-title); font-weight: 800; font-size: 20px; letter-spacing: 0.3px; line-height: 1.15; }
+.brand__tag { display: block; font-family: var(--font-body); font-weight: 400; font-size: 12px; color: var(--muted); }
+.site-nav { max-width: 100%; overflow-x: auto; }
+.site-nav__list {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.site-nav__list a {
+  padding: 10px 16px;
+  border-radius: 999px;
+  color: var(--body);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+.site-nav__list a:hover { background: var(--panel); color: var(--ink); }
+
+/* Hero */
+.hero {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 48px;
+  align-items: center;
+  padding: 56px 0 72px;
+}
+.hero__copy { display: flex; flex-direction: column; gap: 20px; }
+.hero__copy .eyebrow { align-self: flex-start; }
+.hero__copy p.lead { max-width: 520px; font-size: 18px; color: var(--body); }
+.hero__actions { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 8px; }
+.hero__visual { position: relative; }
+
+.img-ph {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+  border: 2px dashed var(--primary);
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 14px;
+}
+.img-ph strong { font-family: var(--font-title); font-weight: 700; font-size: 15px; }
+.img-ph--hero { aspect-ratio: 9 / 8; border-radius: 32px; }
+.img-ph--avatar { width: 60px; height: 60px; border-radius: 50%; padding: 0; font-size: 10px; }
+.img-ph--banner { min-height: 220px; border-radius: 0; border: none; background: #FFFFFF; }
+
+.hero__card {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  right: 16px;
+  max-width: 320px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #FFFFFF;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(18, 21, 18, 0.15);
+}
+.hero__card .img-ph--avatar { width: 48px; height: 48px; }
+.hero__card-info { flex: 1; min-width: 0; }
+.hero__card-info strong { display: block; font-family: var(--font-title); font-size: 16px; }
+.hero__card-tags { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.tag {
+  padding: 1px 8px;
+  border-radius: 6px;
+  background: var(--soft);
+  color: #146B22;
+  font-weight: 600;
+}
+.hero__card-distance { text-align: right; color: var(--primary); font-family: var(--font-title); font-weight: 700; font-size: 18px; line-height: 1; }
+.hero__card-distance span { display: block; font-size: 11px; font-weight: 500; color: var(--muted); }
+
+/* Trois piliers */
+.pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+}
+.card p { color: var(--muted); }
+.icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--soft);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-box svg { width: 24px; height: 24px; }
+
+/* Étapes */
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.step { padding: 22px; border-radius: 22px; background: #FFFFFF; border: 1px solid var(--border); }
+.step__num {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #FFFFFF;
+  font-family: var(--font-title);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.step h3 { margin: 14px 0 6px; font-family: var(--font-title); font-size: 18px; }
+.step p { color: var(--muted); font-size: 15px; }
+
+/* Sports */
+.sports { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+.sport {
+  flex: 0 0 auto;
+  width: 112px;
+  padding: 16px 8px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+.sport .icon-box { width: 52px; height: 52px; border-radius: 16px; }
+.sport .icon-box svg { width: 26px; height: 26px; }
+
+/* Profils proches */
+.profiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+}
+.profile__info { flex: 1; }
+.profile__info strong { display: block; font-family: var(--font-title); font-size: 18px; }
+.profile__meta { display: flex; gap: 8px; align-items: center; font-size: 14px; color: var(--muted); }
+.profile__distance { text-align: right; color: var(--primary); font-family: var(--font-title); font-weight: 700; font-size: 22px; line-height: 1; }
+.profile__distance span { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
+
+/* Bandeau final */
+.banner {
+  margin: 24px 0 56px;
+  border-radius: 32px;
+  overflow: hidden;
+  background: var(--primary);
+  color: #FFFFFF;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  align-items: center;
+}
+.banner__copy { padding: 40px 32px; display: flex; flex-direction: column; gap: 14px; }
+.banner__copy .script { color: #FFFFFF; font-size: 30px; line-height: 1; }
+.banner__copy h2 { font-family: var(--font-title); font-weight: 800; font-size: 34px; line-height: 1.1; }
+.banner__copy .btn { align-self: flex-start; background: #FFFFFF; color: var(--primary-hover); }
+.banner__copy .btn:hover { background: var(--soft); color: var(--primary-hover); }
+
+/* Équipe */
+.team { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.team__card { padding: 24px; background: #FFFFFF; border: 1px solid var(--border); border-radius: 22px; }
+.team__card small { font-size: 12px; font-weight: 600; letter-spacing: 1.2px; color: var(--muted); }
+.team__card strong { display: block; margin-top: 6px; font-family: var(--font-title); font-size: 24px; }
+
+/* Pied de page */
+.site-footer { border-top: 1px solid var(--border); background: #FFFFFF; }
+.site-footer__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.site-footer__links { display: flex; flex-wrap: wrap; gap: 8px; }
+.site-footer__links a {
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Apparition au scroll */
+.reveal { opacity: 0; transform: translateY(12px); transition: opacity 300ms ease-out, transform 300ms ease-out; }
+.reveal.is-visible { opacity: 1; transform: none; }
+
+@media (max-width: 600px) {
+  .site-nav { display: none; }
+  .hero { padding: 40px 0 48px; }
+  .h2 { font-size: 26px; }
+  .banner__copy h2 { font-size: 28px; }
+  .section { padding: 40px 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}

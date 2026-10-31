@@ -69,6 +69,8 @@ Profil d'un sportif inscrit.
 | `first_name`  | text, non nul              | `firstName`           | Prénom                                                   |
 | `last_name`   | text, non nul              | `lastName`            | Nom de famille                                           |
 | `bio`         | text, nullable             | `bio`                 | Courte description libre                                 |
+| `sexe`        | text, nullable, `femme`/`homme`/`autre` | `sexe`       | Sexe déclaré, utilisé comme filtre de recherche          |
+| `birth_date`  | date, nullable             | `birthDate`           | Date de naissance (`YYYY-MM-DD`) ; l'âge se calcule à partir d'elle |
 | `avatar_url`  | text, nullable             | `avatarUrl`           | URL de la photo de profil                                |
 | `city`        | text, nullable             | `location.city`       | Ville affichée (libellé), omise si `null`                |
 | `lat`         | double precision, non nul  | `location.lat`        | Latitude                                                 |

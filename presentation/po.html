@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PO — BINOFIT</title>
+  <meta name="description" content="Product Owner de BINOFIT : lean canvas, backlog des EPICs et user stories des scénarios minimal et cible.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='13' cy='10' r='4.5' fill='%23121512'/%3E%3Ccircle cx='35' cy='12' r='4.5' fill='%231A7F2A'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&family=Caveat:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="index.html" class="brand" aria-label="BINOFIT, accueil">
+      <img src="assets/logo-binofit-horizontal.png" alt="BINOFIT" style="height:48px;width:auto;display:block">
+    </a>
+    <nav class="site-nav" aria-label="Pages du site">
+      <ul class="site-nav__list">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="maquette.html">Maquette</a></li>
+        <li><a href="charte.html">Charte graphique</a></li>
+        <li><a href="parcours.html">Parcours utilisateurs</a></li>
+        <li><a href="po.html" aria-current="page">PO</a></li>
+        <li><a href="dev.html">DEV</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <div class="page-head">
+    <span class="eyebrow">Lean canvas</span>
+    <h1>Le modèle <span style="color:var(--primary)">BinoFit</span></h1>
+  </div>
+
+  <!-- LEAN CANVAS -->
+  <section class="block" style="padding-top:12px">
+    <div class="lean">
+      <div class="lean-cell"><h3>Problème</h3><ul><li>S’entraîner seul démotive vite.</li><li>Difficile de trouver quelqu’un du même sport, niveau et quartier.</li><li>Clubs chers, horaires rigides.</li></ul><p class="ph-note"><strong>Alternatives :</strong> groupes WhatsApp, Facebook, clubs, applis de running.</p></div>
+      <div class="lean-cell"><h3>Solution</h3><ul><li>Profil sportif : sports, niveau, zone, disponibilités.</li><li>Recherche en liste et sur carte, triée par distance.</li><li>Messagerie pour planifier une séance.</li></ul></div>
+      <div class="lean-cell lean-cell--value"><h3>Proposition de valeur unique</h3><p>Le sport, c’est mieux à deux.</p><span>Un binôme compatible, près de chez soi, pour une séance ponctuelle.</span></div>
+      <div class="lean-cell"><h3>Avantage déloyal</h3><ul><li>Multi-sports, centré sur le binôme et non sur le groupe.</li><li>Matching distance × niveau × disponibilités.</li><li>Communauté locale qui grandit par quartier.</li></ul></div>
+      <div class="lean-cell"><h3>Segments clients</h3><ul><li>Sportifs amateurs urbains de 18 à 40 ans.</li><li>Nouveaux arrivants dans une ville.</li><li>Étudiants.</li></ul><p class="ph-note"><strong>Early adopters :</strong> runners et joueurs de tennis en centre-ville.</p></div>
+      <div class="lean-cell"><h3>Indicateurs clés</h3><ul><li>Profils complétés et visibles.</li><li>Premiers messages envoyés.</li><li>Séances planifiées par semaine.</li><li>Binômes qui se revoient.</li></ul></div>
+      <div class="lean-cell"><h3>Canaux</h3><ul><li>App stores et site vitrine.</li><li>Instagram, TikTok.</li><li>Associations étudiantes, salles et parcs.</li></ul></div>
+      <div class="lean-cell"><h3>Coûts</h3><ul><li>Développement et maintenance.</li><li>Hébergement et base de données.</li><li>Modération et marketing local.</li></ul></div>
+      <div class="lean-cell"><h3>Revenus</h3><ul><li>Freemium : offre premium [à définir].</li><li>Partenariats avec salles et marques de sport.</li></ul></div>
+    </div>
+  </section>
+
+  <!-- EPICS -->
+  <section class="block">
+    <span class="tag-badge">Backlog</span>
+    <h2>Les EPICs</h2>
+    <p><strong>Scénario minimal (MUST)</strong> : un sportif crée son profil, trouve un binôme proche et lui écrit. <strong>Scénario cible (SHOULD / COULD)</strong> : planification, confiance et fidélisation.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>EPIC</th><th>Besoin</th><th>Hypothèse</th><th>Priorité</th></tr></thead>
+        <tbody>
+          <tr><td>Compte</td><td>Créer un compte et se connecter simplement.</td><td>Un onboarding court augmente le nombre d’inscrits.</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Profil sportif</td><td>Décrire ses sports, son niveau, sa zone et ses disponibilités.</td><td>Un profil complet améliore la qualité des binômes.</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Recherche</td><td>Trouver des sportifs compatibles près de chez soi.</td><td>Le tri par distance est le critère n°1.</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Carte</td><td>Visualiser les sportifs autour de soi.</td><td>La carte rassure sur la proximité réelle.</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Messagerie</td><td>Contacter un sportif et organiser une séance.</td><td>Un premier message facilite augmente les contacts.</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Séances</td><td>Planifier et retrouver ses activités.</td><td>Une séance planifiée a plus de chances d’avoir lieu.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
+          <tr><td>Confiance</td><td>Se sentir en sécurité avec un inconnu.</td><td>Avis et signalement lèvent l’appréhension.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
+          <tr><td>Fidélisation</td><td>Retrouver ses binômes et rester motivé.</td><td>Les favoris et rappels créent de la régularité.</td><td><span class="prio prio--could">COULD</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SCÉNARIO MINIMAL -->
+  <section class="block">
+    <span class="tag-badge">Backlog PO</span>
+    <h2>Le scénario minimal</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>EPIC</th><th>User story</th><th>Critères d’acceptation</th><th>Écran</th><th>Priorité</th></tr></thead>
+        <tbody>
+          <tr><td>Compte</td><td>En tant que visiteur, je veux créer un compte avec mon e-mail afin d’accéder à l’application.</td><td>E-mail valide, mot de passe ≥ 8 caractères ; redirection vers l’accueil.</td><td>Bienvenue</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Compte</td><td>En tant que sportif, je veux me connecter et me déconnecter afin de sécuriser mon compte.</td><td>Session conservée ; bouton Se déconnecter sur le profil.</td><td>Profil</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Profil sportif</td><td>En tant que sportif, je veux renseigner prénom, nom et bio afin de me présenter.</td><td>Bio limitée à 160 caractères avec compteur.</td><td>Profil</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Profil sportif</td><td>En tant que sportif, je veux choisir mes sports et mon niveau afin d’être trouvé par les bons partenaires.</td><td>Sélection multiple ; niveau Débutant à Expert par sport.</td><td>Profil</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Profil sportif</td><td>En tant que sportif, je veux indiquer mes disponibilités afin de ne recevoir que des propositions utiles.</td><td>Jours L→D × Matin / Après-midi / Soir.</td><td>Profil</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Profil sportif</td><td>En tant que sportif, je veux voir la complétion de mon profil afin de savoir s’il est visible.</td><td>Pourcentage affiché ; visible dès que sports et zone sont remplis.</td><td>Profil, Accueil</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Recherche</td><td>En tant que sportif, je veux voir les sportifs proches triés par distance afin de trouver vite un binôme.</td><td>Distance en km, sport et niveau sur chaque carte.</td><td>Accueil</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Recherche</td><td>En tant que sportif, je veux filtrer par sport, niveau et rayon afin d’affiner mes résultats.</td><td>Filtres combinables ; rayon de 1 à 25 km.</td><td>Accueil, Carte</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Carte</td><td>En tant que sportif, je veux voir les profils sur une carte afin de juger de la proximité.</td><td>Cercle du rayon ; fiche courte au tap avec Voir le profil / Écrire.</td><td>Carte</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>Messagerie</td><td>En tant que sportif, je veux envoyer un premier message afin de proposer une séance.</td><td>Conversation créée ; message visible des deux côtés.</td><td>Messages</td><td><span class="prio prio--must">MUST</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SCÉNARIO CIBLE -->
+  <section class="block">
+    <span class="tag-badge">Backlog PO</span>
+    <h2>Le scénario cible</h2>
+    <div class="table-wrap table-wrap--green">
+      <table>
+        <thead><tr><th>EPIC</th><th>User story</th><th>Critères d’acceptation</th><th>Priorité</th></tr></thead>
+        <tbody>
+          <tr><td>Messagerie</td><td>En tant que sportif, je veux accepter ou refuser une demande afin de garder le contrôle.</td><td>Onglet Demandes ; statut envoyée, acceptée, refusée.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
+          <tr><td>Séances</td><td>En tant que binôme, je veux planifier une séance (date, heure, lieu) afin de la retrouver dans Mes activités.</td><td>Séance visible chez les deux participants.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
+          <tr><td>Séances</td><td>En tant que sportif, je veux marquer une séance comme terminée afin de garder un historique.</td><td>Statut terminée ; historique consultable.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
+          <tr><td>Confiance</td><td>En tant que sportif, je veux noter mon binôme après une séance afin d’aider la communauté.</td><td>Note de 1 à 5 + commentaire, une fois par séance.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
+          <tr><td>Confiance</td><td>En tant que sportif, je veux signaler ou bloquer un profil afin de me protéger.</td><td>Profil bloqué invisible ; signalement transmis à la modération.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
+          <tr><td>Profil sportif</td><td>En tant que sportif, je veux ajouter une photo de profil afin d’inspirer confiance.</td><td>Photo recadrée en rond ; avatar par défaut sinon.</td><td><span class="prio prio--could">COULD</span></td></tr>
+          <tr><td>Fidélisation</td><td>En tant que sportif, je veux ajouter un binôme en favori afin de le retrouver facilement.</td><td>Liste des favoris accessible depuis le profil.</td><td><span class="prio prio--could">COULD</span></td></tr>
+          <tr><td>Fidélisation</td><td>En tant que sportif, je veux recevoir une notification de nouveau message afin de répondre vite.</td><td>Notification push ; pastille sur l’onglet Messages.</td><td><span class="prio prio--could">COULD</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <span>BINOFIT · le sport, c’est mieux à deux.</span>
+    <div class="site-footer__links">
+      <a href="#">Dépôt GitHub</a>
+      <a href="#">Application</a>
+    </div>
+  </div>
+</footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

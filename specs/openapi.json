@@ -659,6 +659,8 @@
           "lastName": { "type": "string" },
           "avatarUrl": { "type": "string", "format": "uri", "nullable": true },
           "bio": { "type": "string", "nullable": true },
+          "sexe": { "type": "string", "enum": ["femme", "homme", "autre"], "nullable": true },
+          "birthDate": { "type": "string", "format": "date", "nullable": true },
           "location": { "$ref": "#/components/schemas/GeoPoint" },
           "sports": {
             "type": "array",
@@ -697,6 +699,8 @@
           "lastName": { "type": "string" },
           "avatarUrl": { "type": "string", "format": "uri", "nullable": true },
           "bio": { "type": "string", "nullable": true },
+          "sexe": { "type": "string", "enum": ["femme", "homme", "autre"], "nullable": true },
+          "birthDate": { "type": "string", "format": "date", "nullable": true },
           "location": { "$ref": "#/components/schemas/GeoPoint" },
           "sports": {
             "type": "array",

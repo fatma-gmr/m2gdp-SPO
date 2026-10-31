@@ -25,7 +25,8 @@ declare module 'vue-router' {
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', redirect: '/connexion' },
+    // Première page : l'inscription, puis la connexion, puis l'accueil.
+    { path: '/', redirect: '/inscription' },
     {
       path: '/inscription',
       name: 'inscription',

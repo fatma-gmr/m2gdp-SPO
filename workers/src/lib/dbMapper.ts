@@ -10,6 +10,7 @@ import type {
   Conversation,
   Favorite,
   Message,
+  Sexe,
   SportPractice,
   User,
   UserUpdate,
@@ -27,6 +28,8 @@ export interface UserRow {
   city: string | null
   lat: number
   lng: number
+  sexe: Sexe | null
+  birth_date: string | null
   created_at: string
   updated_at: string
   user_sports: { sport: string; level: string }[]
@@ -112,6 +115,8 @@ export function rowToUser(row: UserRow): User {
     lastName: row.last_name,
     avatarUrl: row.avatar_url,
     bio: row.bio,
+    sexe: row.sexe as Sexe | null,
+    birthDate: row.birth_date,
     location: row.city === null ? { lat: row.lat, lng: row.lng } : { city: row.city, lat: row.lat, lng: row.lng },
     sports: row.user_sports.map(({ sport, level }) => ({ sport, level }) as SportPractice),
     // L'id d'identité suit l'ordre d'insertion : il conserve l'ordre envoyé par le client.
@@ -186,6 +191,8 @@ export function userUpdateToRow(update: UserUpdate): Record<string, unknown> {
   if (update.lastName !== undefined) row.last_name = update.lastName
   if (update.avatarUrl !== undefined) row.avatar_url = update.avatarUrl
   if (update.bio !== undefined) row.bio = update.bio
+  if (update.sexe !== undefined) row.sexe = update.sexe
+  if (update.birthDate !== undefined) row.birth_date = update.birthDate
   if (update.location !== undefined) {
     row.city = update.location.city ?? null
     row.lat = update.location.lat

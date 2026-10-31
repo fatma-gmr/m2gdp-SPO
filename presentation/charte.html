@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Charte graphique — BINOFIT</title>
+  <meta name="description" content="Charte graphique de BINOFIT : logo, couleurs, typographies, icônes, composants, illustrations et direction artistique.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='13' cy='10' r='4.5' fill='%23121512'/%3E%3Ccircle cx='35' cy='12' r='4.5' fill='%231A7F2A'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&family=Caveat:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="index.html" class="brand" aria-label="BINOFIT, accueil">
+      <img src="assets/logo-binofit-horizontal.png" alt="BINOFIT" style="height:48px;width:auto;display:block">
+    </a>
+    <nav class="site-nav" aria-label="Pages du site">
+      <ul class="site-nav__list">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="maquette.html">Maquette</a></li>
+        <li><a href="charte.html" aria-current="page" class="is-current">Charte graphique</a></li>
+        <li><a href="parcours.html">Parcours utilisateurs</a></li>
+        <li><a href="po.html">PO</a></li>
+        <li><a href="dev.html">DEV</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <section class="hero" style="padding-bottom:24px">
+    <div class="hero__copy">
+      <span class="eyebrow">Identité visuelle</span>
+      <h1 class="h1">Charte graphique <span>BINOFIT</span></h1>
+      <p class="lead">Application de binôme sportif. Une identité chaleureuse, énergique et simple, pensée pour un usage mobile.</p>
+      <p class="script" style="font-size:28px">Trouvez votre binôme, dépassez-vous !</p>
+    </div>
+    <div class="hero__visual">
+      <div class="img-ph img-ph--hero" style="aspect-ratio:4/3"><strong>[IMAGE : deux sportifs qui se tapent dans la main]</strong><span>Emplacement à remplir</span></div>
+    </div>
+  </section>
+
+  <!-- 1. LOGO -->
+  <section class="block">
+    <span class="tag-badge">01</span>
+    <h2>Logo et slogan</h2>
+    <p>Le pictogramme montre deux silhouettes qui se tapent dans la main : l’encre pour l’un, le vert pour l’autre. Toujours sur fond clair ; en version inversée, le mot seul.</p>
+    <div class="grid">
+      <div class="panel panel--soft" style="display:flex;flex-direction:column;align-items:center;gap:14px">
+        <img src="assets/logo-binofit.png" alt="BINOFIT, logo" style="height:180px;width:auto;display:block;margin:0 auto">
+        <span class="script" style="font-size:22px">Le sport, c’est mieux à deux.</span>
+      </div>
+      <div class="panel" style="display:flex;flex-direction:column;gap:12px;justify-content:center">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <span style="flex:1;min-width:160px;text-align:center;padding:18px;border-radius:14px;background:#1A7F2A;color:#FFFFFF;font-family:var(--font-title);font-weight:800;font-size:22px">BINOFIT</span>
+          <span style="flex:1;min-width:160px;text-align:center;padding:18px;border-radius:14px;background:#121512;color:#FFFFFF;font-family:var(--font-title);font-weight:800;font-size:22px">BIN<span style="color:#3CC14B">FIT</span></span>
+        </div>
+        <p class="ph-note">Version principale (vert sur clair) et version inversée (sur noir).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. COULEURS -->
+  <section class="block">
+    <span class="tag-badge">02</span>
+    <h2>Couleurs</h2>
+    <p>Le vert BinoFit porte l’action. Le vert vif n’est jamais utilisé pour du texte. Les teintes neutres encadrent l’ensemble.</p>
+    <div class="grid grid--4">
+      <div class="panel" style="padding:14px"><div style="height:70px;border-radius:14px;background:#1A7F2A"></div><strong style="display:block;margin-top:10px">Vert BinoFit</strong><span class="mono">#1A7F2A</span><p class="ph-note">Action principale, liens, distance.</p></div>
+      <div class="panel" style="padding:14px"><div style="height:70px;border-radius:14px;background:#146B22"></div><strong style="display:block;margin-top:10px">Vert profond</strong><span class="mono">#146B22</span><p class="ph-note">Texte sur vert tendre.</p></div>
+      <div class="panel" style="padding:14px"><div style="height:70px;border-radius:14px;background:#3CC14B"></div><strong style="display:block;margin-top:10px">Vert vif</strong><span class="mono">#3CC14B</span><p class="ph-note">Illustrations et accents, jamais de texte.</p></div>
+      <div class="panel" style="padding:14px"><div style="height:70px;border-radius:14px;background:#DDF0DA"></div><strong style="display:block;margin-top:10px">Vert tendre</strong><span class="mono">#DDF0DA</span><p class="ph-note">Puces, tuiles d’icônes, avatars.</p></div>
+      <div class="panel" style="padding:14px"><div style="height:70px;border-radius:14px;background:#121512"></div><strong style="display:block;margin-top:10px">Encre</strong><span class="mono">#121512</span><p class="ph-note">Titres et texte principal.</p></div>
+      <div class="panel" style="padding:14px"><div style="height:70px;border-radius:14px;background:#5B6358"></div><strong style="display:block;margin-top:10px">Gris texte</strong><span class="mono">#5B6358</span><p class="ph-note">Texte secondaire, légendes.</p></div>
+      <div class="panel" style="padding:14px"><div style="height:70px;border-radius:14px;background:#FFFFFF;border:1px solid var(--border)"></div><strong style="display:block;margin-top:10px">Blanc</strong><span class="mono">#FFFFFF</span><p class="ph-note">Fond des pages, cartes et champs.</p></div>
+      <div class="panel" style="padding:14px"><div style="height:70px;border-radius:14px;background:#F2F5EF"></div><strong style="display:block;margin-top:10px">Sauge</strong><span class="mono">#F2F5EF</span><p class="ph-note">Encadrés et zones secondaires.</p></div>
+    </div>
+  </section>
+
+  <!-- 3. TYPOGRAPHIES -->
+  <section class="block">
+    <span class="tag-badge">03</span>
+    <h2>Typographies</h2>
+    <div class="grid">
+      <div class="panel panel--soft">
+        <span class="label">Titres</span>
+        <p style="font-family:var(--font-title);font-weight:800;font-size:30px;margin:8px 0">Poppins ExtraBold</p>
+        <p class="ph-note">Titres, chiffres de distance, boutons forts.</p>
+        <p class="mono" style="margin-top:10px">ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789</p>
+      </div>
+      <div class="panel panel--soft">
+        <span class="label">Texte</span>
+        <p style="font-size:28px;margin:8px 0">Inter Regular</p>
+        <p class="ph-note">Textes, formulaires, interface.</p>
+        <p class="mono" style="margin-top:10px">abcdefghijklmnopqrstuvwxyz 0123456789</p>
+      </div>
+      <div class="panel panel--soft">
+        <span class="label">Accroches</span>
+        <p class="script" style="font-size:34px;margin:8px 0">Caveat Bold</p>
+        <p class="ph-note">Accroches manuscrites, une par écran au maximum.</p>
+        <p class="script" style="font-size:26px;margin-top:10px">à deux, c’est mieux !</p>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:16px;display:flex;flex-wrap:wrap;gap:24px;align-items:baseline">
+      <span style="font-family:var(--font-title);font-weight:800;font-size:40px">H1 40</span>
+      <span style="font-family:var(--font-title);font-weight:800;font-size:28px">H2 28</span>
+      <span style="font-family:var(--font-title);font-weight:800;font-size:20px">H3 20</span>
+      <span style="font-size:16px">Texte 16</span>
+      <span style="font-size:13px;color:var(--muted)">Légende 13</span>
+    </div>
+  </section>
+
+  <!-- 4. ICÔNES -->
+  <section class="block">
+    <span class="tag-badge">04</span>
+    <h2>Icônes</h2>
+    <p>Icônes au trait, 2 px, coins arrondis, dans une tuile vert tendre. Sélectionnée : tuile verte pleine, icône blanche.</p>
+    <div class="panel">
+      <div class="grid grid--4" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr));text-align:center">
+        <div><span class="icon-box" style="margin:0 auto">Ru</span><p class="ph-note">Running</p></div>
+        <div><span class="icon-box" style="margin:0 auto">Vé</span><p class="ph-note">Vélo</p></div>
+        <div><span class="icon-box" style="margin:0 auto">Te</span><p class="ph-note">Tennis</p></div>
+        <div><span class="icon-box" style="margin:0 auto">Yo</span><p class="ph-note">Yoga</p></div>
+        <div><span class="icon-box" style="margin:0 auto">Mu</span><p class="ph-note">Musculation</p></div>
+        <div><span class="icon-box" style="margin:0 auto">Na</span><p class="ph-note">Natation</p></div>
+        <div><span class="icon-box" style="margin:0 auto">Ac</span><p class="ph-note">Accueil</p></div>
+        <div><span class="icon-box" style="margin:0 auto">Ca</span><p class="ph-note">Carte</p></div>
+        <div><span class="icon-box" style="margin:0 auto">Me</span><p class="ph-note">Messages</p></div>
+        <div><span class="icon-box" style="margin:0 auto">Pr</span><p class="ph-note">Profil</p></div>
+        <div><span class="icon-box" style="margin:0 auto">Re</span><p class="ph-note">Recherche</p></div>
+        <div><span class="icon-box" style="margin:0 auto">Ac</span><p class="ph-note">Activités</p></div>
+      </div>
+      <p class="ph-note">Les pictogrammes réels sont à reprendre depuis la maquette (les libellés ci-dessus sont des repères).</p>
+    </div>
+  </section>
+
+  <!-- 5. COMPOSANTS -->
+  <section class="block">
+    <span class="tag-badge">05</span>
+    <h2>Composants</h2>
+    <div class="grid">
+      <div class="panel">
+        <span class="label">Boutons</span>
+        <div class="btn-row">
+          <a href="#" class="btn btn--primary">Commencer →</a>
+          <a href="#" class="btn btn--outline">Voir le profil</a>
+        </div>
+      </div>
+      <div class="panel">
+        <span class="label">Filtres</span>
+        <div class="chips" style="margin-top:12px">
+          <span class="chip chip--on">Rayon 10 km</span>
+          <span class="chip">Tous les sports</span>
+          <span class="chip">Tous niveaux</span>
+        </div>
+      </div>
+      <div class="panel">
+        <span class="label">Carte de profil</span>
+        <div class="profile" style="margin-top:12px;box-shadow:none">
+          <div class="img-ph img-ph--avatar"><span>[Photo]</span></div>
+          <div class="profile__info"><strong>Arthur</strong><div class="profile__meta"><span class="tag">Natation</span>Expert</div></div>
+          <div class="profile__distance">0,3<span>km</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <span class="label">Disponibilités</span>
+        <div class="chips" style="margin-top:12px">
+          <span class="chip chip--on">L</span><span class="chip">M</span><span class="chip">M</span><span class="chip chip--on">J</span>
+        </div>
+      </div>
+    </div>
+    <p class="ph-note">Rayons : 14 px pour les boutons, 20 px pour les cartes, 999 px pour les puces. Cibles tactiles de 44 px minimum.</p>
+  </section>
+
+  <!-- 6. ILLUSTRATIONS -->
+  <section class="block">
+    <span class="tag-badge">06</span>
+    <h2>Illustrations et avatars</h2>
+    <div class="grid">
+      <div class="img-ph" style="aspect-ratio:16/6;border-radius:18px"><strong>[IMAGE : deux coureurs dans un parc, carte et pin vert]</strong></div>
+      <div class="panel" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <div class="img-ph img-ph--avatar"><span>[Photo]</span></div>
+        <div class="img-ph img-ph--avatar"><span>[Photo]</span></div>
+        <div class="img-ph img-ph--avatar"><span>[Photo]</span></div>
+      </div>
+    </div>
+    <p class="ph-note">Style illustré, trait doux, sportifs souriants en tenue noire et verte, décor de parc urbain en aplats de vert. Avatars en buste sur rond vert tendre.</p>
+  </section>
+
+  <!-- 7. DIRECTION ARTISTIQUE -->
+  <section class="block">
+    <span class="tag-badge">07</span>
+    <h2>Direction artistique</h2>
+    <div class="grid">
+      <div class="panel">
+        <span class="label">Mots-clés</span>
+        <div class="chips" style="margin-top:12px">
+          <span class="chip chip--on">Énergique</span>
+          <span class="chip chip--soft">Bienveillant</span>
+          <span class="chip" style="background:#121512;color:#FFFFFF;border-color:#121512">Direct</span>
+          <span class="chip" style="color:var(--primary);border-color:var(--primary)">Local</span>
+          <span class="chip" style="background:#3CC14B;color:#121512;border-color:#3CC14B">Motivant</span>
+          <span class="chip chip--soft">Mobile-first</span>
+        </div>
+      </div>
+      <div class="panel">
+        <p><strong>Ton :</strong> tutoiement, phrases courtes, verbes d’action (« Trouve », « Écris », « Lance-toi »).</p>
+        <p style="margin-top:10px"><strong>Espace :</strong> fonds clairs, cartes blanches, beaucoup d’air entre les blocs.</p>
+        <p style="margin-top:10px"><strong>Hiérarchie :</strong> un seul bouton vert plein par écran, la distance toujours mise en avant.</p>
+      </div>
+    </div>
+    <p class="script" style="font-size:26px;margin-top:20px">Le sport, c’est mieux à deux.</p>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <span>BINOFIT · le sport, c’est mieux à deux.</span>
+    <div class="site-footer__links">
+      <a href="#">Dépôt GitHub</a>
+      <a href="#">Application</a>
+    </div>
+  </div>
+</footer>
+
+  <script src="nav.js"></script>
+</body>
+</html>

@@ -6,6 +6,7 @@ import { ApiError } from './apiError'
 import {
   DAYS_OF_WEEK,
   LEVELS,
+  SEXES,
   SPORTS,
   type AvailabilitySlot,
   type GeoPoint,
@@ -15,6 +16,10 @@ import {
 } from '../types'
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/
+const BIRTH_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const MAX_AGE_YEARS = 120
+/** Photo de profil envoyée en data URL (≈ 256 px en JPEG) : limite pour rester sous la taille d'un document Firestore. */
+const MAX_AVATAR_LENGTH = 400_000
 
 function isGeoPoint(value: unknown): value is GeoPoint {
   return (
@@ -47,6 +52,18 @@ function isAvailabilitySlot(value: unknown): value is AvailabilitySlot {
   )
 }
 
+
+/** Valide une date de naissance YYYY-MM-DD : date réelle, pas dans le futur, âge plausible. */
+function isBirthDate(value: unknown): value is string {
+  if (typeof value !== 'string' || !BIRTH_DATE_PATTERN.test(value)) return false
+  const date = new Date(`${value}T00:00:00Z`)
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) return false
+  const now = new Date()
+  if (date.getTime() > now.getTime()) return false
+  const ageYears = (now.getTime() - date.getTime()) / (365.25 * 24 * 3600 * 1000)
+  return ageYears <= MAX_AGE_YEARS
+}
+
 /** Valide le corps de PUT /users/{id} et ne retourne que les champs modifiables reconnus. */
 export function validateUserUpdate(body: unknown): UserUpdate {
   if (typeof body !== 'object' || body === null) {
@@ -73,6 +90,9 @@ export function validateUserUpdate(body: unknown): UserUpdate {
     if (input.avatarUrl !== null && typeof input.avatarUrl !== 'string') {
       throw new ApiError(400, 'invalid_body', 'avatarUrl doit être une chaîne ou null')
     }
+    if (typeof input.avatarUrl === 'string' && input.avatarUrl.length > MAX_AVATAR_LENGTH) {
+      throw new ApiError(400, 'invalid_body', 'avatarUrl est trop volumineux (photo à réduire)')
+    }
     update.avatarUrl = input.avatarUrl as string | null
   }
 
@@ -81,6 +101,20 @@ export function validateUserUpdate(body: unknown): UserUpdate {
       throw new ApiError(400, 'invalid_body', 'bio doit être une chaîne ou null')
     }
     update.bio = input.bio as string | null
+  }
+
+  if ('sexe' in input) {
+    if (input.sexe !== null && !SEXES.includes(input.sexe as (typeof SEXES)[number])) {
+      throw new ApiError(400, 'invalid_body', `sexe doit valoir ${SEXES.join(', ')} ou null`)
+    }
+    update.sexe = input.sexe as UserUpdate['sexe']
+  }
+
+  if ('birthDate' in input) {
+    if (input.birthDate !== null && !isBirthDate(input.birthDate)) {
+      throw new ApiError(400, 'invalid_body', 'birthDate doit être une date YYYY-MM-DD valide, passée, ou null')
+    }
+    update.birthDate = input.birthDate as string | null
   }
 
   if ('location' in input) {
@@ -131,5 +165,7 @@ export function validateUserCreate(body: unknown): UserCreate {
     availability: update.availability ?? [],
     bio: update.bio ?? null,
     avatarUrl: update.avatarUrl ?? null,
+    sexe: update.sexe ?? null,
+    birthDate: update.birthDate ?? null,
   }
 }
