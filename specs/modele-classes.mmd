@@ -1,0 +1,82 @@
+classDiagram
+  direction TB
+
+  class Utilisateur {
+    +String id
+    +String email
+    +String prenom
+    +String nom
+    +String bio
+    +String avatarUrl
+    +String ville
+    +Double lat
+    +Double lng
+    +String sexe
+    +Date birthDate
+    +DateTime createdAt
+    +DateTime updatedAt
+  }
+
+  class SportPratique {
+    +String sport
+    +String niveau
+  }
+
+  class Disponibilite {
+    +Integer id
+    +String jourSemaine
+    +String heureDebut
+    +String heureFin
+  }
+
+  class Activite {
+    +String id
+    +String sport
+    +DateTime startAt
+    +String lieuNom
+    +Double lieuLat
+    +Double lieuLng
+    +String message
+    +StatutActivite statut
+    +String mediaUrl
+    +String mediaType
+    +DateTime createdAt
+  }
+
+  class StatutActivite {
+    <<enumeration>>
+    EN_ATTENTE
+    ACCEPTEE
+    REFUSEE
+    TERMINEE
+  }
+
+  class Conversation {
+    +String id
+    +DateTime createdAt
+    +DateTime updatedAt
+  }
+
+  class Message {
+    +String id
+    +String texte
+    +DateTime sentAt
+  }
+
+  class Favori {
+    +String id
+    +String targetType
+    +String targetId
+    +DateTime createdAt
+  }
+
+  Utilisateur "1" --> "0..*" SportPratique : pratique
+  Utilisateur "1" --> "0..*" Disponibilite : publie
+  Utilisateur "1" --> "0..*" Activite : propose
+  Utilisateur "1" --> "0..*" Activite : invite
+  Utilisateur "1" --> "0..*" Favori : garde
+  Utilisateur "1" --> "0..*" Message : envoie
+  Utilisateur "*" -- "*" Conversation : participe
+  Activite "1" --> "0..1" Conversation : discute
+  Conversation "1" --> "0..*" Message : contient
+  Activite --> StatutActivite

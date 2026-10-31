@@ -39,10 +39,10 @@
     <span class="eyebrow">Application</span>
     <h1>Ce qui est en ligne</h1>
     <div class="grid grid--4" style="margin-top:12px">
-      <div class="panel"><span class="label">Front</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">[Framework]</strong><span class="muted" style="font-size:14px">Application mobile-first, testée à 320 px.</span></div>
-      <div class="panel"><span class="label">Données</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">[Base de données]</strong><span class="muted" style="font-size:14px">Comptes, profils sportifs, messages et géolocalisation.</span></div>
-      <div class="panel"><span class="label">Hébergement</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">[Hébergeur]</strong><span class="muted" style="font-size:14px">Déploiement automatique à chaque push.</span></div>
-      <div class="panel"><span class="label">Tests</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">[Nombre] tests e2e</strong><span class="muted" style="font-size:14px">Un test par user story clé du scénario minimal.</span></div>
+      <div class="panel"><span class="label">Front</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Vue 3</strong><span class="muted" style="font-size:14px">Application mobile-first, testée à 320 px.</span></div>
+      <div class="panel"><span class="label">Données</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Supabase</strong><span class="muted" style="font-size:14px">Comptes, profils sportifs, messages et géolocalisation.</span></div>
+      <div class="panel"><span class="label">Hébergement</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Vercel</strong><span class="muted" style="font-size:14px">Déploiement automatique à chaque push.</span></div>
+      <div class="panel"><span class="label">Tests</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">15 tests e2e</strong><span class="muted" style="font-size:14px">Un test par user story clé du scénario minimal.</span></div>
     </div>
     <div class="btn-row">
       <a href="#" class="btn btn--primary">Ouvrir l’application</a>
@@ -72,43 +72,9 @@
   <section class="block">
     <span class="tag-badge">UML</span>
     <h2>Modèle de données</h2>
-    <div class="legend">
-      <span><i style="border:2px solid var(--primary)"></i>Scénario minimal</span>
-      <span><i style="border:2px dashed var(--muted)"></i>Scénario cible</span>
-      <span><i style="border:2px solid var(--ink);background:var(--panel)"></i>Énumération</span>
-    </div>
-    <div class="panel">
-      <div class="class-grid">
-        <div class="class class--min"><div class="class__head"><strong>Utilisateur</strong></div><ul><li>+UUID id</li><li>+String prenom</li><li>+String nom</li><li>+String email</li><li>+String bio</li><li>+String photoUrl</li><li>+Double latitude</li><li>+Double longitude</li><li>+String zone</li><li>+Integer rayonKm</li><li>+Integer completion</li><li>+Boolean visible</li><li>+DateTime createdAt</li></ul></div>
-        <div class="class class--min"><div class="class__head"><strong>Sport</strong></div><ul><li>+UUID id</li><li>+String nom</li><li>+String icone</li></ul></div>
-        <div class="class class--min"><div class="class__head"><strong>UtilisateurSport</strong></div><ul><li>+UUID id</li><li>+UUID utilisateurId</li><li>+UUID sportId</li><li>+Niveau niveau</li></ul></div>
-        <div class="class class--min"><div class="class__head"><strong>Disponibilite</strong></div><ul><li>+UUID id</li><li>+UUID utilisateurId</li><li>+JourSemaine jour</li><li>+Moment moment</li></ul></div>
-        <div class="class class--min"><div class="class__head"><strong>Conversation</strong></div><ul><li>+UUID id</li><li>+UUID utilisateurAId</li><li>+UUID utilisateurBId</li><li>+DateTime createdAt</li></ul></div>
-        <div class="class class--min"><div class="class__head"><strong>Message</strong></div><ul><li>+UUID id</li><li>+UUID conversationId</li><li>+UUID auteurId</li><li>+String texte</li><li>+DateTime envoyeLe</li><li>+Boolean lu</li></ul></div>
-        <div class="class class--cible"><div class="class__head"><strong>DemandeBinome</strong></div><ul><li>+UUID id</li><li>+UUID demandeurId</li><li>+UUID destinataireId</li><li>+UUID sportId</li><li>+String message</li><li>+StatutDemande statut</li></ul></div>
-        <div class="class class--cible"><div class="class__head"><strong>Seance</strong></div><ul><li>+UUID id</li><li>+UUID demandeId</li><li>+UUID sportId</li><li>+DateTime debut</li><li>+String lieu</li><li>+StatutSeance statut</li></ul></div>
-        <div class="class class--cible"><div class="class__head"><strong>Avis</strong></div><ul><li>+UUID id</li><li>+UUID seanceId</li><li>+UUID auteurId</li><li>+UUID cibleId</li><li>+Integer note</li><li>+String commentaire</li></ul></div>
-        <div class="class class--cible"><div class="class__head"><strong>Favori</strong></div><ul><li>+UUID id</li><li>+UUID utilisateurId</li><li>+UUID favoriId</li></ul></div>
-        <div class="class class--enum"><div class="class__head"><small>«enumeration»</small><strong>Niveau</strong></div><ul><li>DEBUTANT</li><li>INTERMEDIAIRE</li><li>AVANCE</li><li>EXPERT</li></ul></div>
-        <div class="class class--enum"><div class="class__head"><small>«enumeration»</small><strong>JourSemaine</strong></div><ul><li>LUNDI … DIMANCHE</li></ul></div>
-        <div class="class class--enum"><div class="class__head"><small>«enumeration»</small><strong>Moment</strong></div><ul><li>MATIN</li><li>APRES_MIDI</li><li>SOIR</li></ul></div>
-        <div class="class class--enum"><div class="class__head"><small>«enumeration»</small><strong>StatutDemande</strong></div><ul><li>ENVOYEE</li><li>ACCEPTEE</li><li>REFUSEE</li><li>ANNULEE</li></ul></div>
-        <div class="class class--enum"><div class="class__head"><small>«enumeration»</small><strong>StatutSeance</strong></div><ul><li>PLANIFIEE</li><li>TERMINEE</li><li>ANNULEE</li></ul></div>
-      </div>
-      <h3 style="margin:28px 0 12px;font-family:var(--font-title);font-size:18px">Associations</h3>
-      <div class="relations">
-        <div class="relation"><strong>Utilisateur</strong><span class="mono">1</span><span class="muted">— pratique →</span><span class="mono">0..*</span><strong>UtilisateurSport</strong></div>
-        <div class="relation"><strong>Sport</strong><span class="mono">1</span><span class="muted">— concerne →</span><span class="mono">0..*</span><strong>UtilisateurSport</strong></div>
-        <div class="relation"><strong>Utilisateur</strong><span class="mono">1</span><span class="muted">— déclare →</span><span class="mono">0..*</span><strong>Disponibilite</strong></div>
-        <div class="relation"><strong>Utilisateur</strong><span class="mono">2</span><span class="muted">— participe à →</span><span class="mono">0..*</span><strong>Conversation</strong></div>
-        <div class="relation"><strong>Conversation</strong><span class="mono">1</span><span class="muted">— contient →</span><span class="mono">0..*</span><strong>Message</strong></div>
-        <div class="relation"><strong>Utilisateur</strong><span class="mono">1</span><span class="muted">— envoie / reçoit →</span><span class="mono">0..*</span><strong>DemandeBinome</strong></div>
-        <div class="relation"><strong>DemandeBinome</strong><span class="mono">1</span><span class="muted">— génère →</span><span class="mono">0..1</span><strong>Seance</strong></div>
-        <div class="relation"><strong>Seance</strong><span class="mono">1</span><span class="muted">— évaluée par →</span><span class="mono">0..2</span><strong>Avis</strong></div>
-        <div class="relation"><strong>Utilisateur</strong><span class="mono">1</span><span class="muted">— garde →</span><span class="mono">0..*</span><strong>Favori</strong></div>
-      </div>
-      <p class="ph-note" style="margin-top:16px">Scénario minimal : utilisateurs géolocalisés, sports et niveaux, disponibilités, conversations et messages. Scénario cible : demandes de binôme, séances, avis, favoris et signalements.</p>
-    </div>
+    <figure class="panel" style="margin:0;padding:16px">
+      <img src="assets/modele-donnees.png" alt="Modèle de données BINOFIT : Utilisateur, SportPratique, Disponibilite, Favori, Activite, StatutActivite, Conversation et Message, avec leurs relations" style="display:block;width:100%;height:auto;border-radius:16px">
+    </figure>
   </section>
 
   <!-- API -->
@@ -144,7 +110,7 @@
       </table>
     </div>
     <div class="btn-row">
-      <a href="#" class="btn btn--primary">Télécharger le YAML</a>
+      <a href="assets/openapi.yaml" download target="_blank" rel="noopener" class="btn btn--primary">Télécharger le YAML</a>
     </div>
   </section>
 
@@ -156,6 +122,7 @@
     <div class="site-footer__links">
       <a href="#">Dépôt GitHub</a>
       <a href="#">Application</a>
+      <a href="assets/openapi.yaml" download target="_blank" rel="noopener" class="btn btn--outline">Télécharger le YAML</a>
     </div>
   </div>
 </footer>
