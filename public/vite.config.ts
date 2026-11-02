@@ -1,4 +1,3 @@
-import fs from 'node:fs'
 import path from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
@@ -13,12 +12,8 @@ const appRoutesToAppHtml = (): Plugin => ({
     server.middlewares.use((req, _res, next) => {
       const url = req.url?.split('?')[0] ?? ''
       if (url === '/') req.url = '/index.html'
-      // Dossiers statiques servis tels quels (ex. /v2/ : site vitrine v2).
-      const isStaticDir = fs.existsSync(path.join(__dirname, 'public', url, 'index.html'))
-      if (isStaticDir && url !== '/') req.url = `${url.replace(/\/$/, '')}/index.html`
       const isAppRoute =
         url !== '/' &&
-        !isStaticDir &&
         !url.includes('.') &&
         !url.startsWith('/@') &&
         !url.startsWith('/src/') &&
