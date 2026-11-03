@@ -16,7 +16,7 @@ données : [`specs/data-model.md`](../specs/data-model.md), diagrammes
 6. [Déployer](#déployer)
 7. [Variables d'environnement](#variables-denvironnement)
 8. [Workflow git](#workflow-git)
-9. [Limites Cloudflare](#limites-cloudflare)
+9. [Limites connues](#limites-connues)
 10. [Reste à faire](#reste-à-faire)
 
 ## Adresses
@@ -53,6 +53,14 @@ données : [`specs/data-model.md`](../specs/data-model.md), diagrammes
 
 Le front ne parle jamais directement à la base : toutes les données passent par l'API.
 
+### Rôle de Firebase
+
+Firebase ne sert qu'à l'authentification : envoi du lien magique par e-mail
+(`public/src/composables/useAuth.ts`) et jeton d'identité, vérifié par le Worker
+(`workers/src/middleware/auth.ts`). Aucune donnée métier n'est stockée chez Firebase :
+profils, activités, conversations, messages et favoris sont dans Supabase Postgres.
+`users.id` reprend l'uid Firebase.
+
 ## Structure des dossiers
 
 | Dossier / fichier                  | Contenu                                                         |
@@ -60,7 +68,7 @@ Le front ne parle jamais directement à la base : toutes les données passent pa
 | `public/`                          | Front Vue 3 (PWA mobile-first)                                  |
 | `workers/`                         | API Cloudflare Workers (voir `workers/README.md`)               |
 | `specs/`                           | `openapi.json` (contrat de l'API), `schema.sql`, `data-model.md` |
-| `docs/`                            | Documentation technique (diagramme du modèle de données)        |
+| `docs/`                            | Documentation technique (ce guide, diagrammes)                  |
 | `BINOFIT v4 Wireframes.dc.html`    | Maquettes                                                       |
 | `tests/`, `design/`                | N'existent pas encore dans le dépôt (tests Playwright prévus)   |
 | `agents.md`                        | Stack, structure et conventions du projet                       |
@@ -71,7 +79,8 @@ Le front ne parle jamais directement à la base : toutes les données passent pa
 ## Fonctionnalités
 
 Écrans présents dans `public/src/views`, avec leur route (`public/src/router/index.ts`).
-La barre du bas (`BottomNav.vue`) contient quatre onglets : Découvrir, Carte, Messages, Profil.
+La barre du bas (`BottomNav.vue`) contient quatre onglets : Accueil (`/decouvrir`), Carte,
+Messages, Profil. L'onglet Messages affiche un badge avec le nombre de conversations non lues.
 Les routes marquées « connecté » redirigent vers `/connexion` sans session Firebase ;
 `/inscription` et `/connexion` redirigent vers `/decouvrir` si l'utilisateur est déjà connecté.
 
@@ -81,17 +90,30 @@ Les routes marquées « connecté » redirigent vers `/connexion` sans session F
 | `/connexion`           | `LoginView.vue`            | visiteur  | Saisie de l'e-mail et envoi d'un lien magique de connexion, sans mot de passe. |
 | `/finish-signin`       | `FinishSignInView.vue`     | tous      | Finalise la connexion à l'ouverture du lien (redemande l'e-mail s'il n'est pas retrouvé), puis redirige vers `/decouvrir`. |
 | `/decouvrir`           | `DiscoverView.vue`         | connecté  | Liste les sportifs à moins de 10 km de la localisation du profil (Lyon par défaut), via `GET /users`. |
-| `/recherche`           | `SearchView.vue`           | connecté  | Recherche de sportifs filtrée par distance, sport, niveau et jour de disponibilité. |
-| `/carte`               | `MapView.vue`              | connecté  | Carte Leaflet (tuiles OpenStreetMap) avec un rayon de 10 km et un repère par sportif, cliquable. |
-| `/messages`            | `ConversationsView.vue`    | connecté  | Liste des conversations, les plus récentes d'abord. |
+| `/recherche`           | `SearchView.vue`           | connecté  | Recherche de sportifs filtrée par distance, sport, niveau et jour de disponibilité (côté API), puis par sexe et tranche d'âge (côté front ; un profil sans ces informations est alors exclu). |
+| `/carte`               | `MapView.vue`              | connecté  | Carte Leaflet (tuiles OpenStreetMap) avec un repère cliquable par sportif ; filtres rayon (2, 5, 10 ou 20 km, 10 par défaut), sport et niveau ; bouton « Me localiser » qui recentre sur la zone du profil. |
+| `/messages`            | `ConversationsView.vue`    | connecté  | Liste des conversations, les plus récentes d'abord, avec les non-lus. |
 | `/messages/:id`        | `ChatView.vue`             | connecté  | Messages d'une conversation (100 derniers) et envoi d'un nouveau message. |
-| `/profil`              | `ProfileView.vue`          | connecté  | Édition du profil (nom, bio, zone, sports et niveaux, disponibilités) via `PUT /users/{id}`, lien vers « Mes activités » et déconnexion. |
+| `/profil`              | `ProfileView.vue`          | connecté  | Édition du profil (photo, nom, bio, sexe, date de naissance, zone, sports et niveaux, disponibilités) via `PUT /users/{id}`, lien vers « Mes activités » et déconnexion. |
 | `/activites`           | `ActivitiesView.vue`       | connecté  | Activités à venir et passées ; l'invité peut accepter ou refuser, le créateur ou l'invité peut terminer une activité acceptée. |
 | `/activites/nouvelle`  | `ActivityCreateView.vue`   | connecté  | Formulaire pour proposer une activité (sport, date, lieu, message) à un sportif, via `POST /activities`. |
 | `/athletes/:id`        | `AthleteView.vue`          | connecté  | Profil public d'un sportif (bio, sports, disponibilités) avec boutons pour ouvrir une conversation ou proposer une activité. |
 
-Autres routes : `/` et toute route inconnue redirigent vers `/connexion` ; `/accueil`
-(ancienne page d'accueil) redirige vers `/decouvrir`.
+Autres routes : `/` et toute route inconnue redirigent vers `/inscription` (donc vers
+`/decouvrir` si l'utilisateur est connecté) ; `/accueil` (ancienne page d'accueil)
+redirige vers `/decouvrir`.
+
+Messages non lus (`public/src/composables/useUnread.ts`) : une fois connecté, le front
+recharge la liste des conversations toutes les 15 secondes (et au retour sur l'onglet du
+navigateur). Une conversation est non lue si son dernier message vient de l'autre personne
+et est plus récent que la dernière ouverture locale ; ce suivi est gardé dans le
+`localStorage` de l'appareil, sans colonne en base. Si l'utilisateur l'a autorisé, une
+notification du navigateur signale les nouveaux messages quand l'onglet est en arrière-plan.
+
+Le brouillon saisi à l'inscription (prénom, nom, sport, localisation) reste dans le
+`localStorage` (`public/src/services/profileStore.ts`) et sert seulement à préremplir le
+prénom et le nom de l'écran Profil ; le profil est créé dans Supabase au premier
+enregistrement de cet écran.
 
 La localisation du profil se choisit parmi six zones prédéfinies autour de Lyon
 (`public/src/services/location.ts`), sans géocodage ni API externe. Les fonctions
@@ -141,7 +163,17 @@ Pour utiliser l'API locale, `VITE_API_BASE_URL` pointe vers `http://localhost:87
 
 ## Déployer
 
+| Partie | Comment                                                                       |
+| ------ | ----------------------------------------------------------------------------- |
+| Front  | Automatique : un push sur `main` du fork relié à Vercel relance le build      |
+| API    | Manuel : `cd workers && npm run deploy` (`wrangler deploy`)                   |
+| Base   | Manuel : SQL collé dans Supabase (SQL Editor), migration avant le déploiement de l'API |
+
 ### API (Cloudflare Workers)
+
+Appliquer la migration dans Supabase avant de déployer le Worker : sur une base créée
+avant l'ajout de `sexe` et `birth_date`, exécuter
+`specs/migrations/2026-11-01-sexe-birth-date.sql` dans **SQL Editor** (idempotent).
 
 ```bash
 cd workers
@@ -157,7 +189,8 @@ Toute nouvelle origine du front doit être ajoutée à `ALLOWED_ORIGINS` dans
 
 Configuration du projet Vercel :
 
-- le front est construit par Vercel depuis le fork GitHub `SiamakSm/BinoFit`, branche `main` ;
+- le front est construit par Vercel depuis le fork GitHub `SiamakSm/binofit`, branche `main` :
+  chaque push sur cette branche déclenche un nouveau déploiement ;
 - **Root Directory** : `public` ;
 - **Framework Preset** : Vite (build `npm run build`, soit `vue-tsc -b && vite build`,
   qui produit `dist/`) ;
@@ -186,9 +219,12 @@ toujours présents.
 
 ### Base de données (Supabase)
 
-Le schéma de référence est `specs/schema.sql`.
+Le schéma de référence est `specs/schema.sql`. Rien n'est appliqué automatiquement : le
+SQL est exécuté à la main dans Supabase. Sur une base existante, appliquer d'abord les
+fichiers de `specs/migrations/` (aujourd'hui `2026-11-01-sexe-birth-date.sql`), puis
+déployer l'API.
 
-1. Dans le tableau de bord Supabase, ouvrir **SQL Editor**, coller le contenu de
+1. Sur une base vide, dans le tableau de bord Supabase, ouvrir **SQL Editor**, coller le contenu de
    `specs/schema.sql` et cliquer **Run**.
 2. Remplir la base avec les données de test, depuis `workers/` :
 
@@ -245,28 +281,30 @@ Noms seulement : aucune valeur ne doit figurer dans le dépôt.
 - `specs/openapi.json` est la source de vérité du contrat ; après chaque modification,
   régénérer `specs/openapi.yml` (`cd workers && node scripts/openapi-to-yaml.mjs`).
 
-## Limites Cloudflare
+## Limites connues
+
+### Firebase Authentication : 5 e-mails de connexion par jour
+
+Le projet Firebase est sur l'offre gratuite, qui n'envoie que 5 e-mails de lien magique
+par jour pour tout le projet (inscriptions et connexions confondues, tous utilisateurs).
+Au-delà, Firebase refuse l'envoi avec l'erreur `QUOTA_EXCEEDED` jusqu'au lendemain. Pour
+les tests, réutiliser une session déjà ouverte ou un jeton de test
+(`workers/scripts/get-test-token.mjs`, voir `workers/README.md`).
+
+### Cloudflare Workers : 100 000 requêtes par jour
 
 Le Worker est sur l'offre gratuite de Cloudflare Workers, limitée à 100 000 requêtes par
-jour. Pour rester sous cette limite, le front doit interroger l'API par un polling
-raisonnable :
-
-| Écran                                   | Fréquence             |
-| --------------------------------------- | --------------------- |
-| Conversation ouverte (`/messages/:id`)  | toutes les 3 secondes |
-| Listes (activités, conversations)       | toutes les 10 secondes |
-
-Le polling ne tourne que lorsque l'onglet du navigateur est visible.
-
-> Ce polling est prévu mais pas encore implémenté dans `public/` (travail de DEV1) :
-> aujourd'hui, les écrans chargent leurs données uniquement à l'ouverture.
+jour. Le seul rafraîchissement périodique du front est celui des messages non lus
+(`GET /conversations` toutes les 15 secondes par utilisateur connecté) ; les autres écrans
+chargent leurs données uniquement à l'ouverture.
 
 ## Reste à faire
 
 - **Onglet Activités** : « Mes activités » n'est accessible que depuis l'écran Profil, pas
   depuis la barre du bas.
-- **Actualisation automatique** : les écrans chargent leurs données à l'ouverture
-  uniquement (pas de rafraîchissement périodique ni de temps réel, y compris dans le chat).
+- **Actualisation automatique** : hormis le compteur de non-lus, les écrans chargent leurs
+  données à l'ouverture uniquement ; une conversation ouverte n'affiche pas les nouveaux
+  messages sans être rechargée.
 - **Profil obligatoire côté écrans** : l'API renvoie `403 profile_required` sans profil,
   mais le front ne redirige pas encore vers l'écran Profil.
 - **Tests automatiques** : aucun test dans le dépôt (tests Playwright prévus).

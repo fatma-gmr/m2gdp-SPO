@@ -26,7 +26,7 @@
  * Usage (depuis workers/, la clé est lue dans .dev.vars sans être affichée) :
  *   SUPABASE_URL=https://<ref>.supabase.co node --env-file=.dev.vars scripts/seed.mjs
  */
-// Client PostgREST seul (celui qu'embarque supabase-js) : pas de client Realtime, donc
+// Client PostgREST seul (celui qu'embarque supabase-js) : sans le client temps réel de Supabase, donc
 // pas besoin de WebSocket natif (absent avant Node 22).
 import { PostgrestClient } from '@supabase/postgrest-js'
 

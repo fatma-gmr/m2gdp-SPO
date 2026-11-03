@@ -672,6 +672,17 @@ components:
         bio:
           type: string
           nullable: true
+        sexe:
+          type: string
+          enum:
+            - femme
+            - homme
+            - autre
+          nullable: true
+        birthDate:
+          type: string
+          format: date
+          nullable: true
         location:
           "$ref": "#/components/schemas/GeoPoint"
         sports:
@@ -713,6 +724,17 @@ components:
           nullable: true
         bio:
           type: string
+          nullable: true
+        sexe:
+          type: string
+          enum:
+            - femme
+            - homme
+            - autre
+          nullable: true
+        birthDate:
+          type: string
+          format: date
           nullable: true
         location:
           "$ref": "#/components/schemas/GeoPoint"

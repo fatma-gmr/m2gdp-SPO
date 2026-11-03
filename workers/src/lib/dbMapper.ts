@@ -81,7 +81,7 @@ export interface FavoriteRow {
 // --- Colonnes sélectionnées (avec les tables liées embarquées) ----------------
 
 export const USER_SELECT =
-  'id, email, first_name, last_name, bio, avatar_url, city, lat, lng, created_at, updated_at, ' +
+  'id, email, first_name, last_name, bio, avatar_url, city, lat, lng, sexe, birth_date, created_at, updated_at, ' +
   'user_sports(sport, level), user_availability(id, day_of_week, start_time, end_time)'
 
 /** `conversations(id)` : conversationId est déduit de conversations.activity_id. */

@@ -69,9 +69,9 @@ Profil d'un sportif inscrit.
 | `first_name`  | text, non nul              | `firstName`           | Prénom                                                   |
 | `last_name`   | text, non nul              | `lastName`            | Nom de famille                                           |
 | `bio`         | text, nullable             | `bio`                 | Courte description libre                                 |
-| `sexe`        | text, nullable, `femme`/`homme`/`autre` | `sexe`       | Sexe déclaré, utilisé comme filtre de recherche          |
+| `sexe`        | text, nullable, `check` `femme`/`homme`/`autre` | `sexe` | Sexe déclaré (`femme`, `homme`, `autre` ou `null`)       |
 | `birth_date`  | date, nullable             | `birthDate`           | Date de naissance (`YYYY-MM-DD`) ; l'âge se calcule à partir d'elle |
-| `avatar_url`  | text, nullable             | `avatarUrl`           | URL de la photo de profil                                |
+| `avatar_url`  | text, nullable             | `avatarUrl`           | Photo de profil : URL, ou data URL JPEG envoyée par l'écran Profil (400 000 caractères max, vérifié par le Worker) |
 | `city`        | text, nullable             | `location.city`       | Ville affichée (libellé), omise si `null`                |
 | `lat`         | double precision, non nul  | `location.lat`        | Latitude                                                 |
 | `lng`         | double precision, non nul  | `location.lng`        | Longitude                                                |
@@ -181,7 +181,10 @@ en 1-à-1 (2 participants). Seuls les participants peuvent lire une conversation
 | `text`             | text, non nul                                           | `text`            | Contenu du message            |
 | `sent_at`          | timestamptz, défaut `now()`                             | `sentAt`          | Horodatage d'envoi (ISO 8601) |
 
-Pas de suivi de lecture : il n'existe aucune colonne de type « lu par ».
+Pas de suivi de lecture en base : il n'existe aucune colonne de type « lu par ». Les
+messages non lus sont calculés par le front, à partir de la date de dernière ouverture de
+chaque conversation gardée dans le `localStorage` de l'appareil
+(`public/src/composables/useUnread.ts`).
 
 ---
 

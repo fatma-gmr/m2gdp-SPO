@@ -48,7 +48,7 @@ Avec jeton Firebase :
 | ------- | ------------------------------ | -------------------------------------------------------------------------------------- |
 | GET     | `/users`                       | Recherche de profils (`lat`, `lng`, `maxKm`, `sport`, `level`, `availability`), avec `distanceKm` |
 | GET     | `/users/{id}`                  | Profil d'un utilisateur                                                                |
-| PUT     | `/users/{id}`                  | Crée (201) ou met à jour (200) son propre profil                                       |
+| PUT     | `/users/{id}`                  | Crée (201) ou met à jour (200) son propre profil (dont `sexe` et `birthDate`)          |
 | POST    | `/activities`                  | Propose une activité à un autre utilisateur (statut `en_attente`)                      |
 | GET     | `/activities`                  | Ses activités (créateur ou invité)                                                     |
 | PATCH   | `/activities/{id}/status`      | Accepter, refuser ou terminer une activité                                             |
@@ -67,6 +67,9 @@ sinon `403 profile_required` (`src/middleware/profile.ts`).
 Erreurs : `{ "error": "<message>", "code": "<code>" }` (ex. `missing_token`, `invalid_token`,
 `token_expired`, `forbidden`, `profile_required`, `not_found`, `database_error`).
 Toute route inconnue renvoie `404 not_found`.
+
+`PUT /users/{id}` accepte `sexe` (`femme`, `homme`, `autre` ou `null`) et `birthDate`
+(`YYYY-MM-DD` ou `null`), validés dans `src/lib/userMapper.ts`.
 
 ## Lancer en local
 
@@ -120,6 +123,10 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8787/users/user-001
 Le jeton peut aussi être collé dans « Authorize » sur `/docs`.
 
 ## Déployer
+
+Appliquer la migration dans Supabase avant de déployer le Worker : coller
+`specs/migrations/2026-11-01-sexe-birth-date.sql` dans **SQL Editor** (colonnes `sexe` et
+`birth_date` lues par `USER_SELECT`, sinon `GET /users` échoue).
 
 ```bash
 npx wrangler secret put SUPABASE_SECRET_KEY   # une fois

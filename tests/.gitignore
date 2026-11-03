@@ -1,0 +1,8 @@
+# Le .gitignore racine ignore *.json : on garde ceux des tests.
+!package.json
+!package-lock.json
+
+# Jetons générés et résultats des tests
+.auth/
+test-results/
+playwright-report/

@@ -16,6 +16,8 @@ classDiagram
         +text first_name
         +text last_name
         +text bio
+        +text sexe
+        +date birth_date
         +text avatar_url
         +text city
         +double_precision lat

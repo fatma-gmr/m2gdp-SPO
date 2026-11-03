@@ -11,7 +11,7 @@ import { centerOf } from '../services/location'
 import { fetchUser } from '../services/users'
 import type { DayOfWeek, Level, Sexe, Sport, User, UserSearchResult } from '../types/api'
 
-const RADIUS_OPTIONS = [1, 3, 5, 10]
+const RADIUS_OPTIONS = [1, 5, 10, 20]
 const SPORTS = Object.keys(SPORT_LABELS) as Sport[]
 const LEVELS = Object.keys(LEVEL_LABELS) as Level[]
 const SEXES = Object.keys(SEXE_LABELS) as Sexe[]

@@ -18,7 +18,7 @@ import {
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/
 const BIRTH_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const MAX_AGE_YEARS = 120
-/** Photo de profil envoyée en data URL (≈ 256 px en JPEG) : limite pour rester sous la taille d'un document Firestore. */
+/** Photo de profil envoyée en data URL (≈ 256 px en JPEG), stockée dans users.avatar_url : limite de taille du corps accepté. */
 const MAX_AVATAR_LENGTH = 400_000
 
 function isGeoPoint(value: unknown): value is GeoPoint {

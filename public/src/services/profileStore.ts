@@ -4,10 +4,10 @@ import type { BinofitProfile } from '../types/profile'
   * Persistance du profil BINOFIT (prénom, nom, sport, localisation) en localStorage,
   * indexée par e-mail normalisé.
   *
-  * Limite connue (POC) : Firebase Auth ne stocke pas ces champs, donc si le lien
-  * magique est ouvert sur un autre appareil/navigateur que celui de l'inscription,
-  * ce profil ne sera pas retrouvé automatiquement. En production, on remplacerait
-  * ce store par une collection Firestore indexée par uid.
+  * Ce brouillon, saisi à l'inscription, sert seulement à préremplir le prénom et le nom
+  * de l'écran Profil ; le profil lui-même est enregistré dans Supabase par l'API
+  * (PUT /users/{id}). Limite connue : si le lien magique est ouvert sur un autre
+  * appareil/navigateur que celui de l'inscription, ce brouillon n'est pas retrouvé.
   */
 const STORAGE_PREFIX = 'binofit_profile_'
 const PENDING_EMAIL_KEY = 'binofit_email_for_sign_in'
