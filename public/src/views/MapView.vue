@@ -28,7 +28,7 @@ let centerPoint: GeoPoint = centerOf(null)
 let requestId = 0
 
 /** Filtres de la carte, branchés sur GET /users. */
-const RADIUS_OPTIONS = [2, 5, 10, 20]
+const RADIUS_OPTIONS = [1, 5, 10, 20]
 const SPORTS = Object.keys(SPORT_LABELS) as Sport[]
 const LEVELS = Object.keys(LEVEL_LABELS) as Level[]
 const radiusKm = ref(DEFAULT_RADIUS_KM)
