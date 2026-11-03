@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PO — BINOFIT</title>
-  <meta name="description" content="Product Owner de BINOFIT : lean canvas, backlog des EPICs et user stories des scénarios minimal et cible.">
+  <meta name="description" content="Product Owner de BINOFIT : lean canvas, 8 EPICs et 29 user stories avec leur statut.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='13' cy='10' r='4.5' fill='%23121512'/%3E%3Ccircle cx='35' cy='12' r='4.5' fill='%231A7F2A'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,7 +44,7 @@
   <section class="block" style="padding-top:12px">
     <div class="lean">
       <div class="lean-cell"><h3>Problème</h3><ul><li>S’entraîner seul démotive vite.</li><li>Difficile de trouver quelqu’un du même sport, niveau et quartier.</li><li>Clubs chers, horaires rigides.</li></ul><p class="ph-note"><strong>Alternatives :</strong> groupes WhatsApp, Facebook, clubs, applis de running.</p></div>
-      <div class="lean-cell"><h3>Solution</h3><ul><li>Profil sportif : sports, niveau, zone, disponibilités.</li><li>Recherche en liste et sur carte, triée par distance.</li><li>Messagerie pour planifier une séance.</li></ul></div>
+      <div class="lean-cell"><h3>Solution</h3><ul><li>Profil sportif : sports, niveau, zone, disponibilités.</li><li>Recherche en liste et sur carte, triée par distance.</li><li>Proposition d’activité (sport, date, lieu) et messagerie pour organiser la séance.</li></ul></div>
       <div class="lean-cell lean-cell--value"><h3>Proposition de valeur unique</h3><p>Le sport, c’est mieux à deux.</p><span>Un binôme compatible, près de chez soi, pour une séance ponctuelle.</span></div>
       <div class="lean-cell"><h3>Avantage déloyal</h3><ul><li>Multi-sports, centré sur le binôme et non sur le groupe.</li><li>Matching distance × niveau × disponibilités.</li><li>Communauté locale qui grandit par quartier.</li></ul></div>
       <div class="lean-cell"><h3>Segments clients</h3><ul><li>Sportifs amateurs urbains de 18 à 40 ans.</li><li>Nouveaux arrivants dans une ville.</li><li>Étudiants.</li></ul><p class="ph-note"><strong>Early adopters :</strong> runners et joueurs de tennis en centre-ville.</p></div>
@@ -55,67 +55,164 @@
     </div>
   </section>
 
-  <!-- EPICS -->
+  <!-- EPICS (généré depuis backlog-po.md) -->
   <section class="block">
     <span class="tag-badge">Backlog</span>
     <h2>Les EPICs</h2>
-    <p><strong>Scénario minimal (MUST)</strong> : un sportif crée son profil, trouve un binôme proche et lui écrit. <strong>Scénario cible (SHOULD / COULD)</strong> : planification, confiance et fidélisation.</p>
+    <p><strong>8 EPICs, 29 user stories</strong> : 26 livrées, 3 à faire (US09, US25, US31). Priorités MUST / SHOULD / COULD. <strong>Livré</strong> = fonctionne dans l’application.</p>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>EPIC</th><th>Besoin</th><th>Hypothèse</th><th>Priorité</th></tr></thead>
+        <thead><tr><th>EPIC</th><th>Besoin</th><th>Hypothèse</th><th>User stories</th><th>Statut</th></tr></thead>
         <tbody>
-          <tr><td>Compte</td><td>Créer un compte et se connecter simplement.</td><td>Un onboarding court augmente le nombre d’inscrits.</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Profil sportif</td><td>Décrire ses sports, son niveau, sa zone et ses disponibilités.</td><td>Un profil complet améliore la qualité des binômes.</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Recherche</td><td>Trouver des sportifs compatibles près de chez soi.</td><td>Le tri par distance est le critère n°1.</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Carte</td><td>Visualiser les sportifs autour de soi.</td><td>La carte rassure sur la proximité réelle.</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Messagerie</td><td>Contacter un sportif et organiser une séance.</td><td>Un premier message facilite augmente les contacts.</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Séances</td><td>Planifier et retrouver ses activités.</td><td>Une séance planifiée a plus de chances d’avoir lieu.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
-          <tr><td>Confiance</td><td>Se sentir en sécurité avec un inconnu.</td><td>Avis et signalement lèvent l’appréhension.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
-          <tr><td>Fidélisation</td><td>Retrouver ses binômes et rester motivé.</td><td>Les favoris et rappels créent de la régularité.</td><td><span class="prio prio--could">COULD</span></td></tr>
+          <tr><td>1. Inscription et authentification</td><td>Créer un compte et se connecter simplement, sans mot de passe.</td><td>Un lien envoyé par e-mail réduit les abandons à l’inscription.</td><td>US01, US02, US03</td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>2. Gestion du profil</td><td>Décrire ses sports, son niveau, sa zone et ses disponibilités.</td><td>Un profil complet améliore la qualité des binômes trouvés.</td><td>US04, US05, US06, US07, US26</td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>3. Découverte et recherche</td><td>Trouver des sportifs compatibles près de chez soi.</td><td>Le tri par distance est le critère n°1 pour choisir un binôme.</td><td>US08, US09, US10, US11, US12, US13, US27</td><td><span class="statut statut--afaire">6/7 livrées</span></td></tr>
+          <tr><td>4. Géolocalisation et carte</td><td>Visualiser les sportifs autour de soi.</td><td>La carte rassure sur la proximité réelle des binômes.</td><td>US14, US15</td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>5. Proposition d’activités</td><td>Proposer une séance ponctuelle à un autre sportif.</td><td>Une proposition précise (sport, date, lieu) a plus de chances d’être acceptée qu’un simple message.</td><td>US16, US31, US17</td><td><span class="statut statut--afaire">2/3 livrées</span></td></tr>
+          <tr><td>6. Suivi des activités</td><td>Répondre à une proposition et retrouver ses activités.</td><td>Un historique clair des séances donne envie d’en refaire.</td><td>US18, US19, US20, US21</td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>7. Messagerie</td><td>Contacter un sportif et organiser une séance.</td><td>Un premier message facile à envoyer augmente le nombre de contacts.</td><td>US22, US23, US24, US28</td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>8. Favoris</td><td>Retrouver facilement les binômes appréciés.</td><td>Une liste de favoris crée de la régularité entre sportifs.</td><td>US25</td><td><span class="statut statut--afaire">À faire</span></td></tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <!-- SCÉNARIO MINIMAL -->
-  <section class="block">
-    <span class="tag-badge">Backlog PO</span>
-    <h2>Le scénario minimal</h2>
+  <section class="block block--us">
+    <span class="tag-badge">EPIC 1</span>
+    <h2>Inscription et authentification</h2>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>EPIC</th><th>User story</th><th>Critères d’acceptation</th><th>Écran</th><th>Priorité</th></tr></thead>
+        <thead><tr><th>N°</th><th>User story</th><th>Critères d’acceptation</th><th>Priorité</th><th>Statut</th></tr></thead>
         <tbody>
-          <tr><td>Compte</td><td>En tant que visiteur, je veux créer un compte avec mon e-mail afin d’accéder à l’application.</td><td>E-mail valide, mot de passe ≥ 8 caractères ; redirection vers l’accueil.</td><td>Bienvenue</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Compte</td><td>En tant que sportif, je veux me connecter et me déconnecter afin de sécuriser mon compte.</td><td>Session conservée ; bouton Se déconnecter sur le profil.</td><td>Profil</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Profil sportif</td><td>En tant que sportif, je veux renseigner prénom, nom et bio afin de me présenter.</td><td>Bio limitée à 160 caractères avec compteur.</td><td>Profil</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Profil sportif</td><td>En tant que sportif, je veux choisir mes sports et mon niveau afin d’être trouvé par les bons partenaires.</td><td>Sélection multiple ; niveau Débutant à Expert par sport.</td><td>Profil</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Profil sportif</td><td>En tant que sportif, je veux indiquer mes disponibilités afin de ne recevoir que des propositions utiles.</td><td>Jours L→D × Matin / Après-midi / Soir.</td><td>Profil</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Profil sportif</td><td>En tant que sportif, je veux voir la complétion de mon profil afin de savoir s’il est visible.</td><td>Pourcentage affiché ; visible dès que sports et zone sont remplis.</td><td>Profil, Accueil</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Recherche</td><td>En tant que sportif, je veux voir les sportifs proches triés par distance afin de trouver vite un binôme.</td><td>Distance en km, sport et niveau sur chaque carte.</td><td>Accueil</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Recherche</td><td>En tant que sportif, je veux filtrer par sport, niveau et rayon afin d’affiner mes résultats.</td><td>Filtres combinables ; rayon de 1 à 25 km.</td><td>Accueil, Carte</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Carte</td><td>En tant que sportif, je veux voir les profils sur une carte afin de juger de la proximité.</td><td>Cercle du rayon ; fiche courte au tap avec Voir le profil / Écrire.</td><td>Carte</td><td><span class="prio prio--must">MUST</span></td></tr>
-          <tr><td>Messagerie</td><td>En tant que sportif, je veux envoyer un premier message afin de proposer une séance.</td><td>Conversation créée ; message visible des deux côtés.</td><td>Messages</td><td><span class="prio prio--must">MUST</span></td></tr>
+          <tr><td>US01</td><td><strong>Inscription</strong><br>En tant que visiteur, je veux créer un compte avec mon adresse e-mail afin d’accéder aux fonctionnalités de BINOFIT.</td><td><ul class="crit"><li>Je saisis mon adresse e-mail.</li><li>Je reçois un lien magique de connexion.</li><li>Après validation du lien, j’accède à mon compte.</li><li>Une adresse invalide affiche un message d’erreur.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US02</td><td><strong>Connexion</strong><br>En tant qu’utilisateur inscrit, je veux me connecter à mon compte afin d’utiliser l’application.</td><td><ul class="crit"><li>Je saisis mon e-mail et je reçois un lien.</li><li>Je clique sur le lien et je suis connecté.</li><li>Si je ne suis pas connecté, je vois seulement la page de connexion.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US03</td><td><strong>Déconnexion</strong><br>En tant qu’utilisateur connecté, je veux me déconnecter afin de sécuriser mon compte.</td><td><ul class="crit"><li>Un bouton de déconnexion est disponible sur le profil.</li><li>La session est fermée.</li><li>Je suis redirigé vers la page de connexion.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <!-- SCÉNARIO CIBLE -->
+  <section class="block block--us">
+    <span class="tag-badge">EPIC 2</span>
+    <h2>Gestion du profil</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>N°</th><th>User story</th><th>Critères d’acceptation</th><th>Priorité</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>US04</td><td><strong>Création du profil</strong><br>En tant que nouvel utilisateur, je veux compléter mon profil afin de me présenter aux autres sportifs.</td><td><ul class="crit"><li>Je renseigne mon prénom et mon nom.</li><li>J’ajoute une photo et une biographie.</li><li>Je choisis ma zone parmi les 6 zones de Lyon (position utilisée pour calculer les distances).</li><li>Je sélectionne mes sports.</li><li>Je définis mon niveau pour chaque sport (Débutant, Intermédiaire, Avancé, Expert).</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US05</td><td><strong>Modification du profil</strong><br>En tant qu’utilisateur, je veux modifier mes informations personnelles afin de garder mon profil à jour.</td><td><ul class="crit"><li>Je peux modifier mes informations.</li><li>J’enregistre les changements.</li><li>Les modifications sont visibles immédiatement sur mon profil.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US06</td><td><strong>Gestion des disponibilités</strong><br>En tant qu’utilisateur, je veux renseigner mes disponibilités afin de trouver des sportifs libres aux mêmes moments que moi.</td><td><ul class="crit"><li>Je choisis un ou plusieurs jours de la semaine.</li><li>J’indique une heure de début et une heure de fin pour chaque jour.</li><li>Mes disponibilités sont enregistrées et visibles sur mon profil.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US07</td><td><strong>Gestion des sports pratiqués</strong><br>En tant qu’utilisateur, je veux sélectionner les sports que je pratique afin de trouver des partenaires ayant les mêmes intérêts.</td><td><ul class="crit"><li>Je sélectionne un ou plusieurs sports dans la liste proposée.</li><li>Je peux modifier ma sélection.</li><li>Les sports sélectionnés apparaissent sur mon profil.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US26</td><td><strong>Sexe et date de naissance</strong><br>En tant qu’utilisateur, je veux indiquer mon sexe et ma date de naissance afin que les autres sportifs puissent mieux me trouver.</td><td><ul class="crit"><li>Je choisis Femme, Homme ou Autre.</li><li>Je renseigne ma date de naissance.</li><li>Ces informations sont enregistrées dans mon profil.</li></ul></td><td><span class="prio prio--could">COULD</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block block--us">
+    <span class="tag-badge">EPIC 3</span>
+    <h2>Découverte et recherche</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>N°</th><th>User story</th><th>Critères d’acceptation</th><th>Priorité</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>US08</td><td><strong>Découvrir les sportifs proches</strong><br>En tant qu’utilisateur, je veux consulter une liste de sportifs proches de moi afin de trouver un partenaire potentiel.</td><td><ul class="crit"><li>Une liste de profils est affichée.</li><li>Les profils sont triés du plus proche au plus loin.</li><li>Chaque carte montre le prénom, le sport, le niveau et la distance.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US09</td><td><strong>Rechercher par distance</strong><br>En tant qu’utilisateur, je veux définir une distance maximale de recherche afin de trouver des sportifs dans ma zone géographique.</td><td><ul class="crit"><li>Je choisis un rayon de recherche (1, 5, 10 ou 20 km).</li><li>Les résultats respectent le rayon choisi.</li><li>La distance en km est affichée sur chaque profil.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--afaire">À faire</span></td></tr>
+          <tr><td>US10</td><td><strong>Filtrer par sport</strong><br>En tant qu’utilisateur, je veux filtrer les profils selon le sport recherché afin de trouver des personnes pratiquant la même activité.</td><td><ul class="crit"><li>Je sélectionne un sport.</li><li>Seuls les profils correspondants sont affichés.</li><li>Je peux supprimer le filtre.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US11</td><td><strong>Filtrer par niveau</strong><br>En tant qu’utilisateur, je veux filtrer les sportifs selon leur niveau afin de trouver un partenaire ayant une expérience similaire.</td><td><ul class="crit"><li>Je choisis Débutant, Intermédiaire, Avancé ou Expert.</li><li>Les résultats correspondent au niveau choisi.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US12</td><td><strong>Filtrer par disponibilité</strong><br>En tant qu’utilisateur, je veux filtrer les sportifs selon leurs disponibilités afin de trouver une personne libre au même moment que moi.</td><td><ul class="crit"><li>Je choisis un jour de la semaine.</li><li>Seuls les profils disponibles ce jour-là sont affichés.</li><li>Je peux supprimer le filtre.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US13</td><td><strong>Consulter un profil</strong><br>En tant qu’utilisateur, je veux consulter le profil d’un autre sportif afin de découvrir ses intérêts et son expérience sportive.</td><td><ul class="crit"><li>Je vois sa photo et sa biographie.</li><li>Je vois ses sports et son niveau.</li><li>Je vois ses disponibilités.</li><li>J’accède aux actions « Contacter » et « Proposer une activité ».</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US27</td><td><strong>Filtrer par sexe</strong><br>En tant qu’utilisateur, je veux filtrer les sportifs selon leur sexe afin de me sentir à l’aise avec mon futur binôme.</td><td><ul class="crit"><li>Je choisis Femme, Homme ou Autre.</li><li>Seuls les profils correspondants sont affichés.</li><li>Je peux supprimer le filtre.</li></ul></td><td><span class="prio prio--could">COULD</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block block--us">
+    <span class="tag-badge">EPIC 4</span>
+    <h2>Géolocalisation et carte</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>N°</th><th>User story</th><th>Critères d’acceptation</th><th>Priorité</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>US14</td><td><strong>Visualiser les sportifs sur une carte</strong><br>En tant qu’utilisateur, je veux visualiser les sportifs proches sur une carte afin de mieux comprendre leur localisation.</td><td><ul class="crit"><li>Une carte affiche les profils géolocalisés.</li><li>Chaque sportif est représenté par un marqueur.</li><li>Les marqueurs correspondent à des profils existants et respectent les filtres actifs.</li></ul></td><td><span class="prio prio--should">SHOULD</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US15</td><td><strong>Consulter un profil depuis la carte</strong><br>En tant qu’utilisateur, je veux cliquer sur un marqueur afin de consulter un aperçu du profil correspondant.</td><td><ul class="crit"><li>Un clic sur un marqueur affiche un aperçu.</li><li>L’aperçu montre les informations essentielles.</li><li>J’accède au profil complet depuis l’aperçu.</li></ul></td><td><span class="prio prio--should">SHOULD</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block block--us">
+    <span class="tag-badge">EPIC 5</span>
+    <h2>Proposition d’activités</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>N°</th><th>User story</th><th>Critères d’acceptation</th><th>Priorité</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>US16</td><td><strong>Proposer une activité sportive</strong><br>En tant qu’utilisateur, je veux proposer une activité à un autre sportif afin d’organiser une séance ensemble.</td><td><ul class="crit"><li>Je sélectionne un sport.</li><li>Je renseigne une date et une heure.</li><li>J’indique un lieu.</li><li>J’ajoute un message.</li><li>J’envoie ma proposition.</li><li>On ne peut pas se proposer une activité à soi-même.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US31</td><td><strong>Joindre une photo ou une vidéo à une proposition</strong><br>En tant qu’utilisateur, je veux joindre une photo ou une vidéo à ma proposition d’activité afin de la rendre plus parlante.</td><td><ul class="crit"><li>Je peux joindre une photo ou une vidéo (facultatif).</li></ul></td><td><span class="prio prio--could">COULD</span></td><td><span class="statut statut--afaire">À faire</span></td></tr>
+          <tr><td>US17</td><td><strong>Recevoir une proposition</strong><br>En tant qu’utilisateur, je veux consulter les propositions d’activités reçues afin de décider si je souhaite participer.</td><td><ul class="crit"><li>Les propositions reçues sont accessibles dans l’onglet Activités.</li><li>Les informations de l’activité sont affichées (sport, date, lieu, message, auteur).</li><li>Le statut initial est « En attente ».</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block block--us">
+    <span class="tag-badge">EPIC 6</span>
+    <h2>Suivi des activités</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>N°</th><th>User story</th><th>Critères d’acceptation</th><th>Priorité</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>US18</td><td><strong>Accepter une proposition</strong><br>En tant que destinataire d’une proposition, je veux accepter une activité afin de confirmer ma participation.</td><td><ul class="crit"><li>Je peux accepter une proposition en attente.</li><li>Son statut passe à « Acceptée ».</li><li>L’activité apparaît dans mes activités à venir.</li><li>Seul le destinataire peut accepter.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US19</td><td><strong>Refuser une proposition</strong><br>En tant que destinataire d’une proposition, je veux refuser une activité afin d’indiquer que je ne souhaite pas y participer.</td><td><ul class="crit"><li>Je peux refuser une proposition en attente.</li><li>Son statut passe à « Refusée ».</li><li>Elle ne figure pas parmi mes activités confirmées.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US20</td><td><strong>Consulter mes activités</strong><br>En tant qu’utilisateur, je veux consulter mes activités afin de suivre les propositions envoyées et reçues.</td><td><ul class="crit"><li>Je vois mes activités à venir et mes activités passées.</li><li>Je distingue les propositions envoyées et reçues.</li><li>Chaque activité affiche son statut : En attente, Acceptée, Refusée ou Terminée.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US21</td><td><strong>Marquer une activité comme terminée</strong><br>En tant que participant, je veux marquer une activité comme terminée afin de conserver un historique de mes activités sportives.</td><td><ul class="crit"><li>Une activité acceptée peut être marquée comme terminée par le créateur ou l’invité.</li><li>Son statut passe à « Terminée ».</li><li>Elle apparaît dans les activités passées.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block block--us">
+    <span class="tag-badge">EPIC 7</span>
+    <h2>Messagerie</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>N°</th><th>User story</th><th>Critères d’acceptation</th><th>Priorité</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>US22</td><td><strong>Consulter les conversations</strong><br>En tant qu’utilisateur, je veux consulter mes conversations afin de retrouver les personnes avec lesquelles j’ai échangé.</td><td><ul class="crit"><li>Une liste de conversations est affichée.</li><li>Chaque conversation identifie l’autre participant et montre le dernier message.</li><li>Je peux ouvrir une conversation.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US23</td><td><strong>Envoyer un message</strong><br>En tant qu’utilisateur, je veux envoyer des messages à un autre sportif afin de communiquer avec lui et organiser une activité.</td><td><ul class="crit"><li>Je peux saisir et envoyer un message.</li><li>Une conversation est créée au premier message.</li><li>Le message apparaît dans la conversation.</li><li>Les messages sont conservés.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US24</td><td><strong>Consulter les messages reçus</strong><br>En tant qu’utilisateur, je veux consulter les messages reçus afin de suivre mes échanges avec les autres sportifs.</td><td><ul class="crit"><li>Les messages reçus sont affichés.</li><li>Ils apparaissent dans l’ordre chronologique.</li><li>Je retrouve l’historique de la conversation.</li></ul></td><td><span class="prio prio--must">MUST</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+          <tr><td>US28</td><td><strong>Messages non lus</strong><br>En tant qu’utilisateur, je veux voir combien de messages je n’ai pas lus afin de répondre rapidement.</td><td><ul class="crit"><li>Une pastille indique le nombre de messages non lus sur l’onglet Messages.</li><li>Elle disparaît quand j’ouvre la conversation.</li></ul></td><td><span class="prio prio--should">SHOULD</span></td><td><span class="statut statut--livre">Livré</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="block block--us">
+    <span class="tag-badge">EPIC 8</span>
+    <h2>Favoris</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>N°</th><th>User story</th><th>Critères d’acceptation</th><th>Priorité</th><th>Statut</th></tr></thead>
+        <tbody>
+          <tr><td>US25</td><td><strong>Ajouter un profil aux favoris</strong><br>En tant qu’utilisateur, je veux ajouter un sportif à mes favoris afin de retrouver facilement son profil plus tard.</td><td><ul class="crit"><li>Je peux ajouter un profil aux favoris.</li><li>Je peux consulter ma liste de favoris depuis mon profil.</li><li>Je peux retirer un profil de mes favoris.</li></ul></td><td><span class="prio prio--should">SHOULD</span></td><td><span class="statut statut--afaire">À faire</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- À VENIR -->
   <section class="block">
-    <span class="tag-badge">Backlog PO</span>
-    <h2>Le scénario cible</h2>
+    <span class="tag-badge">À venir</span>
+    <h2>Sécurité et confiance</h2>
+    <p>Demandées par la PO pour la sécurité des utilisateurs, prévues avant la J5 du 10/11. Elles ne comptent pas dans les 29 user stories.</p>
     <div class="table-wrap table-wrap--green">
       <table>
-        <thead><tr><th>EPIC</th><th>User story</th><th>Critères d’acceptation</th><th>Priorité</th></tr></thead>
+        <thead><tr><th>N°</th><th>User story</th><th>Critères d’acceptation</th><th>Priorité</th><th>Statut</th></tr></thead>
         <tbody>
-          <tr><td>Messagerie</td><td>En tant que sportif, je veux accepter ou refuser une demande afin de garder le contrôle.</td><td>Onglet Demandes ; statut envoyée, acceptée, refusée.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
-          <tr><td>Séances</td><td>En tant que binôme, je veux planifier une séance (date, heure, lieu) afin de la retrouver dans Mes activités.</td><td>Séance visible chez les deux participants.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
-          <tr><td>Séances</td><td>En tant que sportif, je veux marquer une séance comme terminée afin de garder un historique.</td><td>Statut terminée ; historique consultable.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
-          <tr><td>Confiance</td><td>En tant que sportif, je veux noter mon binôme après une séance afin d’aider la communauté.</td><td>Note de 1 à 5 + commentaire, une fois par séance.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
-          <tr><td>Confiance</td><td>En tant que sportif, je veux signaler ou bloquer un profil afin de me protéger.</td><td>Profil bloqué invisible ; signalement transmis à la modération.</td><td><span class="prio prio--should">SHOULD</span></td></tr>
-          <tr><td>Profil sportif</td><td>En tant que sportif, je veux ajouter une photo de profil afin d’inspirer confiance.</td><td>Photo recadrée en rond ; avatar par défaut sinon.</td><td><span class="prio prio--could">COULD</span></td></tr>
-          <tr><td>Fidélisation</td><td>En tant que sportif, je veux ajouter un binôme en favori afin de le retrouver facilement.</td><td>Liste des favoris accessible depuis le profil.</td><td><span class="prio prio--could">COULD</span></td></tr>
-          <tr><td>Fidélisation</td><td>En tant que sportif, je veux recevoir une notification de nouveau message afin de répondre vite.</td><td>Notification push ; pastille sur l’onglet Messages.</td><td><span class="prio prio--could">COULD</span></td></tr>
+          <tr><td>US29</td><td><strong>Bloquer un profil</strong><br>En tant qu’utilisateur, je veux bloquer un profil afin de ne plus être contacté par une personne qui m’a mis mal à l’aise.</td><td><ul class="crit"><li>Un bouton « Bloquer » est disponible sur le profil.</li><li>Le profil bloqué ne me voit plus et je ne le vois plus dans les résultats.</li><li>Nous ne pouvons plus nous écrire ni nous proposer d’activité.</li></ul></td><td><span class="prio prio--should">SHOULD</span></td><td><span class="statut statut--afaire">À faire</span></td></tr>
+          <tr><td>US30</td><td><strong>Débloquer un profil</strong><br>En tant qu’utilisateur, je veux débloquer un profil afin de revenir sur ma décision.</td><td><ul class="crit"><li>Je vois la liste de mes profils bloqués.</li><li>Je peux débloquer un profil.</li><li>Il réapparaît dans mes résultats.</li></ul></td><td><span class="prio prio--should">SHOULD</span></td><td><span class="statut statut--afaire">À faire</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -127,7 +224,7 @@
   <div class="site-footer__inner">
     <span>BINOFIT · le sport, c’est mieux à deux.</span>
     <div class="site-footer__links">
-      <a href="#">Dépôt GitHub</a>
+      <a href="https://github.com/fatma-gmr/m2gdp-SPO" target="_blank" rel="noopener">Dépôt GitHub</a>
       <a href="/inscription">Application</a>
     </div>
   </div>

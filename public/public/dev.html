@@ -40,32 +40,41 @@
     <span class="eyebrow">Application</span>
     <h1>Ce qui est en ligne</h1>
     <div class="grid grid--4" style="margin-top:12px">
-      <div class="panel"><span class="label">Front</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Vue 3</strong><span class="muted" style="font-size:14px">Application mobile-first, testée à 320 px.</span></div>
-      <div class="panel"><span class="label">Données</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Supabase</strong><span class="muted" style="font-size:14px">Comptes, profils sportifs, messages et géolocalisation.</span></div>
-      <div class="panel"><span class="label">Hébergement</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Vercel</strong><span class="muted" style="font-size:14px">Déploiement automatique à chaque push.</span></div>
-      <div class="panel"><span class="label">Tests</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">15 tests e2e</strong><span class="muted" style="font-size:14px">Un test par user story clé du scénario minimal.</span></div>
+      <div class="panel"><span class="label">Front</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Vue 3</strong><span class="muted" style="font-size:14px">Application mobile-first, hébergée sur Vercel.</span></div>
+      <div class="panel"><span class="label">API</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Cloudflare Workers</strong><span class="muted" style="font-size:14px">API TypeScript (Hono) : 16 routes, documentées en OpenAPI.</span></div>
+      <div class="panel"><span class="label">Données</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Supabase</strong><span class="muted" style="font-size:14px">Profils, sports, disponibilités, activités, conversations et messages (Postgres).</span></div>
+      <div class="panel"><span class="label">Connexion</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Firebase Auth</strong><span class="muted" style="font-size:14px">Connexion par lien magique envoyé par e-mail, sans mot de passe.</span></div>
+      <div class="panel"><span class="label">Localisation</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">6 zones lyonnaises</strong><span class="muted" style="font-size:14px">Position choisie parmi 6 zones (Presqu’île, Part-Dieu, Confluence, Villeurbanne, Vénissieux, Caluire-et-Cuire), sans géocodage.</span></div>
+      <div class="panel"><span class="label">Tests</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Tests Playwright : prévus</strong><span class="muted" style="font-size:14px">Tests de l’API et tests de bout en bout en préparation.</span></div>
     </div>
     <div class="btn-row">
       <a href="/inscription" class="btn btn--primary">Ouvrir l’application</a>
-      <a href="/inscription" class="btn btn--outline">Voir le dépôt GitHub</a>
+      <a href="https://github.com/fatma-gmr/m2gdp-SPO" target="_blank" rel="noopener" class="btn btn--outline">Voir le dépôt GitHub</a>
     </div>
   </section>
 
   <!-- FONCTIONNALITÉS -->
   <section class="block">
-    <span class="tag-badge">Scénario cible</span>
+    <span class="tag-badge">Backlog</span>
     <h2>Fonctionnalités</h2>
+    <p>26 user stories livrées sur 29, plus 2 à venir pour la sécurité. Le détail est sur la page PO.</p>
     <div class="grid grid--4">
-      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Demandes de binôme</strong><span class="prio prio--should">SHOULD</span></div>
-      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Planifier une séance</strong><span class="prio prio--should">SHOULD</span></div>
-      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Mes activités et historique</strong><span class="prio prio--should">SHOULD</span></div>
-      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Séance terminée</strong><span class="prio prio--should">SHOULD</span></div>
-      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Avis après séance</strong><span class="prio prio--should">SHOULD</span></div>
-      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Signaler / bloquer</strong><span class="prio prio--should">SHOULD</span></div>
-      <div class="panel panel--soft" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Photo de profil</strong><span class="prio prio--could">COULD</span></div>
-      <div class="panel panel--soft" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Binômes favoris</strong><span class="prio prio--could">COULD</span></div>
-      <div class="panel panel--soft" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Notifications</strong><span class="prio prio--could">COULD</span></div>
-      <div class="panel panel--soft" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><strong>Replanifier avec le même binôme</strong><span class="prio prio--could">COULD</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Inscription et connexion par lien magique</strong><br><span class="muted" style="font-size:13px">US01–US03</span></span><span class="statut statut--livre">Livré</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Profil : sports, niveaux, disponibilités</strong><br><span class="muted" style="font-size:13px">US04–US07</span></span><span class="statut statut--livre">Livré</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Photo de profil</strong><br><span class="muted" style="font-size:13px">US04</span></span><span class="statut statut--livre">Livré</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Sexe et date de naissance</strong><br><span class="muted" style="font-size:13px">US26</span></span><span class="statut statut--livre">Livré</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Sportifs proches triés par distance</strong><br><span class="muted" style="font-size:13px">US08</span></span><span class="statut statut--livre">Livré</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Filtres sport, niveau, jour, sexe</strong><br><span class="muted" style="font-size:13px">US10–US12, US27</span></span><span class="statut statut--livre">Livré</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Carte des sportifs</strong><br><span class="muted" style="font-size:13px">US14–US15</span></span><span class="statut statut--livre">Livré</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Proposer une activité</strong><br><span class="muted" style="font-size:13px">US16</span></span><span class="statut statut--livre">Livré</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Accepter ou refuser une proposition</strong><br><span class="muted" style="font-size:13px">US18–US19</span></span><span class="statut statut--livre">Livré</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Mes activités (à venir, passées)</strong><br><span class="muted" style="font-size:13px">US17, US20</span></span><span class="statut statut--livre">Livré</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Terminer une activité</strong><br><span class="muted" style="font-size:13px">US21</span></span><span class="statut statut--livre">Livré</span></div>
+      <div class="panel" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Messagerie et messages non lus</strong><br><span class="muted" style="font-size:13px">US22–US24, US28</span></span><span class="statut statut--livre">Livré</span></div>
+      <div class="panel panel--soft" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Rayon 1, 5, 10 ou 20 km</strong><br><span class="muted" style="font-size:13px">US09</span></span><span class="statut statut--afaire">À faire</span></div>
+      <div class="panel panel--soft" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Favoris dans l’application (API prête)</strong><br><span class="muted" style="font-size:13px">US25</span></span><span class="statut statut--afaire">À faire</span></div>
+      <div class="panel panel--soft" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Photo ou vidéo jointe à une proposition (API prête)</strong><br><span class="muted" style="font-size:13px">US31</span></span><span class="statut statut--afaire">À faire</span></div>
+      <div class="panel panel--soft" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span><strong>Bloquer et débloquer un profil (à venir)</strong><br><span class="muted" style="font-size:13px">US29–US30</span></span><span class="statut statut--afaire">À faire</span></div>
     </div>
   </section>
 
@@ -82,31 +91,27 @@
   <section class="block">
     <span class="tag-badge">API</span>
     <h2>Spécification OpenAPI</h2>
-    <p>Les routes du scénario minimal et du scénario cible.</p>
+    <p>16 routes : 3 publiques et 13 protégées par le jeton Firebase (<span class="mono">Authorization: Bearer &lt;jeton&gt;</span>). Les 3 créations demandent en plus un profil existant (sinon erreur 403 <span class="mono">profile_required</span>). Les 13 routes protégées sont décrites dans la spécification OpenAPI.</p>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Méthode</th><th>Route</th><th>Rôle</th><th>Scénario</th></tr></thead>
+        <thead><tr><th>Méthode</th><th>Route</th><th>Rôle</th><th>Accès</th><th>User stories</th></tr></thead>
         <tbody>
-          <tr><td><span class="method m-post">POST</span></td><td class="mono">/auth/signup</td><td>Créer un compte</td><td>Minimal</td></tr>
-          <tr><td><span class="method m-post">POST</span></td><td class="mono">/auth/login</td><td>Se connecter</td><td>Minimal</td></tr>
-          <tr><td><span class="method m-get">GET</span></td><td class="mono">/me</td><td>Lire son profil et sa complétion</td><td>Minimal</td></tr>
-          <tr><td><span class="method m-patch">PATCH</span></td><td class="mono">/me</td><td>Modifier prénom, nom, bio, zone, rayon</td><td>Minimal</td></tr>
-          <tr><td><span class="method m-put">PUT</span></td><td class="mono">/me/sports</td><td>Définir ses sports et niveaux</td><td>Minimal</td></tr>
-          <tr><td><span class="method m-put">PUT</span></td><td class="mono">/me/disponibilites</td><td>Définir ses disponibilités</td><td>Minimal</td></tr>
-          <tr><td><span class="method m-get">GET</span></td><td class="mono">/sports</td><td>Lister les sports</td><td>Minimal</td></tr>
-          <tr><td><span class="method m-get">GET</span></td><td class="mono">/sportifs?sport&amp;niveau&amp;rayon</td><td>Rechercher les sportifs proches, triés par distance</td><td>Minimal</td></tr>
-          <tr><td><span class="method m-get">GET</span></td><td class="mono">/sportifs/{id}</td><td>Voir un profil</td><td>Minimal</td></tr>
-          <tr><td><span class="method m-get">GET</span></td><td class="mono">/conversations</td><td>Lister ses conversations</td><td>Minimal</td></tr>
-          <tr><td><span class="method m-post">POST</span></td><td class="mono">/conversations</td><td>Démarrer une conversation</td><td>Minimal</td></tr>
-          <tr><td><span class="method m-post">POST</span></td><td class="mono">/conversations/{id}/messages</td><td>Envoyer un message</td><td>Minimal</td></tr>
-          <tr><td><span class="method m-post">POST</span></td><td class="mono">/demandes</td><td>Envoyer une demande de binôme</td><td>Cible</td></tr>
-          <tr><td><span class="method m-patch">PATCH</span></td><td class="mono">/demandes/{id}</td><td>Accepter ou refuser</td><td>Cible</td></tr>
-          <tr><td><span class="method m-post">POST</span></td><td class="mono">/seances</td><td>Planifier une séance</td><td>Cible</td></tr>
-          <tr><td><span class="method m-get">GET</span></td><td class="mono">/me/seances</td><td>Mes activités</td><td>Cible</td></tr>
-          <tr><td><span class="method m-post">POST</span></td><td class="mono">/seances/{id}/avis</td><td>Noter son binôme</td><td>Cible</td></tr>
-          <tr><td><span class="method m-post">POST</span></td><td class="mono">/favoris</td><td>Ajouter un favori</td><td>Cible</td></tr>
-          <tr><td><span class="method m-delete">DELETE</span></td><td class="mono">/favoris/{id}</td><td>Retirer un favori</td><td>Cible</td></tr>
-          <tr><td><span class="method m-post">POST</span></td><td class="mono">/signalements</td><td>Signaler un profil</td><td>Cible</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/api/health</td><td>Vérifier que l’API répond</td><td><span class="statut statut--public">Public</span></td><td>—</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/docs</td><td>Documentation interactive (Swagger UI)</td><td><span class="statut statut--public">Public</span></td><td>—</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/openapi.json</td><td>Spécification OpenAPI</td><td><span class="statut statut--public">Public</span></td><td>—</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/users</td><td>Rechercher des sportifs à proximité (distance, sport, niveau, jour), triés par distance</td><td><span class="statut statut--jeton">Protégé</span></td><td>US08–US12, US27</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/users/{id}</td><td>Récupérer un profil</td><td><span class="statut statut--jeton">Protégé</span></td><td>US13</td></tr>
+          <tr><td><span class="method m-put">PUT</span></td><td class="mono">/users/{id}</td><td>Créer ou mettre à jour son profil (identité, zone, sports, disponibilités)</td><td><span class="statut statut--jeton">Protégé</span></td><td>US04–US07, US26</td></tr>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/activities</td><td>Proposer une activité à un autre sportif</td><td><span class="statut statut--profil">Profil requis</span></td><td>US16</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/activities</td><td>Lister ses activités (proposées et reçues)</td><td><span class="statut statut--jeton">Protégé</span></td><td>US17, US20</td></tr>
+          <tr><td><span class="method m-patch">PATCH</span></td><td class="mono">/activities/{id}/status</td><td>Accepter, refuser ou terminer une activité</td><td><span class="statut statut--jeton">Protégé</span></td><td>US18, US19, US21</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/conversations</td><td>Lister ses conversations</td><td><span class="statut statut--jeton">Protégé</span></td><td>US22</td></tr>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/conversations</td><td>Ouvrir une conversation avec un autre sportif</td><td><span class="statut statut--profil">Profil requis</span></td><td>US23</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/conversations/{id}/messages</td><td>Lister les messages d’une conversation</td><td><span class="statut statut--jeton">Protégé</span></td><td>US24</td></tr>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/messages</td><td>Envoyer un message</td><td><span class="statut statut--jeton">Protégé</span></td><td>US23</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/favorites</td><td>Lister ses favoris</td><td><span class="statut statut--jeton">Protégé</span></td><td>US25</td></tr>
+          <tr><td><span class="method m-post">POST</span></td><td class="mono">/favorites</td><td>Ajouter un sportif ou une activité aux favoris</td><td><span class="statut statut--profil">Profil requis</span></td><td>US25</td></tr>
+          <tr><td><span class="method m-delete">DELETE</span></td><td class="mono">/favorites/{targetId}</td><td>Retirer un favori</td><td><span class="statut statut--jeton">Protégé</span></td><td>US25</td></tr>
         </tbody>
       </table>
     </div>
@@ -121,7 +126,7 @@
   <div class="site-footer__inner">
     <span>BINOFIT · le sport, c’est mieux à deux.</span>
     <div class="site-footer__links">
-      <a href="#">Dépôt GitHub</a>
+      <a href="https://github.com/fatma-gmr/m2gdp-SPO" target="_blank" rel="noopener">Dépôt GitHub</a>
       <a href="/inscription">Application</a>
       <a href="assets/openapi.yaml" download target="_blank" rel="noopener" class="btn btn--outline">Télécharger le YAML</a>
     </div>
