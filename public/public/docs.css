@@ -62,6 +62,14 @@ ul, ol { list-style: none; }
 .prio--must { background: var(--primary); color: #FFFFFF; }
 .prio--should { background: var(--soft); color: #146B22; }
 .prio--could { background: var(--panel); color: var(--muted); }
+.statut { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.statut--livre { background: var(--primary); color: #FFFFFF; }
+.statut--afaire { background: #FDF1D8; color: #7A4A00; }
+.statut--public { background: var(--soft); color: #146B22; }
+.statut--jeton { background: var(--panel); color: var(--ink); }
+.statut--profil { background: #FDECEA; color: #9A2A1C; }
+.crit { margin: 0; padding-left: 18px; }
+.crit li + li { margin-top: 4px; }
 
 .table-wrap { overflow-x: auto; border-radius: 20px; border: 1px solid var(--border); background: #FFFFFF; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 640px; }
