@@ -62,7 +62,7 @@ On montre le diagramme UML de la page DEV (sources : `docs/diagramme-uml.md` et 
 
 On montre la carte « Tests » de la page DEV, et le rapport Playwright si on a le temps.
 
-> « 71 tests Playwright : 52 sur l'API avec de vrais jetons Firebase, et 19 de bout en bout, où Firebase est simulé, donc aucun e-mail n'est envoyé. Chaque test porte le numéro de sa user story. Côté back, 26 user stories sur 29 sont couvertes. Il reste les favoris dans l'interface, la photo jointe à une proposition, et ensuite le blocage de profils. »
+> « 71 tests Playwright : 52 sur l'API avec de vrais jetons Firebase, et 19 de bout en bout, où Firebase est simulé, donc aucun e-mail n'est envoyé. Chaque test porte le numéro de sa user story. Sur 29 user stories, 27 sont livrées dans l'application ; côté back, 26 sur 29 sont couvertes. Il reste les favoris dans l'interface, la photo jointe à une proposition, et ensuite le blocage de profils. »
 
 ## Plan B
 
@@ -76,7 +76,7 @@ On montre la carte « Tests » de la page DEV, et le rapport Playwright si on a 
 
 ## Couverture des user stories (d'après le code)
 
-Le backlog compte **29 user stories** : les 28 d'origine, plus US31 (photo ou vidéo jointe), détachée de US16. US29 et US30 sont à venir et ne sont pas comptées. Les statuts ci-dessous viennent de la lecture du code de `main` le 03/11/2026, pas du backlog.
+Le backlog compte **29 user stories** : les 28 d'origine, plus US31 (photo ou vidéo jointe), détachée de US16. US29 et US30 sont à venir et ne sont pas comptées. Les statuts ci-dessous viennent de la lecture du code de `main` le 03/11/2026 (après le merge de #60 et #61), pas du backlog. Dans l'application : **27 US livrées sur 29**, 2 à faire (US25, US31).
 
 ### Back : 26 US sur 29 (90 %)
 
@@ -100,7 +100,7 @@ Ici, le « back » regroupe l'API Worker, la base Supabase et Firebase Auth.
 
 Il manque côté back : un paramètre `sexe` sur `GET /users` (US27) et un état lu / non lu en base (US28). US03 n'a pas besoin du back. Si on ne compte que les 28 US qui en ont besoin, le back en couvre 26 sur 28 (93 %).
 
-### Front, scénario minimal : 9 US sur 10 (90 %), 10 sur 10 après la PR #61
+### Front, scénario minimal : 10 US sur 10 (100 %)
 
 Le backlog ne définit plus de « scénario minimal ». J'ai pris les 10 US du parcours « créer son profil, trouver un binôme proche et lui écrire ». **La PO doit confirmer cette liste.**
 
@@ -112,17 +112,15 @@ Le backlog ne définit plus de « scénario minimal ». J'ai pris les 10 US du p
 | US06 Disponibilités | ✅ | `ProfileView.vue` (jour, début, fin) |
 | US07 Sports pratiqués | ✅ | `ProfileView.vue` |
 | US08 Sportifs proches | ✅ | `DiscoverView.vue`, `AthleteCard.vue` (prénom, sport, niveau, distance) |
-| US09 Rayon 1, 5, 10, 20 km | ⏳ | Sur `main` : 1/3/5/10 km (Rechercher) et 2/5/10/20 km (Carte). Corrigé dans la PR #61, pas encore mergée |
+| US09 Rayon 1, 5, 10, 20 km | ✅ | `SearchView.vue` et `MapView.vue` (`RADIUS_OPTIONS = [1, 5, 10, 20]`, PR #61) |
 | US10 Filtrer par sport | ✅ | `DiscoverView.vue`, `SearchView.vue`, `MapView.vue` |
 | US13 Consulter un profil | ✅ | `AthleteView.vue` |
 | US23 Envoyer un message | ✅ | `AthleteView.vue`, `ChatView.vue` |
 
-### Ce qui manque encore dans le front (sur les 29 US)
+### Ce qui manque encore dans le front (2 US sur 29)
 
-- **US09** : valeurs du rayon (PR #61 en attente de merge).
 - **US25** : aucun bouton pour ajouter ou retirer un favori, aucune liste dans le profil. L'API est prête.
 - **US31** : aucun champ photo ou vidéo sur « Proposer une activité ». L'API est prête.
-- **US17** (détail) : les propositions reçues sont dans « Mes activités », qu'on ouvre depuis le Profil, et non dans un onglet « Activités » de la barre du bas.
 - À venir : **US29** et **US30** (bloquer et débloquer), ni back ni front.
 - Dans l'interface, sans US : l'onglet « Demandes » affiche « bientôt » et la cloche des notifications ne fait rien.
 
@@ -141,4 +139,4 @@ Le backlog ne définit plus de « scénario minimal ». J'ai pris les 10 US du p
    71 tests Playwright. 52 testent l'API avec de vrais jetons Firebase, sur des comptes dédiés qui sont nettoyés à la fin : transitions de statut, 401, 403, filtres. 19 sont de bout en bout : vitrine, inscription, routes protégées, avec Firebase simulé pour ne pas envoyer d'e-mails. Chaque test porte le numéro de son US. Limites : pas d'intégration continue, et pas de test des écrans connectés.
 
 5. **Qu'est-ce qui manque, et que feriez-vous ensuite ?**
-   Côté front : les favoris et la photo jointe à une proposition, dont l'API est déjà prête, et le rayon 1/5/10/20 km, en cours de relecture. Ensuite, la sécurité avec bloquer et débloquer un profil (US29, US30), des messages en temps réel (aujourd'hui, il faut recharger la conversation, et les non lus se mettent à jour toutes les 15 secondes) et des tests automatiques à chaque pull request.
+   Côté front : les favoris et la photo jointe à une proposition, dont l'API est déjà prête. Ensuite, la sécurité avec bloquer et débloquer un profil (US29, US30), des messages en temps réel (aujourd'hui, il faut recharger la conversation, et les non lus se mettent à jour toutes les 15 secondes) et des tests automatiques à chaque pull request.
