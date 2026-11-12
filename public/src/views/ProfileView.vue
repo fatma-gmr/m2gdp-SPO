@@ -2,12 +2,10 @@
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { computed, onMounted, reactive, ref, type Component } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 import {
   Bike,
   Camera,
-  CalendarDays,
-  ChevronRight,
   Circle,
   Dumbbell,
   Flower2,
@@ -324,11 +322,6 @@ async function onLogout() {
           Ton profil n'est pas encore dans BINOFIT : enregistre-le pour apparaître dans les recherches.
         </p>
 
-        <RouterLink :to="{ name: 'activities' }" class="activities-link">
-          <span class="activities-link__icon"><CalendarDays :size="18" aria-hidden="true" /></span>
-          <span>Mes activités</span>
-          <ChevronRight :size="18" aria-hidden="true" class="activities-link__chevron" />
-        </RouterLink>
         </aside>
 
         <form class="profile__form" @submit.prevent="save">
@@ -614,35 +607,6 @@ async function onLogout() {
   border-radius: 999px;
   background: var(--color-lime);
   transition: width 0.3s ease;
-}
-
-.activities-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.activities-link__icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--color-lime-soft);
-  color: var(--color-lime);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.activities-link__chevron {
-  margin-left: auto;
-  color: var(--color-text-muted);
 }
 
 .profile__form {

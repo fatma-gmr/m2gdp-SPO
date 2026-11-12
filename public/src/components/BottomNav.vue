@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { Compass, Map as MapIcon, MessageCircle, User } from 'lucide-vue-next'
+import { CalendarDays, Compass, Map as MapIcon, MessageCircle, User } from 'lucide-vue-next'
 import { useUnread } from '../composables/useUnread'
 
 const { unreadCount } = useUnread()
 
-/** Onglets de la barre du bas. « Mes activités » s'ouvre depuis Profil. */
+/** Onglets de la barre du bas. */
 const tabs = [
   { to: '/decouvrir', label: 'Accueil', icon: Compass },
   { to: '/carte', label: 'Carte', icon: MapIcon },
+  { to: '/activites', label: 'Activités', icon: CalendarDays },
   { to: '/messages', label: 'Messages', icon: MessageCircle },
   { to: '/profil', label: 'Profil', icon: User },
 ]
