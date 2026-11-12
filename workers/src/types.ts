@@ -43,6 +43,8 @@ export interface GeoPoint {
 export interface SportPractice {
   sport: Sport
   level: Level
+  /** Sport principal (au plus un par profil). */
+  isPrimary?: boolean
 }
 
 export interface AvailabilitySlot {

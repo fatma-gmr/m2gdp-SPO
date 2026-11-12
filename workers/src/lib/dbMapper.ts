@@ -32,7 +32,7 @@ export interface UserRow {
   birth_date: string | null
   created_at: string
   updated_at: string
-  user_sports: { sport: string; level: string }[]
+  user_sports: { sport: string; level: string; is_primary: boolean }[]
   user_availability: { id: number; day_of_week: string; start_time: string; end_time: string }[]
 }
 
@@ -82,7 +82,7 @@ export interface FavoriteRow {
 
 export const USER_SELECT =
   'id, email, first_name, last_name, bio, avatar_url, city, lat, lng, sexe, birth_date, created_at, updated_at, ' +
-  'user_sports(sport, level), user_availability(id, day_of_week, start_time, end_time)'
+  'user_sports(sport, level, is_primary), user_availability(id, day_of_week, start_time, end_time)'
 
 /** `conversations(id)` : conversationId est déduit de conversations.activity_id. */
 export const ACTIVITY_SELECT =
@@ -118,7 +118,10 @@ export function rowToUser(row: UserRow): User {
     sexe: row.sexe as Sexe | null,
     birthDate: row.birth_date,
     location: row.city === null ? { lat: row.lat, lng: row.lng } : { city: row.city, lat: row.lat, lng: row.lng },
-    sports: row.user_sports.map(({ sport, level }) => ({ sport, level }) as SportPractice),
+    // Le sport principal passe en premier : le client affiche sports[0] comme sport principal.
+    sports: [...row.user_sports]
+      .sort((a, b) => Number(b.is_primary) - Number(a.is_primary))
+      .map(({ sport, level, is_primary }) => ({ sport, level, isPrimary: is_primary }) as SportPractice),
     // L'id d'identité suit l'ordre d'insertion : il conserve l'ordre envoyé par le client.
     availability: [...row.user_availability]
       .sort((a, b) => a.id - b.id)
@@ -202,7 +205,15 @@ export function userUpdateToRow(update: UserUpdate): Record<string, unknown> {
 }
 
 export function sportsToRows(userId: string, sports: SportPractice[]) {
-  return sports.map(({ sport, level }) => ({ user_id: userId, sport, level }))
+  // Sport principal : celui marqué isPrimary, sinon le premier de la liste.
+  const flagged = sports.findIndex((practice) => practice.isPrimary === true)
+  const primaryIndex = flagged === -1 ? 0 : flagged
+  return sports.map(({ sport, level }, index) => ({
+    user_id: userId,
+    sport,
+    level,
+    is_primary: index === primaryIndex,
+  }))
 }
 
 export function availabilityToRows(userId: string, availability: AvailabilitySlot[]) {

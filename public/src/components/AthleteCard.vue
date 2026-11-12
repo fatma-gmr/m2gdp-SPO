@@ -1,29 +1,50 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { Button } from '@/components/ui/button'
 import { RouterLink } from 'vue-router'
 import { LEVEL_LABELS, SPORT_LABELS } from '../services/labels'
-import { formatDistance, initials } from '../services/format'
+import { formatDistance } from '../services/format'
+import { SPORT_ICONS } from '../services/sportIcons'
 import type { UserSearchResult } from '../types/api'
 
-defineProps<{ profile: UserSearchResult }>()
+const props = defineProps<{ profile: UserSearchResult }>()
+
+/** Sport principal : sports[0] (le mapper de l'API le place en premier). */
+const primary = computed(() => props.profile.sports[0])
+/** Sports secondaires affichés en pastilles ; au-delà, un compteur « +N ». */
+const MAX_SECONDARY_ICONS = 2
+const secondary = computed(() => props.profile.sports.slice(1, 1 + MAX_SECONDARY_ICONS))
+const hiddenCount = computed(() => Math.max(0, props.profile.sports.length - 1 - MAX_SECONDARY_ICONS))
 </script>
 
 <template>
   <li class="athlete-card">
     <div class="athlete-card__top">
-      <div class="avatar athlete-card__avatar">
-        <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="profile.firstName" />
-        <template v-else>{{ initials(profile.firstName, profile.lastName) }}</template>
+      <div
+        v-if="primary"
+        class="athlete-card__sport"
+        role="img"
+        :aria-label="`Sport principal : ${SPORT_LABELS[primary.sport]}`"
+      >
+        <component :is="SPORT_ICONS[primary.sport]" :size="26" :stroke-width="2" aria-hidden="true" />
       </div>
       <div class="athlete-card__who">
         <h2>{{ profile.firstName }}</h2>
         <div class="athlete-card__sports">
-          <span v-if="profile.sports[0]" class="pill">
-            {{ SPORT_LABELS[profile.sports[0].sport] }} · {{ LEVEL_LABELS[profile.sports[0].level] }}
+          <span v-if="primary" class="pill">
+            {{ SPORT_LABELS[primary.sport] }} · {{ LEVEL_LABELS[primary.level] }}
           </span>
-          <span v-if="profile.sports.length > 1" class="athlete-card__more">
-            +{{ profile.sports.length - 1 }}
+          <span
+            v-for="practice in secondary"
+            :key="practice.sport"
+            class="athlete-card__mini"
+            role="img"
+            :aria-label="`${SPORT_LABELS[practice.sport]}, ${LEVEL_LABELS[practice.level]}`"
+            :title="SPORT_LABELS[practice.sport]"
+          >
+            <component :is="SPORT_ICONS[practice.sport]" :size="14" :stroke-width="2" aria-hidden="true" />
           </span>
+          <span v-if="hiddenCount > 0" class="athlete-card__more">+{{ hiddenCount }}</span>
         </div>
       </div>
       <div class="athlete-card__distance">
@@ -54,19 +75,17 @@ defineProps<{ profile: UserSearchResult }>()
   gap: 12px;
 }
 
-.athlete-card__avatar {
+/* Sport principal : remplace la photo sur la carte (la photo reste sur la page détail) */
+.athlete-card__sport {
   width: 56px;
   height: 56px;
-  font-size: 18px;
   flex-shrink: 0;
-  overflow: hidden;
-  border: none;
-}
-
-.athlete-card__avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  border-radius: 16px;
+  background: var(--color-lime-soft);
+  color: var(--color-lime-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .athlete-card__who {
@@ -94,6 +113,19 @@ defineProps<{ profile: UserSearchResult }>()
 .athlete-card__sports .pill {
   font-size: 12px;
   padding: 4px 10px;
+}
+
+/* Sports secondaires : petites pastilles d'icône */
+.athlete-card__mini {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .athlete-card__more {

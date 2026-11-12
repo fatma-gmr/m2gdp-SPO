@@ -1,28 +1,19 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { computed, onMounted, reactive, ref, type Component } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  Bike,
   Camera,
-  Circle,
-  Dumbbell,
-  Flower2,
-  Hand,
   LogOut,
   MapPin,
-  PersonStanding,
   Plus,
   Trash2,
-  Trophy,
-  Waves,
-  Zap,
-  Target,
 } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import { api, ApiError } from '../services/api'
 import { getProfileByEmail } from '../services/profileStore'
+import { SPORT_ICONS } from '../services/sportIcons'
 import { DAYS, DAY_LABELS, LEVEL_LABELS, SEXE_LABELS, SPORT_LABELS } from '../services/labels'
 import { SEARCH_ZONES, nearestZone } from '../services/location'
 import { fetchUser } from '../services/users'
@@ -36,21 +27,6 @@ const LEVELS = Object.keys(LEVEL_LABELS) as Level[]
 const SEXES = Object.keys(SEXE_LABELS) as Sexe[]
 const TODAY = new Date().toISOString().slice(0, 10)
 const BIO_MAX = 160
-
-/** Icône de chaque sport dans la grille de sélection. */
-const SPORT_ICONS: Record<Sport, Component> = {
-  musculation: Dumbbell,
-  course_a_pied: PersonStanding,
-  football: Trophy,
-  basketball: Circle,
-  natation: Waves,
-  cyclisme: Bike,
-  yoga: Flower2,
-  boxe: Hand,
-  crossfit: Zap,
-  tennis: Target,
-  autre: Plus,
-}
 
 /** Lettre affichée pour chaque jour, dans les pastilles de disponibilité. */
 const DAY_LETTERS: Record<DayOfWeek, string> = {
@@ -147,6 +123,18 @@ const initialsText = computed(() => {
 
 const selectedSportCount = computed(() => SPORTS.filter((s) => sportRows[s]?.on).length)
 
+/** Sport principal : affiché sur la carte, à la place de la photo. Toujours parmi les sports cochés (ou vide). */
+const primarySport = ref<Sport | ''>('')
+
+/** Garde le sport principal valide : premier sport coché si celui en cours est décoché. */
+watch(
+  () => SPORTS.filter((s) => sportRows[s]?.on).join(','),
+  () => {
+    const selected = SPORTS.filter((s) => sportRows[s]?.on)
+    if (!selected.includes(primarySport.value as Sport)) primarySport.value = selected[0] ?? ''
+  },
+)
+
 /** Complétion du profil : prénom, nom, bio, au moins un sport, au moins une disponibilité. */
 const completion = computed(() => {
   const checks = [
@@ -191,6 +179,8 @@ function fillForm(profile: User | null) {
   for (const practice of profile?.sports ?? []) {
     sportRows[practice.sport] = { on: true, level: practice.level }
   }
+  // Sans sport marqué isPrimary, le premier de la liste fait office de principal.
+  primarySport.value = profile?.sports.find((p) => p.isPrimary)?.sport ?? profile?.sports[0]?.sport ?? ''
 }
 
 onMounted(async () => {
@@ -242,6 +232,7 @@ async function save() {
     sports: SPORTS.filter((s) => sportRows[s]?.on).map((s) => ({
       sport: s,
       level: sportRows[s]!.level,
+      isPrimary: s === primarySport.value,
     })),
     availability: availability.value,
     ...(avatarDraft.value ? { avatarUrl: avatarDraft.value } : {}),
@@ -406,8 +397,20 @@ async function onLogout() {
                 <span>{{ SPORT_LABELS[s] }}</span>
               </label>
             </div>
+            <p v-if="selectedSportCount > 0" class="field-hint">
+              Le sport principal s'affiche sur ta carte, à la place de ta photo.
+            </p>
             <div v-for="s in SPORTS.filter((x) => sportRows[x]?.on)" :key="s" class="level-row">
               <span>{{ SPORT_LABELS[s] }}</span>
+              <button
+                type="button"
+                class="primary-toggle"
+                :class="{ 'is-primary': primarySport === s }"
+                :aria-pressed="primarySport === s"
+                @click="primarySport = s"
+              >
+                {{ primarySport === s ? 'Principal' : 'Définir principal' }}
+              </button>
               <select v-model="sportRows[s]!.level" :aria-label="`Niveau en ${SPORT_LABELS[s]}`">
                 <option v-for="l in LEVELS" :key="l" :value="l">{{ LEVEL_LABELS[l] }}</option>
               </select>
@@ -747,6 +750,25 @@ textarea:focus {
   border: 1px solid var(--color-border);
   font-size: 15px;
   font-weight: 600;
+}
+
+.primary-toggle {
+  margin-left: auto;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.primary-toggle.is-primary {
+  border-color: var(--color-lime);
+  background: var(--color-lime-soft);
+  color: var(--color-lime-dark);
 }
 
 .level-row select {
