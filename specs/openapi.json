@@ -23,7 +23,8 @@
     { "name": "activities", "description": "Propositions ponctuelles d'un utilisateur à un autre" },
     { "name": "conversations", "description": "Conversations entre utilisateurs" },
     { "name": "messages", "description": "Messages échangés dans une conversation" },
-    { "name": "favorites", "description": "Utilisateurs et activités mis en favori" }
+    { "name": "favorites", "description": "Utilisateurs et activités mis en favori" },
+    {"name": "venues", "description": "Lieux de pratique par sport à Lyon (OpenStreetMap)"}
   ],
   "paths": {
     "/users": {
@@ -442,6 +443,54 @@
         }
       }
     },
+    "/venues": {
+      "get": {
+        "tags": [
+          "venues"
+        ],
+        "summary": "Lieux de pratique d'un sport à Lyon",
+        "description": "Lieux nommés pratiquant le sport demandé dans la commune de Lyon, lus depuis OpenStreetMap (recherche Nominatim bornée à Lyon). Résultat mis en cache 7 jours côté serveur. Renvoie une liste vide pour les sports sans lieu proposé (« autre », course à pied).",
+        "parameters": [
+          {
+            "name": "sport",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Sport"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lieux triés par nom",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Venue"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Sport absent ou inconnu (`code`: `invalid_query`)"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "503": {
+            "description": "Service OpenStreetMap (Nominatim) indisponible après plusieurs essais (`code`: `venues_unavailable`)"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
     "/favorites": {
       "get": {
         "tags": ["favorites"],
@@ -639,6 +688,25 @@
           "sport": { "$ref": "#/components/schemas/Sport" },
           "level": { "$ref": "#/components/schemas/Level" },
           "isPrimary": { "type": "boolean", "description": "Sport principal de l'utilisateur (au plus un par profil). Affiché en premier et sur la carte. Si aucun n'est marqué, le premier de la liste fait office de principal." }
+        }
+      },
+      "Venue": {
+        "type": "object",
+        "required": [
+          "name",
+          "lat",
+          "lng"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "lat": {
+            "type": "number"
+          },
+          "lng": {
+            "type": "number"
+          }
         }
       },
       "AvailabilitySlot": {

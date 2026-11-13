@@ -78,6 +78,13 @@ export interface User {
   updatedAt: string
 }
 
+/** Lieu de pratique (OpenStreetMap) proposé pour une activité. */
+export interface Venue {
+  name: string
+  lat: number
+  lng: number
+}
+
 /** Résultat de GET /users : `distanceKm` présent seulement si lat et lng sont fournis. */
 export interface UserSearchResult extends User {
   distanceKm?: number

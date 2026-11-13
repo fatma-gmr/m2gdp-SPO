@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, CheckCircle2 } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
@@ -11,7 +11,8 @@ import { api, ApiError } from '../services/api'
 import { SPORT_LABELS } from '../services/labels'
 import { centerOf } from '../services/location'
 import { fetchUser } from '../services/users'
-import type { Sport, User } from '../types/api'
+import { fetchVenues } from '../services/venues'
+import type { Sport, User, Venue } from '../types/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -26,9 +27,49 @@ const loading = ref(true)
 const loadError = ref('')
 
 const sport = ref<Sport>('autre')
-const date = ref('')
-const time = ref('')
+/** Heure par défaut : prochaine heure pleine (plafonnée à 23:00 pour rester le même jour). */
+const defaultTime = (() => {
+  const next = Math.min(new Date().getHours() + 1, 23)
+  return `${String(next).padStart(2, '0')}:00`
+})()
+const time = ref(defaultTime)
 const placeName = ref('')
+
+/** Lieux suggérés pour le sport choisi (OpenStreetMap, Lyon). */
+const suggestions = ref<Venue[]>([])
+const suggestionsLoading = ref(false)
+const suggestionsError = ref('')
+/** Lieu choisi dans les suggestions : son point remplace le milieu entre les deux profils. */
+const selectedVenue = ref<Venue | null>(null)
+watch(
+  sport,
+  async (value) => {
+    const requested = value
+    suggestions.value = []
+    suggestionsError.value = ''
+    suggestionsLoading.value = true
+    try {
+      const venues = await fetchVenues(value)
+      // Ignore une réponse arrivée après un changement de sport.
+      if (requested === sport.value) suggestions.value = venues.slice(0, 8)
+    } catch {
+      if (requested === sport.value) suggestionsError.value = 'Impossible de charger les lieux suggérés.'
+    } finally {
+      if (requested === sport.value) suggestionsLoading.value = false
+    }
+  },
+  { immediate: true },
+)
+
+function pickVenue(venue: Venue) {
+  selectedVenue.value = venue
+  placeName.value = venue.name
+}
+
+// Si l'utilisateur modifie le texte après un choix, le point n'est plus celui du lieu.
+watch(placeName, (value) => {
+  if (selectedVenue.value && value !== selectedVenue.value.name) selectedVenue.value = null
+})
 const message = ref('')
 
 const submitting = ref(false)
@@ -36,7 +77,29 @@ const formError = ref('')
 const profileRequired = ref(false)
 const sent = ref(false)
 
-const today = new Date().toISOString().slice(0, 10)
+/** Date du jour en heure locale (YYYY-MM-DD), utilisée comme minimum et comme valeur par défaut. */
+const today = (() => {
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+})()
+const date = ref(today)
+
+/** Message de départ proposé ; il se met à jour tant que la personne ne l'a pas modifié. */
+const suggestedMessage = computed(() => {
+  const first = guest.value?.firstName ?? ''
+  const label = SPORT_LABELS[sport.value].toLowerCase()
+  const place = selectedVenue.value ? ` à ${selectedVenue.value.name}` : ''
+  return `Salut ${first} ! Tu serais partant pour une séance de ${label}${place} ?`
+})
+
+watch(
+  suggestedMessage,
+  (value, previous) => {
+    if (!message.value.trim() || message.value === previous) message.value = value
+  },
+  { immediate: true },
+)
 
 const messageLeft = computed(() => 500 - message.value.length)
 
@@ -93,7 +156,7 @@ async function submit() {
 
   submitting.value = true
   try {
-    const point = meetingPoint()
+    const point = selectedVenue.value ?? meetingPoint()
     await api.createActivity({
       guestId: guestId.value,
       sport: sport.value,
@@ -137,7 +200,10 @@ async function submit() {
           {{ guest?.firstName }} va recevoir ta proposition. Tu la retrouveras dans « Mes activités ».
         </p>
         <div class="sent__actions">
-          <Button as-child><RouterLink :to="{ name: 'activities' }">Voir mes activités</RouterLink></Button>
+          <Button type="button" @click="router.push({ name: 'activities' })">Voir mes activités</Button>
+          <Button type="button" variant="outline" @click="router.push({ name: 'athlete', params: { id: guestId } })">
+            Retour au profil
+          </Button>
           <Button as-child variant="outline"><RouterLink :to="{ name: 'athlete', params: { id: guestId } }">
             Retour au profil
           </RouterLink></Button>
@@ -179,6 +245,21 @@ async function submit() {
               placeholder="Ex. Parc de la Tête d’Or, entrée Lac"
               required />
             <span class="field-hint">Le point sur la carte est placé entre vous deux.</span>
+            <p v-if="suggestionsLoading" class="field-hint">Recherche des lieux à Lyon…</p>
+            <p v-else-if="suggestionsError" class="field-hint">{{ suggestionsError }}</p>
+            <div v-else-if="suggestions.length" class="venue-list" role="list" aria-label="Lieux suggérés à Lyon">
+              <button
+                v-for="v in suggestions"
+                :key="v.name + v.lat"
+                type="button"
+                role="listitem"
+                class="venue-chip"
+                :class="{ 'is-selected': selectedVenue?.name === v.name }"
+                @click="pickVenue(v)"
+              >
+                {{ v.name }}
+              </button>
+            </div>
           </div>
 
           <div class="form-row">
@@ -254,5 +335,30 @@ textarea:focus {
 
 textarea::placeholder {
   color: var(--color-text-muted);
+}
+
+.venue-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.venue-chip {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.venue-chip.is-selected {
+  border-color: var(--color-lime);
+  background: var(--color-lime-soft);
+  color: var(--color-lime-dark);
+  font-weight: 700;
 }
 </style>

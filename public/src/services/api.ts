@@ -10,10 +10,12 @@ import type {
   FavoriteCreate,
   Message,
   MessageCreate,
+  Sport,
   User,
   UserSearchParams,
   UserSearchResult,
   UserUpdate,
+  Venue,
 } from '../types/api'
 
 /** URL de base de l'API (sans slash final), lue depuis public/.env. */
@@ -85,6 +87,10 @@ async function request<T>(
 /** Client API BINOFIT : une méthode par route de specs/openapi.json. */
 export const api = {
   /** GET /users : profils proches, triés par distance. */
+  /** GET /venues : lieux de pratique du sport à Lyon (OpenStreetMap, cache serveur). */
+  // `v` : version de la liste, pour ne pas réutiliser une réponse mise en cache par le navigateur avant les nouveaux termes.
+  listVenues: (sport: Sport) => request<Venue[]>('GET', '/venues', { query: { sport, v: '3' } }),
+
   searchUsers: (params: UserSearchParams = {}) =>
     request<UserSearchResult[]>('GET', '/users', { query: { ...params } }),
 
