@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input'
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Send } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import { useUnread } from '../composables/useUnread'
 import { api, ApiError } from '../services/api'
+import type { RealtimeEvent } from '../services/realtime'
 import { formatTime } from '../services/format'
 import { fetchUser } from '../services/users'
 import type { Message, User } from '../types/api'
@@ -72,7 +73,17 @@ async function send() {
   }
 }
 
-onMounted(load)
+/** Nouveau message dans cette conversation : on recharge le fil. */
+function onRealtime(event: Event) {
+  const detail = (event as CustomEvent<RealtimeEvent>).detail
+  if (detail.type === 'message' && detail.conversationId === conversationId.value) void load()
+}
+
+onMounted(() => {
+  void load()
+  window.addEventListener('binofit:realtime', onRealtime)
+})
+onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime))
 </script>
 
 <template>

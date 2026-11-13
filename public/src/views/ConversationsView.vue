@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Send } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
+import { useUnread } from '../composables/useUnread'
 import ProfileRequired from '../components/ProfileRequired.vue'
 import { api, ApiError } from '../services/api'
 import { formatTime, formatDate } from '../services/format'
 import { getUserCached } from '../services/users'
+import type { RealtimeEvent } from '../services/realtime'
 import type { Conversation, User } from '../types/api'
 
 const route = useRoute()
@@ -57,6 +59,7 @@ async function startWithRecipient() {
 }
 
 const { user } = useAuth()
+const { isConversationUnread, unreadCountOf, refresh: refreshUnread } = useUnread()
 
 const conversations = ref<Conversation[]>([])
 const names = reactive<Record<string, { firstName: string; lastName: string; avatarUrl: string | null }>>({})
@@ -90,7 +93,8 @@ function previewTime(iso: string): string {
   return sameDay ? formatTime(iso) : formatDate(iso)
 }
 
-onMounted(async () => {
+/** Charge la liste des conversations (à l'ouverture et à chaque événement temps réel). */
+async function loadList() {
   try {
     const list = await api.listConversations()
     conversations.value = list.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
@@ -105,7 +109,20 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+}
+
+function onRealtime(event: Event) {
+  const detail = (event as CustomEvent<RealtimeEvent>).detail
+  if (detail.type === 'message' || detail.type === 'activity') void loadList()
+}
+
+onMounted(() => {
+  void refreshUnread()
+  void loadList()
+  window.addEventListener('binofit:realtime', onRealtime)
 })
+
+onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime))
 </script>
 
 <template>
@@ -196,7 +213,11 @@ onMounted(async () => {
 
       <ul v-else class="convo-list">
         <li v-for="c in conversations" :key="c.id">
-          <RouterLink :to="{ name: 'conversation', params: { id: c.id } }" class="convo">
+          <RouterLink
+            :to="{ name: 'conversation', params: { id: c.id } }"
+            class="convo"
+            :class="{ 'is-unread': isConversationUnread(c) }"
+          >
             <div class="avatar convo__avatar">
               <img v-if="otherAvatar(c)" :src="otherAvatar(c) ?? undefined" alt="" />
               <template v-else>{{ otherInitials(c) }}</template>
@@ -205,6 +226,7 @@ onMounted(async () => {
               <div class="convo__top">
                 <strong>{{ otherName(c) }}</strong>
                 <span class="convo__time">{{ previewTime(c.updatedAt) }}</span>
+                <span v-if="isConversationUnread(c)" class="convo__count" :aria-label="`${unreadCountOf(c)} message(s) non lu(s)`">{{ unreadCountOf(c) > 9 ? '9+' : unreadCountOf(c) }}</span>
               </div>
               <p class="convo__preview">
                 <template v-if="c.lastMessage">
@@ -383,6 +405,25 @@ onMounted(async () => {
 .convo__time {
   font-size: 12px;
   color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.convo.is-unread .convo__preview {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.convo__count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #E5484D;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
   flex-shrink: 0;
 }
 

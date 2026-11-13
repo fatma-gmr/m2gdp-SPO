@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { MapPin } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
+import { useUnread } from '../composables/useUnread'
 import { api } from '../services/api'
+import type { RealtimeEvent } from '../services/realtime'
 import { ACTIVITY_STATUS_LABELS, SPORT_LABELS } from '../services/labels'
 import { formatDateTime } from '../services/format'
 import { getUserCached } from '../services/users'
@@ -28,8 +30,10 @@ function counterpartName(a: Activity): string {
   return names[counterpartId(a)] ?? '…'
 }
 
+/** « À venir » : toute proposition en attente, et les activités acceptées dont la date n'est pas passée. */
 function isUpcoming(a: Activity): boolean {
-  return new Date(a.startAt).getTime() >= Date.now() && (a.status === 'en_attente' || a.status === 'acceptee')
+  if (a.status === 'en_attente') return true
+  return a.status === 'acceptee' && new Date(a.startAt).getTime() >= Date.now()
 }
 
 const upcoming = computed(() =>
@@ -67,9 +71,20 @@ async function setStatus(a: Activity, status: ActivityStatus) {
   }
 }
 
-onMounted(async () => {
+const { markActivitiesSeen } = useUnread()
+
+/** Recharge la liste des activités (à l'ouverture et à chaque événement temps réel). */
+async function loadActivities() {
   try {
     activities.value = await api.listActivities()
+    markActivitiesSeen(
+      activities.value.filter((a) => a.guestId === uid.value && a.status === 'en_attente').map((a) => a.id),
+      Object.fromEntries(
+        activities.value
+          .filter((a) => a.createdBy === uid.value && (a.status === 'acceptee' || a.status === 'refusee'))
+          .map((a) => [a.id, a.status]),
+      ),
+    )
     const ids = new Set(activities.value.map(counterpartId))
     await Promise.all(
       [...ids].map(async (id) => {
@@ -82,7 +97,18 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+}
+
+function onRealtime(event: Event) {
+  const detail = (event as CustomEvent<RealtimeEvent>).detail
+  if (detail.type === 'activity') void loadActivities()
+}
+
+onMounted(() => {
+  void loadActivities()
+  window.addEventListener('binofit:realtime', onRealtime)
 })
+onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime))
 </script>
 
 <template>

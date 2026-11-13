@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import { CalendarDays, Compass, Map as MapIcon, MessageCircle, User } from 'lucide-vue-next'
 import { useUnread } from '../composables/useUnread'
 
-const { unreadCount } = useUnread()
+const { unreadCount, newActivityCount } = useUnread()
 
 /** Onglets de la barre du bas. */
 const tabs = [
@@ -69,7 +69,8 @@ onBeforeUnmount(() => {
     >
       <span class="tabbar__pill">
         <component :is="tab.icon" :size="22" :stroke-width="2" aria-hidden="true" />
-        <span v-if="tab.to === '/messages' && unreadCount > 0" class="tabbar__badge" :aria-label="`${unreadCount} conversation(s) non lue(s)`">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+        <span v-if="tab.to === '/messages' && unreadCount > 0" class="tabbar__badge" :aria-label="`${unreadCount} message(s) non lu(s)`">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+        <span v-if="tab.to === '/activites' && newActivityCount > 0" class="tabbar__badge" :aria-label="`${newActivityCount} nouvelle(s) proposition(s)`">{{ newActivityCount > 9 ? '9+' : newActivityCount }}</span>
       </span>
       <span class="tabbar__label">{{ tab.label }}</span>
     </RouterLink>
