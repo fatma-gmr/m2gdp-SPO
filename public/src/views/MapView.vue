@@ -15,7 +15,7 @@ import type { DayOfWeek, GeoPoint, Level, Sport, UserSearchParams, UserSearchRes
 
 /** Initiale affichée pour chaque jour dans la fiche sportif. */
 const DAY_LETTERS: Record<DayOfWeek, string> = {
-  lundi: 'L', mardi: 'M', mercredi: 'M', jeudi: 'J', vendredi: 'V', samedi: 'S', dimanche: 'D',
+  lundi: 'Lu', mardi: 'Ma', mercredi: 'Me', jeudi: 'Je', vendredi: 'Ve', samedi: 'Sa', dimanche: 'Di',
 }
 
 /** Jours où le sportif est disponible (d'après ses créneaux). */
@@ -284,8 +284,8 @@ onBeforeUnmount(() => {
         <RouterLink :to="{ name: 'athlete', params: { id: selected.id } }" class="map-btn map-btn--outline">
           Voir le profil
         </RouterLink>
-        <RouterLink :to="{ name: 'messages', query: { to: selected.id } }" class="map-btn map-btn--primary">
-          Écrire
+        <RouterLink :to="{ name: 'activity-new', query: { guestId: selected.id } }" class="map-btn map-btn--primary">
+          Proposer une activité
         </RouterLink>
       </div>
     </div>

@@ -30,13 +30,13 @@ const BIO_MAX = 160
 
 /** Lettre affichée pour chaque jour, dans les pastilles de disponibilité. */
 const DAY_LETTERS: Record<DayOfWeek, string> = {
-  lundi: 'L',
-  mardi: 'M',
-  mercredi: 'M',
-  jeudi: 'J',
-  vendredi: 'V',
-  samedi: 'S',
-  dimanche: 'D',
+  lundi: 'Lu',
+  mardi: 'Ma',
+  mercredi: 'Me',
+  jeudi: 'Je',
+  vendredi: 'Ve',
+  samedi: 'Sa',
+  dimanche: 'Di',
 }
 
 const me = ref<User | null>(null)
