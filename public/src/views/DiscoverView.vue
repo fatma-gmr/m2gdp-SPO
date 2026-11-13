@@ -198,7 +198,7 @@ onMounted(load)
 }
 
 .discover__logo {
-  height: 40px;
+  height: 28px;
   width: auto;
 }
 
