@@ -47,11 +47,12 @@ async function load() {
     other.value = await fetchUser(otherId)
     const list = await api.listMessages(conversationId.value, { limit: 100 })
     messages.value = [...list].sort((a, b) => a.sentAt.localeCompare(b.sentAt))
-    scrollToEnd()
   } catch (error) {
     errorMessage.value = error instanceof Error ? error.message : 'Impossible de charger la conversation.'
   } finally {
     loading.value = false
+    // La liste n'existe qu'une fois le chargement terminé : on descend après l'affichage.
+    scrollToEnd()
   }
 }
 
@@ -151,7 +152,8 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   vertical-align: middle;
 }
 .chat {
-  min-height: 100svh;
+  height: 100svh;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--color-bg);
@@ -189,6 +191,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 
 .chat__list {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 16px;
   display: flex;
