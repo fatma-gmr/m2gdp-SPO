@@ -237,6 +237,9 @@ onMounted(load)
 
 .chat__composer {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
   gap: 10px;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
@@ -244,7 +247,9 @@ onMounted(load)
 }
 
 .chat__composer input {
-  flex: 1;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
   border-radius: 999px;
   padding: 12px 16px;
 }
