@@ -3,7 +3,8 @@ import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { Send } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
-import { api } from '../services/api'
+import ProfileRequired from '../components/ProfileRequired.vue'
+import { api, ApiError } from '../services/api'
 import { formatTime, formatDate } from '../services/format'
 import { getUserCached } from '../services/users'
 import type { Conversation, User } from '../types/api'
@@ -26,6 +27,7 @@ const recipient = ref<User | null>(null)
 const draft = ref('')
 const sending = ref(false)
 const sendError = ref('')
+const profileRequired = ref(false)
 
 watch(
   recipientId,
@@ -41,11 +43,13 @@ async function startWithRecipient() {
   if (!body || !recipientId.value || sending.value) return
   sending.value = true
   sendError.value = ''
+  profileRequired.value = false
   try {
     const conversation = await api.createConversation({ participantId: recipientId.value })
     await api.sendMessage({ conversationId: conversation.id, text: body })
     router.push({ name: 'conversation', params: { id: conversation.id } })
   } catch (error) {
+    profileRequired.value = error instanceof ApiError && error.code === 'profile_required'
     sendError.value = error instanceof Error ? error.message : 'Impossible d’ouvrir la conversation.'
   } finally {
     sending.value = false
@@ -135,7 +139,8 @@ onMounted(async () => {
           aria-label="Premier message"
           placeholder="Écris ton premier message…"
         ></textarea>
-        <p v-if="sendError" class="start__error">{{ sendError }}</p>
+        <ProfileRequired v-if="profileRequired" />
+        <p v-else-if="sendError" class="start__error">{{ sendError }}</p>
         <button
           type="button"
           class="start__send"

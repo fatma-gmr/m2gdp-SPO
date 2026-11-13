@@ -6,6 +6,7 @@ import { computed, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, CheckCircle2 } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
+import ProfileRequired from '../components/ProfileRequired.vue'
 import { api, ApiError } from '../services/api'
 import { SPORT_LABELS } from '../services/labels'
 import { centerOf } from '../services/location'
@@ -32,6 +33,7 @@ const message = ref('')
 
 const submitting = ref(false)
 const formError = ref('')
+const profileRequired = ref(false)
 const sent = ref(false)
 
 const today = new Date().toISOString().slice(0, 10)
@@ -101,6 +103,7 @@ async function submit() {
     })
     sent.value = true
   } catch (error) {
+    profileRequired.value = error instanceof ApiError && error.code === 'profile_required'
     formError.value =
       error instanceof ApiError ? error.message : 'Impossible d’envoyer la proposition.'
   } finally {
@@ -191,7 +194,8 @@ async function submit() {
             <span class="field-hint">{{ messageLeft }} caractères restants</span>
           </div>
 
-          <p v-if="formError" class="alert alert-error">{{ formError }}</p>
+          <ProfileRequired v-if="profileRequired" />
+          <p v-else-if="formError" class="alert alert-error">{{ formError }}</p>
 
           <Button type="submit" :disabled="submitting">
             {{ submitting ? 'Envoi…' : 'Envoyer la proposition' }}
