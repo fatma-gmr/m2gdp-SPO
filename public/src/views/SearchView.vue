@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, toRef, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import AthleteCard from '../components/AthleteCard.vue'
 import { api } from '../services/api'
 import { DAYS, DAY_LABELS, LEVEL_LABELS, SEXE_LABELS, SPORT_LABELS } from '../services/labels'
-import { ageFromBirthDate } from '../services/age'
 import { centerOf } from '../services/location'
 import { fetchUser } from '../services/users'
-import type { DayOfWeek, Level, Sexe, Sport, User, UserSearchResult } from '../types/api'
+import { useSearchFilters } from '../composables/useSearchFilters'
+import { FETCH_RADIUS_KM, hasActiveFilters, matchesFilters } from '../services/searchFilters'
+import type { Level, Sexe, Sport, User, UserSearchResult } from '../types/api'
 
 const RADIUS_OPTIONS = [1, 5, 10, 20]
 const SPORTS = Object.keys(SPORT_LABELS) as Sport[]
@@ -20,13 +21,14 @@ const router = useRouter()
 const { user } = useAuth()
 
 const me = ref<User | null>(null)
-const maxKm = ref(10)
-const sport = ref<Sport | null>(null)
-const level = ref<Level | null>(null)
-const availability = ref<DayOfWeek | null>(null)
-const sexe = ref<Sexe | null>(null)
-const ageMin = ref<number | null>(null)
-const ageMax = ref<number | null>(null)
+const { filters, resetFilters: resetSharedFilters } = useSearchFilters()
+const maxKm = toRef(filters, 'maxKm')
+const sport = toRef(filters, 'sport')
+const level = toRef(filters, 'level')
+const availability = toRef(filters, 'day')
+const sexe = toRef(filters, 'sexe')
+const ageMin = toRef(filters, 'ageMin')
+const ageMax = toRef(filters, 'ageMax')
 
 /** Résultats renvoyés par l'API (distance, sport, niveau, disponibilité déjà filtrés côté serveur). */
 const rawResults = ref<UserSearchResult[]>([])
@@ -34,39 +36,13 @@ const loading = ref(true)
 const errorMessage = ref('')
 let requestId = 0
 
-const hasFilters = computed(
-  () =>
-    maxKm.value !== 10 ||
-    sport.value !== null ||
-    level.value !== null ||
-    availability.value !== null ||
-    sexe.value !== null ||
-    ageMin.value !== null ||
-    ageMax.value !== null,
-)
+const hasFilters = computed(() => hasActiveFilters(filters))
 
-/** Sexe et âge sont filtrés ici : un profil sans ces informations est exclu dès qu'on filtre dessus. */
-const results = computed(() =>
-  rawResults.value.filter((p) => {
-    if (sexe.value && p.sexe !== sexe.value) return false
-    if (ageMin.value !== null || ageMax.value !== null) {
-      const age = ageFromBirthDate(p.birthDate)
-      if (age === null) return false
-      if (ageMin.value !== null && age < ageMin.value) return false
-      if (ageMax.value !== null && age > ageMax.value) return false
-    }
-    return true
-  }),
-)
+/** Résultats : les critères partagés sont appliqués localement (mêmes règles que Découvrir et la Carte). */
+const results = computed(() => rawResults.value.filter((p) => matchesFilters(p, filters)))
 
 function resetFilters() {
-  maxKm.value = 10
-  sport.value = null
-  level.value = null
-  availability.value = null
-  sexe.value = null
-  ageMin.value = null
-  ageMax.value = null
+  resetSharedFilters()
 }
 
 async function search() {
@@ -75,14 +51,7 @@ async function search() {
   errorMessage.value = ''
   try {
     const center = centerOf(me.value)
-    const list = await api.searchUsers({
-      lat: center.lat,
-      lng: center.lng,
-      maxKm: maxKm.value,
-      sport: sport.value ?? undefined,
-      level: sport.value ? (level.value ?? undefined) : undefined,
-      availability: availability.value ?? undefined,
-    })
+    const list = await api.searchUsers({ lat: center.lat, lng: center.lng, maxKm: FETCH_RADIUS_KM })
     if (id !== requestId) return
     const uid = user.value?.uid
     rawResults.value = list.filter((p) => p.id !== uid)
@@ -99,8 +68,6 @@ async function search() {
 watch(sport, (value) => {
   if (!value) level.value = null
 })
-
-watch([maxKm, sport, level, availability], search)
 
 onMounted(async () => {
   me.value = user.value?.uid ? await fetchUser(user.value.uid) : null
@@ -389,9 +356,18 @@ onMounted(async () => {
 .athlete-list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 0 8px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Une carte par défilement horizontal, comme sur la page Découvrir */
+.athlete-list > li {
+  flex: 0 0 min(280px, 80%);
+  scroll-snap-align: start;
 }
 </style>

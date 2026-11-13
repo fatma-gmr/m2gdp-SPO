@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { h, nextTick, onBeforeUnmount, onMounted, ref, render, watch } from 'vue'
+import { computed, h, nextTick, onBeforeUnmount, onMounted, ref, render, toRef, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { LocateFixed, Search } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
+import { useSearchFilters } from '../composables/useSearchFilters'
 import { api } from '../services/api'
-import { DAYS, DAY_LABELS, LEVEL_LABELS, SPORT_LABELS } from '../services/labels'
+import { DAYS, DAY_LABELS, LEVEL_LABELS, SEXE_LABELS, SPORT_LABELS } from '../services/labels'
 import { formatDistance, initials } from '../services/format'
 import { SPORT_ICONS } from '../services/sportIcons'
-import { DEFAULT_RADIUS_KM, centerOf } from '../services/location'
+import { centerOf } from '../services/location'
+import { FETCH_RADIUS_KM, matchesFilters } from '../services/searchFilters'
 import { fetchUser } from '../services/users'
-import type { DayOfWeek, GeoPoint, Level, Sport, UserSearchParams, UserSearchResult } from '../types/api'
+import type { DayOfWeek, GeoPoint, Level, Sexe, Sport, UserSearchResult } from '../types/api'
 
 /** Initiale affichée pour chaque jour dans la fiche sportif. */
 const DAY_LETTERS: Record<DayOfWeek, string> = {
@@ -39,6 +41,8 @@ const mapEl = ref<HTMLElement | null>(null)
 const selected = ref<UserSearchResult | null>(null)
 /** Sportifs proches, affichés dans la liste latérale (desktop). */
 const people = ref<UserSearchResult[]>([])
+/** Tous les sportifs du rayon maximal, avant application des critères. */
+const rawPeople = ref<UserSearchResult[]>([])
 const loading = ref(true)
 const errorMessage = ref('')
 let map: L.Map | null = null
@@ -52,9 +56,47 @@ let requestId = 0
 const RADIUS_OPTIONS = [1, 5, 10, 20]
 const SPORTS = Object.keys(SPORT_LABELS) as Sport[]
 const LEVELS = Object.keys(LEVEL_LABELS) as Level[]
-const radiusKm = ref(DEFAULT_RADIUS_KM)
-const sportFilter = ref<Sport | ''>('')
-const levelFilter = ref<Level | ''>('')
+const SEXES = Object.keys(SEXE_LABELS) as Sexe[]
+const { filters } = useSearchFilters()
+/** Rayon, sport et niveau : critères partagés avec Recherche et Découvrir. */
+const radiusKm = toRef(filters, 'maxKm')
+const sportFilter = computed<Sport | ''>({
+  get: () => filters.sport ?? '',
+  set: (value) => {
+    filters.sport = value || null
+  },
+})
+const levelFilter = computed<Level | ''>({
+  get: () => filters.level ?? '',
+  set: (value) => {
+    filters.level = value || null
+  },
+})
+/** Jour, sexe et âge : mêmes critères que la page Recherche. */
+const dayFilter = computed<DayOfWeek | ''>({
+  get: () => filters.day ?? '',
+  set: (value) => {
+    filters.day = value || null
+  },
+})
+const sexeFilter = computed<Sexe | ''>({
+  get: () => filters.sexe ?? '',
+  set: (value) => {
+    filters.sexe = value || null
+  },
+})
+const ageMinFilter = computed<number | ''>({
+  get: () => filters.ageMin ?? '',
+  set: (value) => {
+    filters.ageMin = value === '' || value === null ? null : Number(value)
+  },
+})
+const ageMaxFilter = computed<number | ''>({
+  get: () => filters.ageMax ?? '',
+  set: (value) => {
+    filters.ageMax = value === '' || value === null ? null : Number(value)
+  },
+})
 
 function escapeAttr(value: string): string {
   return value.replace(/[&"<>]/g, (ch) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' })[ch] ?? ch)
@@ -104,42 +146,45 @@ function drawRadius() {
   }).addTo(map)
 }
 
-/** Charge les sportifs autour du centre, selon le rayon et les filtres, et redessine la carte. */
+/** Charge les sportifs autour du centre (rayon maximal), puis applique les critères partagés. */
 async function load() {
   if (!map) return
   const id = ++requestId
   loading.value = true
   errorMessage.value = ''
   try {
-    const uid = user.value?.uid
-    const params: UserSearchParams = {
+    const results = await api.searchUsers({
       lat: centerPoint.lat,
       lng: centerPoint.lng,
-      maxKm: radiusKm.value,
-    }
-    if (sportFilter.value) params.sport = sportFilter.value
-    if (levelFilter.value) params.level = levelFilter.value
-    const results = await api.searchUsers(params)
+      maxKm: FETCH_RADIUS_KM,
+    })
     if (id !== requestId) return
-    people.value = results.filter((p) => p.id !== uid)
-    markers?.clearLayers()
-    for (const p of people.value) {
-      L.marker([p.location.lat, p.location.lng], { icon: pinIcon(p), title: p.firstName })
-        .on('click', () => {
-          selected.value = p
-        })
-        .addTo(markers!)
-    }
-    if (selected.value && !people.value.some((p) => p.id === selected.value?.id)) {
-      selected.value = null
-    }
-    drawRadius()
+    rawPeople.value = results
+    applyFilters()
   } catch (error) {
     if (id !== requestId) return
     errorMessage.value = error instanceof Error ? error.message : 'Impossible de charger la carte.'
   } finally {
     if (id === requestId) loading.value = false
   }
+}
+
+/** Sportifs affichés : ceux qui respectent les critères partagés. Redessine marqueurs et rayon. */
+function applyFilters() {
+  const uid = user.value?.uid
+  people.value = rawPeople.value.filter((p) => p.id !== uid && matchesFilters(p, filters))
+  markers?.clearLayers()
+  for (const p of people.value) {
+    L.marker([p.location.lat, p.location.lng], { icon: pinIcon(p), title: p.firstName })
+      .on('click', () => {
+        selected.value = p
+      })
+      .addTo(markers!)
+  }
+  if (selected.value && !people.value.some((p) => p.id === selected.value?.id)) {
+    selected.value = null
+  }
+  drawRadius()
 }
 
 /** « Me localiser » : recentre la carte sur la localisation de votre profil. */
@@ -151,9 +196,7 @@ async function locate() {
   await load()
 }
 
-watch([radiusKm, sportFilter, levelFilter], () => {
-  void load()
-})
+watch(filters, () => applyFilters(), { deep: true })
 
 onMounted(async () => {
   try {
@@ -238,6 +281,16 @@ onBeforeUnmount(() => {
           <option value="">Tous les sports</option>
           <option v-for="sport in SPORTS" :key="sport" :value="sport">{{ SPORT_LABELS[sport] }}</option>
         </select>
+        <select v-model="dayFilter" class="map-chip map-chip--select" aria-label="Jour">
+          <option value="">Tous les jours</option>
+          <option v-for="d in DAYS" :key="d" :value="d">{{ DAY_LABELS[d] }}</option>
+        </select>
+        <select v-model="sexeFilter" class="map-chip map-chip--select" aria-label="Sexe">
+          <option value="">Tous sexes</option>
+          <option v-for="x in SEXES" :key="x" :value="x">{{ SEXE_LABELS[x] }}</option>
+        </select>
+        <input v-model.number="ageMinFilter" type="number" min="16" max="99" class="map-chip map-chip--input" placeholder="Âge min" aria-label="Âge minimum" />
+        <input v-model.number="ageMaxFilter" type="number" min="16" max="99" class="map-chip map-chip--input" placeholder="Âge max" aria-label="Âge maximum" />
         <select v-model="levelFilter" class="map-chip map-chip--select" aria-label="Niveau">
           <option value="">Tous niveaux</option>
           <option v-for="level in LEVELS" :key="level" :value="level">{{ LEVEL_LABELS[level] }}</option>
@@ -382,6 +435,10 @@ onBeforeUnmount(() => {
   justify-content: center;
   box-shadow: 0 6px 16px rgba(18, 21, 18, 0.08);
   cursor: pointer;
+}
+
+.map-chip--input {
+  width: 92px;
 }
 
 .map-chips {

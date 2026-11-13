@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, toRef } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
   Bell,
@@ -22,7 +22,9 @@ import { useAuth } from '../composables/useAuth'
 import AthleteCard from '../components/AthleteCard.vue'
 import { api } from '../services/api'
 import { SPORT_LABELS } from '../services/labels'
-import { DEFAULT_RADIUS_KM, centerOf } from '../services/location'
+import { centerOf } from '../services/location'
+import { useSearchFilters } from '../composables/useSearchFilters'
+import { FETCH_RADIUS_KM, matchesFilters } from '../services/searchFilters'
 import { fetchUser } from '../services/users'
 import type { Sport, User, UserSearchResult } from '../types/api'
 
@@ -48,7 +50,9 @@ const quickSports: { label: string; sport: Sport; icon: typeof Dumbbell }[] = [
 ]
 
 /** Sport sélectionné dans les raccourcis ; null = pas de filtre. */
-const selectedSport = ref<Sport | null>(null)
+/** Sport choisi dans les raccourcis : même critère partagé avec Recherche et la Carte. */
+const { filters } = useSearchFilters()
+const selectedSport = toRef(filters, 'sport')
 
 function toggleSport(sport: Sport) {
   selectedSport.value = selectedSport.value === sport ? null : sport
@@ -65,7 +69,7 @@ function normalize(text: string): string {
 const visibleProfiles = computed(() => {
   const q = normalize(query.value)
   return profiles.value.filter((p) => {
-    if (selectedSport.value && p.sports[0]?.sport !== selectedSport.value) return false
+    if (!matchesFilters(p, filters)) return false
     if (!q) return true
     const name = normalize(`${p.firstName} ${p.lastName}`)
     const sportMatch = p.sports.some((practice) => normalize(SPORT_LABELS[practice.sport]).includes(q))
@@ -87,7 +91,7 @@ async function load() {
     const results = await api.searchUsers({
       lat: center.lat,
       lng: center.lng,
-      maxKm: DEFAULT_RADIUS_KM,
+      maxKm: FETCH_RADIUS_KM,
     })
     profiles.value = results.filter((p) => p.id !== uid)
   } catch (error) {
