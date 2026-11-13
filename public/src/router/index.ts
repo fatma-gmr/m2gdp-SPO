@@ -87,7 +87,7 @@ const router = createRouter({
       path: '/activites',
       name: 'activities',
       component: () => import('../views/ActivitiesView.vue'),
-      meta: { requiresAuth: true, title: 'Mes activités — BINOFIT' },
+      meta: { requiresAuth: true, tab: true, title: 'Mes activités — BINOFIT' },
     },
     {
       path: '/activites/nouvelle',
