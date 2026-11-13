@@ -21,6 +21,7 @@ import logoUrl from '../assets/logo-binofit-horizontal.png'
 import { useAuth } from '../composables/useAuth'
 import AthleteCard from '../components/AthleteCard.vue'
 import { api } from '../services/api'
+import { SPORT_LABELS } from '../services/labels'
 import { DEFAULT_RADIUS_KM, centerOf } from '../services/location'
 import { fetchUser } from '../services/users'
 import type { Sport, User, UserSearchResult } from '../types/api'
@@ -53,12 +54,24 @@ function toggleSport(sport: Sport) {
   selectedSport.value = selectedSport.value === sport ? null : sport
 }
 
-/** Profils affichés : tous, ou seulement ceux dont le sport principal est le sport sélectionné. */
-const visibleProfiles = computed(() =>
-  selectedSport.value
-    ? profiles.value.filter((p) => p.sports[0]?.sport === selectedSport.value)
-    : profiles.value,
-)
+/** Texte de recherche : prénom, nom ou libellé d'un sport (sans accents ni casse). */
+const query = ref('')
+
+function normalize(text: string): string {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
+
+/** Profils affichés : filtre sport (sport principal) puis recherche texte. */
+const visibleProfiles = computed(() => {
+  const q = normalize(query.value)
+  return profiles.value.filter((p) => {
+    if (selectedSport.value && p.sports[0]?.sport !== selectedSport.value) return false
+    if (!q) return true
+    const name = normalize(`${p.firstName} ${p.lastName}`)
+    const sportMatch = p.sports.some((practice) => normalize(SPORT_LABELS[practice.sport]).includes(q))
+    return name.includes(q) || sportMatch
+  })
+})
 
 const greetingName = computed(
   () => me.value?.firstName ?? user.value?.email?.split('@')[0] ?? '',
@@ -106,7 +119,7 @@ onMounted(load)
       <div class="discover__search">
         <label class="discover__input">
           <Search :size="18" aria-hidden="true" />
-          <input type="search" placeholder="Un sport, un prénom…" aria-label="Rechercher un sportif" />
+          <input v-model="query" type="search" placeholder="Un sport, un prénom…" aria-label="Rechercher un sportif" />
         </label>
         <RouterLink :to="{ name: 'recherche' }" class="discover__filter" aria-label="Filtrer">
           <SlidersHorizontal :size="18" aria-hidden="true" />
@@ -156,7 +169,7 @@ onMounted(load)
       </div>
 
       <p v-else-if="visibleProfiles.length === 0" class="state">
-        {{ selectedSport ? 'Personne dont le sport principal est celui-ci dans ce rayon.' : 'Personne dans ce rayon pour l\'instant.' }}
+        {{ selectedSport || query ? 'Aucun sportif ne correspond dans ce rayon.' : 'Personne dans ce rayon pour l\'instant.' }}
       </p>
 
       <ul v-else class="athlete-list">
@@ -234,6 +247,14 @@ onMounted(load)
   font: inherit;
   font-size: 15px;
   outline: none;
+}
+
+/* Pas de halo vert au focus : le champ garde sa bordure grise */
+.discover__input input:focus,
+.discover__input input:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
 }
 
 .discover__filter {
