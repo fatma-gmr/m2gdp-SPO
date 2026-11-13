@@ -1,7 +1,22 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { Bell, Bike, Dumbbell, Flower2, PersonStanding, Search, SlidersHorizontal, Target } from 'lucide-vue-next'
+import {
+  Bell,
+  Bike,
+  Circle,
+  Dumbbell,
+  Flower2,
+  Hand,
+  PersonStanding,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  Target,
+  Trophy,
+  Waves,
+  Zap,
+} from 'lucide-vue-next'
 import logoUrl from '../assets/logo-binofit-horizontal.png'
 import { useAuth } from '../composables/useAuth'
 import AthleteCard from '../components/AthleteCard.vue'
@@ -23,6 +38,12 @@ const quickSports: { label: string; sport: Sport; icon: typeof Dumbbell }[] = [
   { label: 'Tennis', sport: 'tennis', icon: Target },
   { label: 'Yoga', sport: 'yoga', icon: Flower2 },
   { label: 'Muscu', sport: 'musculation', icon: Dumbbell },
+  { label: 'Natation', sport: 'natation', icon: Waves },
+  { label: 'Football', sport: 'football', icon: Trophy },
+  { label: 'Basket', sport: 'basketball', icon: Circle },
+  { label: 'Boxe', sport: 'boxe', icon: Hand },
+  { label: 'CrossFit', sport: 'crossfit', icon: Zap },
+  { label: 'Autre', sport: 'autre', icon: Plus },
 ]
 
 /** Sport sélectionné dans les raccourcis ; null = pas de filtre. */
@@ -32,10 +53,10 @@ function toggleSport(sport: Sport) {
   selectedSport.value = selectedSport.value === sport ? null : sport
 }
 
-/** Profils affichés : tous, ou seulement ceux qui pratiquent le sport sélectionné. */
+/** Profils affichés : tous, ou seulement ceux dont le sport principal est le sport sélectionné. */
 const visibleProfiles = computed(() =>
   selectedSport.value
-    ? profiles.value.filter((p) => p.sports.some((practice) => practice.sport === selectedSport.value))
+    ? profiles.value.filter((p) => p.sports[0]?.sport === selectedSport.value)
     : profiles.value,
 )
 
@@ -135,7 +156,7 @@ onMounted(load)
       </div>
 
       <p v-else-if="visibleProfiles.length === 0" class="state">
-        {{ selectedSport ? 'Personne pratiquant ce sport dans ce rayon.' : 'Personne dans ce rayon pour l\'instant.' }}
+        {{ selectedSport ? 'Personne dont le sport principal est celui-ci dans ce rayon.' : 'Personne dans ce rayon pour l\'instant.' }}
       </p>
 
       <ul v-else class="athlete-list">
