@@ -179,7 +179,7 @@ onMounted(load)
         </button>
       </div>
 
-      <RouterLink :to="{ name: 'carte' }" class="discover__banner" aria-label="Rencontrez des partenaires sportifs près de chez vous : voir la carte">
+      <RouterLink :to="{ name: 'carte' }" class="discover__banner discover__banner--mobile-only" aria-label="Rencontrez des partenaires sportifs près de chez vous : voir la carte">
         <img src="/assets/banner-decouvrir.png" alt="" class="discover__banner-img" />
         <span class="discover__banner-link">
           <MapPin :size="18" aria-hidden="true" />
@@ -425,6 +425,15 @@ onMounted(load)
   width: 100%;
   height: auto;
 }
+
+/* La bannière illustrée n'est affichée que sur mobile */
+@media (min-width: 1024px) {
+  .discover__banner--mobile-only {
+    display: none;
+  }
+}
+
+
 
 /* Bouton blanc en bas à gauche, comme sur l'illustration de référence */
 .discover__banner-link {

@@ -10,7 +10,7 @@ import { api } from '../services/api'
 import { DAYS, DAY_LABELS, LEVEL_LABELS, SEXE_LABELS, SPORT_LABELS } from '../services/labels'
 import { formatDistance, initials } from '../services/format'
 import { SPORT_ICONS } from '../services/sportIcons'
-import { centerOf } from '../services/location'
+import { SEARCH_ZONES, centerOf, type SearchZone } from '../services/location'
 import { FETCH_RADIUS_KM, matchesFilters } from '../services/searchFilters'
 import { fetchUser } from '../services/users'
 import type { DayOfWeek, GeoPoint, Level, Sexe, Sport, UserSearchResult } from '../types/api'
@@ -188,6 +188,51 @@ function applyFilters() {
 }
 
 /** « Me localiser » : recentre la carte sur la localisation de votre profil. */
+/** Recherche de lieu : choisir une zone de Lyon recentre la carte sur elle. */
+const placeQuery = ref('')
+const placeOpen = ref(false)
+
+function normalizePlace(text: string): string {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
+
+const placeMatches = computed(() => {
+  const q = normalizePlace(placeQuery.value)
+  return SEARCH_ZONES.filter((z) => !q || normalizePlace(z.label).includes(q))
+})
+
+/** Recentre la carte sur une zone ; `zoom` plus fort quand la zone est choisie. */
+function centerOnZone(zone: SearchZone, zoom = 13) {
+  centerPoint = { ...zone.location }
+  map?.flyTo([centerPoint.lat, centerPoint.lng], zoom, { duration: 0.8 })
+  void load()
+}
+
+/** Vrai quand la saisie est remplie par un choix : pas de recentrage automatique à ce moment-là. */
+let skipAutoCenter = false
+
+function choosePlace(zone: SearchZone) {
+  skipAutoCenter = true
+  placeQuery.value = zone.label
+  placeOpen.value = false
+  centerOnZone(zone, 15)
+}
+
+/** Recentrage automatique : dès qu'une zone correspond à la saisie (délai court, pour limiter les appels). */
+let placeTimer: number | undefined
+watch(placeQuery, (value) => {
+  window.clearTimeout(placeTimer)
+  if (skipAutoCenter) {
+    skipAutoCenter = false
+    return
+  }
+  if (!value.trim()) return
+  placeTimer = window.setTimeout(() => {
+    const first = placeMatches.value[0]
+    if (first) centerOnZone(first)
+  }, 400)
+})
+
 async function locate() {
   const uid = user.value?.uid
   const me = uid ? await fetchUser(uid) : null
@@ -265,10 +310,27 @@ onBeforeUnmount(() => {
     <!-- Recherche et filtres, au-dessus de la carte -->
     <div class="map-top">
       <div class="map-search">
-        <label class="map-search__input">
-          <Search :size="18" aria-hidden="true" />
-          <input type="search" placeholder="Lyon · Presqu'île" aria-label="Lieu de recherche" />
-        </label>
+        <div class="map-search__field">
+          <label class="map-search__input">
+            <Search :size="18" aria-hidden="true" />
+            <input
+              v-model="placeQuery"
+              type="search"
+              placeholder="Lyon · Presqu'île"
+              aria-label="Lieu de recherche"
+              autocomplete="off"
+              @focus="placeOpen = true"
+              @input="placeOpen = true"
+              @blur="placeOpen = false"
+              @keydown.enter.prevent="placeMatches[0] && choosePlace(placeMatches[0])"
+            />
+          </label>
+          <ul v-if="placeOpen && placeMatches.length" class="map-search__results" aria-label="Lieux proposés">
+            <li v-for="z in placeMatches" :key="z.label">
+              <button type="button" @mousedown.prevent="choosePlace(z)">{{ z.label }}</button>
+            </li>
+          </ul>
+        </div>
         <button type="button" class="map-search__locate" aria-label="Me localiser" @click="locate">
           <LocateFixed :size="18" aria-hidden="true" />
         </button>
@@ -410,6 +472,52 @@ onBeforeUnmount(() => {
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
   box-shadow: 0 6px 16px rgba(18, 21, 18, 0.08);
+}
+
+.map-search__field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.map-search__results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 500;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 30px rgba(18, 21, 18, 0.14);
+}
+
+.map-search__results button {
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.map-search__results button:hover {
+  background: var(--color-lime-soft);
+}
+
+/* Pas de halo ni de contour au clic dans le champ */
+.map-search__input input:focus,
+.map-search__input input:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
 }
 
 .map-search__input input {
