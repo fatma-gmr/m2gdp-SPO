@@ -204,9 +204,6 @@ async function submit() {
           <Button type="button" variant="outline" @click="router.push({ name: 'athlete', params: { id: guestId } })">
             Retour au profil
           </Button>
-          <Button as-child variant="outline"><RouterLink :to="{ name: 'athlete', params: { id: guestId } }">
-            Retour au profil
-          </RouterLink></Button>
         </div>
       </div>
 
