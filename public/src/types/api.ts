@@ -49,6 +49,8 @@ export interface GeoPoint {
 export interface SportPractice {
   sport: Sport
   level: Level
+  /** Sport principal (au plus un par profil) : affiché sur la carte, en premier. */
+  isPrimary?: boolean
 }
 
 export interface AvailabilitySlot {
@@ -74,6 +76,13 @@ export interface User {
   availability: AvailabilitySlot[]
   createdAt: string
   updatedAt: string
+}
+
+/** Lieu de pratique (OpenStreetMap) proposé pour une activité. */
+export interface Venue {
+  name: string
+  lat: number
+  lng: number
 }
 
 /** Résultat de GET /users : `distanceKm` présent seulement si lat et lng sont fournis. */

@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue'
 import { api } from '../services/api'
+import { startRealtime, stopRealtime } from '../services/realtime'
 import { useAuth } from './useAuth'
 import type { Conversation } from '../types/api'
 
@@ -13,6 +14,51 @@ const STORAGE_KEY = 'binofit:lastSeen'
 const POLL_MS = 15000
 
 const conversations = ref<Conversation[]>([])
+/** Nombre de messages non lus par conversation (id de conversation → nombre). */
+const unreadCounts = ref<Record<string, number>>({})
+/** Propositions reçues en attente de réponse, pas encore vues dans « Mes activités ». */
+const SEEN_ACTIVITIES_KEY = 'binofit:seenActivities'
+const pendingIncomingIds = ref<string[]>([])
+const seenActivityIds = ref<string[]>(readSeenActivities())
+const newActivityCount = ref(0)
+
+function readSeenActivities(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(SEEN_ACTIVITIES_KEY) ?? '[]')
+  } catch {
+    return []
+  }
+}
+
+/** Réponses (acceptée/refusée) à mes propositions : id → statut, et le dernier statut vu par cet appareil. */
+const SEEN_STATUS_KEY = 'binofit:seenActivityStatus'
+const answeredStatus = ref<Record<string, string>>({})
+const seenStatus = ref<Record<string, string>>(readSeenStatus())
+
+function readSeenStatus(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem(SEEN_STATUS_KEY) ?? '{}')
+  } catch {
+    return {}
+  }
+}
+
+function recountNewActivities() {
+  const seen = new Set(seenActivityIds.value)
+  const incoming = pendingIncomingIds.value.filter((id) => !seen.has(id)).length
+  const answers = Object.entries(answeredStatus.value).filter(([id, status]) => seenStatus.value[id] !== status).length
+  newActivityCount.value = incoming + answers
+}
+
+/** Marque ces propositions reçues et ces réponses comme vues (à l'ouverture de « Mes activités »). */
+function markActivitiesSeen(incomingIds: string[], answers: Record<string, string>) {
+  seenActivityIds.value = [...new Set([...seenActivityIds.value, ...incomingIds])]
+  localStorage.setItem(SEEN_ACTIVITIES_KEY, JSON.stringify(seenActivityIds.value))
+  seenStatus.value = { ...seenStatus.value, ...answers }
+  localStorage.setItem(SEEN_STATUS_KEY, JSON.stringify(seenStatus.value))
+  answeredStatus.value = { ...answeredStatus.value, ...answers }
+  recountNewActivities()
+}
 const lastSeen = ref<Record<string, string>>(readLastSeen())
 let timer: number | undefined
 let lastCount = 0
@@ -40,6 +86,18 @@ function isUnread(c: Conversation, uid: string): boolean {
   if (!last || last.senderId === uid) return false
   const seen = lastSeen.value[c.id]
   return !seen || last.sentAt > seen
+}
+
+/** Nombre de messages non lus d'une conversation (0 si lue). */
+export function unreadCountOf(c: Conversation): number {
+  return unreadCounts.value[c.id] ?? 0
+}
+
+/** Vrai si la conversation a un message non lu pour l'utilisateur connecté. */
+export function isConversationUnread(c: Conversation): boolean {
+  const { user } = useAuth()
+  const uid = user.value?.uid
+  return uid ? isUnread(c, uid) : false
 }
 
 /** Marque une conversation comme lue jusqu'à son dernier message. */
@@ -71,7 +129,35 @@ async function refresh() {
     const openId = openConversationId()
     const open = list.find((c) => c.id === openId)
     if (open) markSeen(open)
-    const count = list.filter((c) => isUnread(c, uid)).length
+    const unread = list.filter((c) => isUnread(c, uid))
+    const counts: Record<string, number> = {}
+    await Promise.all(
+      unread.map(async (c) => {
+        const seen = lastSeen.value[c.id]
+        try {
+          const messages = await api.listMessages(c.id, { limit: 100 })
+          counts[c.id] = messages.filter((m) => m.senderId !== uid && (!seen || m.sentAt > seen)).length
+        } catch {
+          counts[c.id] = 1
+        }
+      }),
+    )
+    unreadCounts.value = counts
+    try {
+      const activities = await api.listActivities()
+      pendingIncomingIds.value = activities
+        .filter((a) => a.guestId === uid && a.status === 'en_attente')
+        .map((a) => a.id)
+      answeredStatus.value = Object.fromEntries(
+        activities
+          .filter((a) => a.createdBy === uid && (a.status === 'acceptee' || a.status === 'refusee'))
+          .map((a) => [a.id, a.status]),
+      )
+      recountNewActivities()
+    } catch {
+      // Sans bruit : la prochaine interrogation réessaiera.
+    }
+    const count = unread.length
     if (count > lastCount) notify(count)
     lastCount = count
   } catch {
@@ -79,27 +165,42 @@ async function refresh() {
   }
 }
 
-/** Nombre de conversations avec des messages non lus (affiché sur l'onglet Messages). */
+/** Nombre total de messages non lus, toutes conversations confondues (affiché sur l'onglet Messages). */
 const unreadCount = computed(() => {
   const { user } = useAuth()
   const uid = user.value?.uid ?? ''
   if (!uid) return 0
-  return conversations.value.filter((c) => isUnread(c, uid)).length
+  return conversations.value
+    .filter((c) => isUnread(c, uid))
+    .reduce((total, c) => total + (unreadCounts.value[c.id] ?? 1), 0)
 })
 
-/** Démarre l'interrogation périodique (à appeler une fois connecté). */
+/** Un événement temps réel rafraîchit tout de suite les compteurs (l'interrogation reste en secours). */
+function onRealtime() {
+  void refresh()
+}
+
+/** Démarre le temps réel et l'interrogation de secours (à appeler une fois connecté). */
 function startUnreadPolling() {
   if (timer !== undefined) return
   void refresh()
   timer = window.setInterval(refresh, POLL_MS)
   document.addEventListener('visibilitychange', onVisibility)
+  window.addEventListener('binofit:realtime', onRealtime)
+  startRealtime()
 }
 
 function stopUnreadPolling() {
   if (timer !== undefined) window.clearInterval(timer)
   timer = undefined
   document.removeEventListener('visibilitychange', onVisibility)
+  window.removeEventListener('binofit:realtime', onRealtime)
+  stopRealtime()
   conversations.value = []
+  unreadCounts.value = {}
+  pendingIncomingIds.value = []
+  answeredStatus.value = {}
+  newActivityCount.value = 0
   lastCount = 0
 }
 
@@ -114,5 +215,5 @@ function requestNotificationPermission() {
 }
 
 export function useUnread() {
-  return { unreadCount, refresh, markSeen, startUnreadPolling, stopUnreadPolling, requestNotificationPermission }
+  return { unreadCount, newActivityCount, markActivitiesSeen, refresh, markSeen, isConversationUnread, unreadCountOf, startUnreadPolling, stopUnreadPolling, requestNotificationPermission }
 }

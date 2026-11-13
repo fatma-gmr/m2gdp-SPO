@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input'
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Send } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import { useUnread } from '../composables/useUnread'
 import { api, ApiError } from '../services/api'
+import type { RealtimeEvent } from '../services/realtime'
 import { formatTime } from '../services/format'
 import { fetchUser } from '../services/users'
 import type { Message, User } from '../types/api'
@@ -72,7 +73,17 @@ async function send() {
   }
 }
 
-onMounted(load)
+/** Nouveau message dans cette conversation : on recharge le fil. */
+function onRealtime(event: Event) {
+  const detail = (event as CustomEvent<RealtimeEvent>).detail
+  if (detail.type === 'message' && detail.conversationId === conversationId.value) void load()
+}
+
+onMounted(() => {
+  void load()
+  window.addEventListener('binofit:realtime', onRealtime)
+})
+onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime))
 </script>
 
 <template>
@@ -163,7 +174,7 @@ onMounted(load)
 
 .chat__title {
   font-weight: 800;
-  font-size: 16px;
+  font-size: 14.5px;
   color: var(--color-text);
   text-decoration: none;
 }
@@ -188,7 +199,7 @@ onMounted(load)
 .chat__empty {
   text-align: center;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
   margin: auto;
 }
 
@@ -203,13 +214,13 @@ onMounted(load)
 }
 
 .bubble p {
-  font-size: 15px;
+  font-size: 13.5px;
   line-height: 1.4;
   white-space: pre-line;
 }
 
 .bubble__time {
-  font-size: 11px;
+  font-size: 10px;
   opacity: 0.7;
   align-self: flex-end;
 }
@@ -231,12 +242,15 @@ onMounted(load)
 
 .chat__error {
   color: var(--color-danger);
-  font-size: 13px;
+  font-size: 11.5px;
   padding: 0 16px;
 }
 
 .chat__composer {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
   gap: 10px;
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
   background: var(--color-surface);
@@ -244,7 +258,9 @@ onMounted(load)
 }
 
 .chat__composer input {
-  flex: 1;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
   border-radius: 999px;
   padding: 12px 16px;
 }

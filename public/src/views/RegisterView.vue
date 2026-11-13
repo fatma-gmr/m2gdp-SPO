@@ -149,7 +149,7 @@ function toErrorMessage(e: unknown): string {
 
         <div class="divider-text">ou</div>
 
-        <p style="text-align: center; font-size: 14.5px; color: var(--color-text-muted)">
+        <p style="text-align: center; font-size: 13px; color: var(--color-text-muted)">
           Déjà inscrit ?
           <router-link class="btn-link" to="/connexion" style="display: inline">Se connecter</router-link>
         </p>

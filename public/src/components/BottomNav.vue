@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { Compass, Map as MapIcon, MessageCircle, User } from 'lucide-vue-next'
+import { CalendarDays, Compass, Map as MapIcon, MessageCircle, User } from 'lucide-vue-next'
 import { useUnread } from '../composables/useUnread'
 
-const { unreadCount } = useUnread()
+const { unreadCount, newActivityCount } = useUnread()
 
-/** Onglets de la barre du bas. « Mes activités » s'ouvre depuis Profil. */
+/** Onglets de la barre du bas. */
 const tabs = [
   { to: '/decouvrir', label: 'Accueil', icon: Compass },
   { to: '/carte', label: 'Carte', icon: MapIcon },
+  { to: '/activites', label: 'Activités', icon: CalendarDays },
   { to: '/messages', label: 'Messages', icon: MessageCircle },
   { to: '/profil', label: 'Profil', icon: User },
 ]
@@ -68,7 +69,8 @@ onBeforeUnmount(() => {
     >
       <span class="tabbar__pill">
         <component :is="tab.icon" :size="22" :stroke-width="2" aria-hidden="true" />
-        <span v-if="tab.to === '/messages' && unreadCount > 0" class="tabbar__badge" :aria-label="`${unreadCount} conversation(s) non lue(s)`">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+        <span v-if="tab.to === '/messages' && unreadCount > 0" class="tabbar__badge" :aria-label="`${unreadCount} message(s) non lu(s)`">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+        <span v-if="tab.to === '/activites' && newActivityCount > 0" class="tabbar__badge" :aria-label="`${newActivityCount} nouvelle(s) proposition(s)`">{{ newActivityCount > 9 ? '9+' : newActivityCount }}</span>
       </span>
       <span class="tabbar__label">{{ tab.label }}</span>
     </RouterLink>
@@ -87,7 +89,7 @@ onBeforeUnmount(() => {
   border-radius: 999px;
   background: #E5484D;
   color: #FFFFFF;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   line-height: 18px;
   text-align: center;
@@ -123,7 +125,7 @@ onBeforeUnmount(() => {
   padding: 0 8px;
   border-radius: 999px;
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   text-decoration: none;
   transition: color 0.2s ease;
@@ -180,7 +182,7 @@ onBeforeUnmount(() => {
     gap: 0;
     height: 40px;
     padding: 0 18px;
-    font-size: 15px;
+    font-size: 13.5px;
     color: var(--color-text);
   }
 

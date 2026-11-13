@@ -38,7 +38,8 @@ function isSportPractice(value: unknown): value is SportPractice {
     typeof value === 'object' &&
     value !== null &&
     SPORTS.includes((value as SportPractice).sport) &&
-    LEVELS.includes((value as SportPractice).level)
+    LEVELS.includes((value as SportPractice).level) &&
+    ((value as SportPractice).isPrimary === undefined || typeof (value as SportPractice).isPrimary === 'boolean')
   )
 }
 
@@ -132,6 +133,10 @@ export function validateUserUpdate(body: unknown): UserUpdate {
     // Un seul niveau par sport (clé primaire (user_id, sport) de user_sports).
     if (new Set(input.sports.map((practice) => practice.sport)).size !== input.sports.length) {
       throw new ApiError(400, 'invalid_body', 'sports ne doit pas contenir deux fois le même sport')
+    }
+    // Un seul sport principal (index unique partiel sur user_sports.is_primary).
+    if (input.sports.filter((practice) => practice.isPrimary === true).length > 1) {
+      throw new ApiError(400, 'invalid_body', 'sports ne doit contenir qu\'un seul sport principal (isPrimary)')
     }
     update.sports = input.sports
   }

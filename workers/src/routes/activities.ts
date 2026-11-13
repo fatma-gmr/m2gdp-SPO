@@ -1,6 +1,7 @@
 /**
  * BINOFIT API — routes /activities (voir /specs/openapi.json).
  */
+import { notifyUsers } from '../realtime/notify'
 import { Hono } from 'hono'
 import type { AppBindings } from '../env'
 import {
@@ -47,7 +48,16 @@ activitiesRoute.post('/', requireProfile(), async (c) => {
     'activities',
   )
 
-  return c.json(rowToActivity(row as unknown as ActivityRow), 201)
+  const created = rowToActivity(row as unknown as ActivityRow)
+  await notifyUsers(c.env, [input.guestId], {
+    type: 'activity',
+    activityId: created.id,
+    status: created.status,
+    actorId: authUser.uid,
+    creatorId: authUser.uid,
+    guestId: input.guestId,
+  })
+  return c.json(created, 201)
 })
 
 /**
@@ -109,5 +119,14 @@ activitiesRoute.patch('/:id/status', async (c) => {
     await supabase.from('activities').update({ status: nextStatus }).eq('id', id).select(ACTIVITY_SELECT).single(),
     'activities',
   )
-  return c.json(rowToActivity(updated as unknown as ActivityRow))
+  const result = rowToActivity(updated as unknown as ActivityRow)
+  await notifyUsers(c.env, [activity.createdBy, activity.guestId], {
+    type: 'activity',
+    activityId: result.id,
+    status: result.status,
+    actorId: authUser.uid,
+    creatorId: activity.createdBy,
+    guestId: activity.guestId,
+  })
+  return c.json(result)
 })

@@ -1,19 +1,70 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { Send } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
-import { api } from '../services/api'
+import { useUnread } from '../composables/useUnread'
+import ProfileRequired from '../components/ProfileRequired.vue'
+import { api, ApiError } from '../services/api'
 import { formatTime, formatDate } from '../services/format'
 import { getUserCached } from '../services/users'
-import type { Conversation } from '../types/api'
+import type { RealtimeEvent } from '../services/realtime'
+import type { Conversation, User } from '../types/api'
+
+const route = useRoute()
+const router = useRouter()
+
+/** Messages suggérés pour démarrer la conversation ; le texte reste modifiable. */
+const STARTERS = [
+  'Salut ! Tu serais partant pour une séance cette semaine ?',
+  'Bonjour ! Tu t’entraînes souvent près de chez toi ?',
+  'Hello, ça te dit un match ce week-end ?',
+  'Salut ! On se fait une séance à deux ?',
+]
+const MESSAGE_MAX = 2000
+
+/** Sportif avec qui démarrer une conversation (?to=<id>, venant de la carte). */
+const recipientId = computed(() => (typeof route.query.to === 'string' ? route.query.to : ''))
+const recipient = ref<User | null>(null)
+const draft = ref('')
+const sending = ref(false)
+const sendError = ref('')
+const profileRequired = ref(false)
+
+watch(
+  recipientId,
+  async (id) => {
+    recipient.value = id ? await getUserCached(id) : null
+  },
+  { immediate: true },
+)
+
+/** Crée la conversation, y dépose le premier message, puis ouvre le chat. */
+async function startWithRecipient() {
+  const body = draft.value.trim()
+  if (!body || !recipientId.value || sending.value) return
+  sending.value = true
+  sendError.value = ''
+  profileRequired.value = false
+  try {
+    const conversation = await api.createConversation({ participantId: recipientId.value })
+    await api.sendMessage({ conversationId: conversation.id, text: body })
+    router.push({ name: 'conversation', params: { id: conversation.id } })
+  } catch (error) {
+    profileRequired.value = error instanceof ApiError && error.code === 'profile_required'
+    sendError.value = error instanceof Error ? error.message : 'Impossible d’ouvrir la conversation.'
+  } finally {
+    sending.value = false
+  }
+}
 
 const { user } = useAuth()
+const { isConversationUnread, unreadCountOf, refresh: refreshUnread } = useUnread()
 
 const conversations = ref<Conversation[]>([])
 const names = reactive<Record<string, { firstName: string; lastName: string; avatarUrl: string | null }>>({})
 const loading = ref(true)
 const errorMessage = ref('')
-const tab = ref<'conversations' | 'demandes'>('conversations')
 
 const uid = computed(() => user.value?.uid ?? '')
 
@@ -41,7 +92,8 @@ function previewTime(iso: string): string {
   return sameDay ? formatTime(iso) : formatDate(iso)
 }
 
-onMounted(async () => {
+/** Charge la liste des conversations (à l'ouverture et à chaque événement temps réel). */
+async function loadList() {
   try {
     const list = await api.listConversations()
     conversations.value = list.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
@@ -56,7 +108,20 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+}
+
+function onRealtime(event: Event) {
+  const detail = (event as CustomEvent<RealtimeEvent>).detail
+  if (detail.type === 'message' || detail.type === 'activity') void loadList()
+}
+
+onMounted(() => {
+  void refreshUnread()
+  void loadList()
+  window.addEventListener('binofit:realtime', onRealtime)
 })
+
+onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime))
 </script>
 
 <template>
@@ -67,26 +132,41 @@ onMounted(async () => {
         <h1>Messages</h1>
       </header>
 
-      <div class="segmented" role="tablist" aria-label="Type de messages">
+      <section v-if="recipientId" class="start">
+        <h2>
+          Démarrer la conversation<span v-if="recipient"> avec {{ recipient.firstName }}</span>
+        </h2>
+        <div class="start__chips">
+          <button
+            v-for="(msg, i) in STARTERS"
+            :key="i"
+            type="button"
+            class="start__chip"
+            @click="draft = msg"
+          >
+            {{ msg }}
+          </button>
+        </div>
+        <textarea
+          v-model="draft"
+          class="start__field"
+          rows="3"
+          :maxlength="MESSAGE_MAX"
+          aria-label="Premier message"
+          placeholder="Écris ton premier message…"
+        ></textarea>
+        <ProfileRequired v-if="profileRequired" />
+        <p v-else-if="sendError" class="start__error">{{ sendError }}</p>
         <button
           type="button"
-          role="tab"
-          class="segmented__item"
-          :aria-selected="tab === 'conversations'"
-          @click="tab = 'conversations'"
+          class="start__send"
+          :disabled="sending || !draft.trim()"
+          @click="startWithRecipient"
         >
-          Conversations
+          <Send :size="18" aria-hidden="true" />
+          {{ sending ? 'Envoi…' : 'Envoyer et ouvrir la conversation' }}
         </button>
-        <button
-          type="button"
-          role="tab"
-          class="segmented__item"
-          :aria-selected="tab === 'demandes'"
-          @click="tab = 'demandes'"
-        >
-          Demandes
-        </button>
-      </div>
+      </section>
 
       <div v-if="loading" class="state">
         <span class="spinner spinner--muted" aria-hidden="true"></span>
@@ -94,10 +174,6 @@ onMounted(async () => {
       </div>
 
       <div v-else-if="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
-
-      <template v-else-if="tab === 'demandes'">
-        <p class="state">Les demandes de binôme arrivent bientôt.</p>
-      </template>
 
       <template v-else-if="conversations.length === 0">
         <section class="empty">
@@ -111,7 +187,11 @@ onMounted(async () => {
 
       <ul v-else class="convo-list">
         <li v-for="c in conversations" :key="c.id">
-          <RouterLink :to="{ name: 'conversation', params: { id: c.id } }" class="convo">
+          <RouterLink
+            :to="{ name: 'conversation', params: { id: c.id } }"
+            class="convo"
+            :class="{ 'is-unread': isConversationUnread(c) }"
+          >
             <div class="avatar convo__avatar">
               <img v-if="otherAvatar(c)" :src="otherAvatar(c) ?? undefined" alt="" />
               <template v-else>{{ otherInitials(c) }}</template>
@@ -120,6 +200,7 @@ onMounted(async () => {
               <div class="convo__top">
                 <strong>{{ otherName(c) }}</strong>
                 <span class="convo__time">{{ previewTime(c.updatedAt) }}</span>
+                <span v-if="isConversationUnread(c)" class="convo__count" :aria-label="`${unreadCountOf(c)} message(s) non lu(s)`">{{ unreadCountOf(c) > 9 ? '9+' : unreadCountOf(c) }}</span>
               </div>
               <p class="convo__preview">
                 <template v-if="c.lastMessage">
@@ -147,6 +228,12 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.messages__col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .messages {
   display: flex;
   flex-direction: column;
@@ -161,7 +248,7 @@ onMounted(async () => {
 }
 
 .messages__head h1 {
-  font-size: 28px;
+  font-size: 25px;
   font-weight: 800;
 }
 
@@ -191,7 +278,7 @@ onMounted(async () => {
   background: transparent;
   color: var(--color-text-muted);
   font: inherit;
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -209,7 +296,7 @@ onMounted(async () => {
   gap: 10px;
   padding: 32px 0;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
   text-align: center;
 }
 
@@ -228,13 +315,13 @@ onMounted(async () => {
 }
 
 .empty__body h2 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
 }
 
 .empty__body p {
   color: var(--color-text-muted);
-  font-size: 15px;
+  font-size: 13.5px;
 }
 
 .empty__cta {
@@ -247,7 +334,7 @@ onMounted(async () => {
   background: var(--color-lime);
   color: var(--primary-foreground);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 13.5px;
   text-decoration: none;
 }
 
@@ -275,7 +362,7 @@ onMounted(async () => {
 .convo__avatar {
   width: 48px;
   height: 48px;
-  font-size: 16px;
+  font-size: 14.5px;
   flex-shrink: 0;
   border: none;
 }
@@ -296,13 +383,32 @@ onMounted(async () => {
 }
 
 .convo__time {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
 
+.convo.is-unread .convo__preview {
+  color: var(--color-text);
+  font-weight: 700;
+}
+
+.convo__count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #E5484D;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
 .convo__preview {
-  font-size: 14px;
+  font-size: 12.5px;
   color: var(--color-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -353,7 +459,7 @@ onMounted(async () => {
   }
 
   .messages__panel-body h2 {
-    font-size: 26px;
+    font-size: 23.5px;
     font-weight: 800;
   }
 
@@ -363,7 +469,7 @@ onMounted(async () => {
 
   .messages__panel-script {
     font-family: 'Caveat', cursive;
-    font-size: 28px;
+    font-size: 25px;
     font-weight: 700;
     color: var(--color-lime);
   }
@@ -373,5 +479,83 @@ onMounted(async () => {
     padding: 0 28px;
     width: auto;
   }
+}
+
+.start {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.start h2 {
+  font-size: 14.5px;
+  font-weight: 800;
+}
+
+.start__chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.start__chip {
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.start__chip:hover {
+  border-color: var(--color-lime);
+  background: var(--color-lime-soft);
+}
+
+.start__field {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 14.5px;
+  resize: vertical;
+}
+
+.start__field:focus {
+  outline: none;
+  border-color: var(--color-lime);
+  box-shadow: 0 0 0 3px var(--color-lime-soft);
+}
+
+.start__error {
+  color: var(--color-danger, #b42318);
+  font-size: 12.5px;
+}
+
+.start__send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-lime-dark);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.start__send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

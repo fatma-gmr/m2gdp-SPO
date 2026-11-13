@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap');
 
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -8,7 +8,7 @@
 
 :root {
   /* Thème clair (principal) — palette du redesign BINOFIT */
-  --color-bg: #F6F6F4;
+  --color-bg: #FFFFFF;
   --color-surface: #FFFFFF;
   --color-surface-2: #F2F5EF;
   --color-border: #E2E8DE;
@@ -110,6 +110,7 @@
 
 body {
   margin: 0;
+  font-size: 14.5px;
   min-height: 100svh;
   background: var(--color-bg);
 }
@@ -194,12 +195,12 @@ button {
   justify-content: center;
   font-weight: 800;
   color: #FFFFFF;
-  font-size: 16px;
+  font-size: 14.5px;
   flex-shrink: 0;
 }
 
 .brand__name {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: -0.01em;
 }
@@ -215,12 +216,12 @@ button {
 }
 
 .header-block h1 {
-  font-size: 26px;
+  font-size: 23.5px;
 }
 
 .header-block p {
   color: var(--color-text-muted);
-  font-size: 14.5px;
+  font-size: 13px;
 }
 
 /* --- Formulaires --- */
@@ -244,7 +245,7 @@ form {
 }
 
 label {
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--color-text-muted);
 }
@@ -257,7 +258,7 @@ select {
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text);
-  font-size: 16px;
+  font-size: 14.5px;
   padding: 13px 14px;
   font-family: inherit;
   transition:
@@ -294,7 +295,7 @@ select:disabled {
 }
 
 .field-hint {
-  font-size: 12.5px;
+  font-size: 11px;
   color: var(--color-text-muted);
 }
 
@@ -317,7 +318,7 @@ select:disabled {
   width: auto;
   padding: 4px 0;
   font-weight: 700;
-  font-size: 14.5px;
+  font-size: 13px;
 }
 
 /* --- Messages / états --- */
@@ -325,7 +326,7 @@ select:disabled {
 .alert {
   border-radius: var(--radius-md);
   padding: 12px 14px;
-  font-size: 14px;
+  font-size: 12.5px;
   line-height: 1.45;
 }
 
@@ -364,7 +365,7 @@ select:disabled {
 .footer-note {
   margin-top: auto;
   text-align: center;
-  font-size: 13.5px;
+  font-size: 12px;
   color: var(--color-text-muted);
   padding-top: 16px;
 }
@@ -374,7 +375,7 @@ select:disabled {
   align-items: center;
   gap: 10px;
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: 11.5px;
 }
 
 .divider-text::before,
@@ -404,7 +405,7 @@ select:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 25px;
 }
 
 /* --- Page d'accueil / profil --- */
@@ -426,7 +427,7 @@ select:disabled {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14.5px;
   transition: border-color 0.15s ease;
 }
 
@@ -458,7 +459,7 @@ select:disabled {
   border-radius: 50%;
   background: var(--color-lime);
   color: var(--primary-foreground);
-  font-size: 30px;
+  font-size: 27px;
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -467,7 +468,7 @@ select:disabled {
 }
 
 .profile-hero h1 {
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .pill {
@@ -478,7 +479,7 @@ select:disabled {
   color: var(--color-lime);
   border-radius: 999px;
   padding: 6px 14px;
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 700;
 }
 
@@ -506,7 +507,7 @@ select:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
+  font-size: 15.5px;
   flex-shrink: 0;
 }
 
@@ -518,12 +519,12 @@ select:disabled {
 }
 
 .info-row__label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--color-text-muted);
 }
 
 .info-row__value {
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -539,7 +540,7 @@ select:disabled {
   gap: 12px;
   min-height: 100svh;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 @theme inline {

@@ -4,6 +4,7 @@
  * La lecture des messages est exposée sous GET /conversations/{id}/messages
  * (voir routes/conversations.ts).
  */
+import { notifyUsers } from '../realtime/notify'
 import { Hono } from 'hono'
 import type { AppBindings } from '../env'
 import { ApiError } from '../lib/apiError'
@@ -39,7 +40,7 @@ messagesRoute.post('/', async (c) => {
     throw new ApiError(400, 'invalid_body', `text doit contenir entre 1 et ${TEXT_MAX_LENGTH} caractères`)
   }
 
-  await getConversationForParticipant(c.env, conversationId, authUser.uid)
+  const conversation = await getConversationForParticipant(c.env, conversationId, authUser.uid)
 
   const supabase = getSupabase(c.env)
   const sentAt = new Date().toISOString()
@@ -53,6 +54,7 @@ messagesRoute.post('/', async (c) => {
   )
 
   unwrap(await supabase.from('conversations').update({ updated_at: sentAt }).eq('id', conversationId), 'conversations')
+  await notifyUsers(c.env, conversation.participantIds, { type: 'message', conversationId, senderId: authUser.uid })
 
   return c.json(rowToMessage(row as MessageRow), 201)
 })

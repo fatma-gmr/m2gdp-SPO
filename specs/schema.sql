@@ -6,8 +6,11 @@ create table users (
 );
 create table user_sports (
   user_id text not null references users(id) on delete cascade,
-  sport text not null, level text not null, primary key (user_id, sport)
+  sport text not null, level text not null, primary key (user_id, sport),
+  is_primary boolean not null default false
 );
+-- Au plus un sport principal par utilisateur.
+create unique index user_sports_one_primary on user_sports(user_id) where is_primary;
 create table user_availability (
   id bigint generated always as identity primary key,
   user_id text not null references users(id) on delete cascade,

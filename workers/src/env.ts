@@ -12,6 +12,8 @@ export interface Env {
   /** URL du projet Supabase, ex. https://<ref>.supabase.co (non sensible, wrangler.toml). */
   SUPABASE_URL: string
   SUPABASE_SECRET_KEY: string
+  /** Durable Object « UserHub » (une par utilisateur) : relais temps réel. */
+  USER_HUB: DurableObjectNamespace
 }
 
 export interface AuthUser {

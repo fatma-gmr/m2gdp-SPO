@@ -14,10 +14,13 @@ import { docsRoute } from './routes/docs'
 import { favoritesRoute } from './routes/favorites'
 import { messagesRoute } from './routes/messages'
 import { usersRoute } from './routes/users'
+import { venuesRoute } from './routes/venues'
+import { verifyFirebaseIdToken } from './middleware/auth'
 
 export type { Env } from './env'
+export { UserHub } from './realtime/userHub'
 
-const ALLOWED_ORIGINS = ['https://binofit-a36cf.web.app', 'https://bino-fit.vercel.app', 'http://localhost:5173']
+const ALLOWED_ORIGINS = ['https://binofit-a36cf.web.app', 'https://bino-fit.vercel.app', 'http://localhost:5173', 'http://localhost:5178']
 
 const app = new Hono<AppBindings>()
 
@@ -46,6 +49,26 @@ app.route('/activities', activitiesRoute)
 app.route('/conversations', conversationsRoute)
 app.route('/messages', messagesRoute)
 app.route('/favorites', favoritesRoute)
+app.route('/venues', venuesRoute)
+
+/**
+ * GET /realtime — WebSocket temps réel. Le navigateur ne peut pas envoyer d'en-tête
+ * Authorization sur un WebSocket : le jeton Firebase voyage dans le sous-protocole
+ * (`new WebSocket(url, ['binofit', jeton])`), jamais dans l'URL.
+ */
+app.get('/realtime', async (c) => {
+  const offered = (c.req.header('Sec-WebSocket-Protocol') ?? '').split(',').map((p) => p.trim())
+  const token = offered[1]
+  if (c.req.header('Upgrade') !== 'websocket' || offered[0] !== 'binofit' || !token) {
+    throw new ApiError(401, 'unauthenticated', 'Connexion temps réel non autorisée')
+  }
+  const payload = await verifyFirebaseIdToken(c.env, token).catch(() => {
+    throw new ApiError(401, 'invalid_token', "Jeton d'authentification invalide")
+  })
+  const stub = c.env.USER_HUB.get(c.env.USER_HUB.idFromName(payload.sub))
+  const upstream = await stub.fetch('https://user-hub/connect', { headers: { Upgrade: 'websocket' } })
+  return new Response(null, { status: 101, webSocket: upstream.webSocket, headers: { 'Sec-WebSocket-Protocol': 'binofit' } })
+})
 
 app.notFound((c) => c.json({ error: 'Route introuvable', code: 'not_found' }, 404))
 

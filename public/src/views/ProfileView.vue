@@ -1,30 +1,19 @@
 <script setup lang="ts">
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { computed, onMounted, reactive, ref, type Component } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import {
-  Bike,
   Camera,
-  CalendarDays,
-  ChevronRight,
-  Circle,
-  Dumbbell,
-  Flower2,
-  Hand,
   LogOut,
   MapPin,
-  PersonStanding,
   Plus,
   Trash2,
-  Trophy,
-  Waves,
-  Zap,
-  Target,
 } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import { api, ApiError } from '../services/api'
 import { getProfileByEmail } from '../services/profileStore'
+import { SPORT_ICONS } from '../services/sportIcons'
 import { DAYS, DAY_LABELS, LEVEL_LABELS, SEXE_LABELS, SPORT_LABELS } from '../services/labels'
 import { SEARCH_ZONES, nearestZone } from '../services/location'
 import { fetchUser } from '../services/users'
@@ -39,30 +28,15 @@ const SEXES = Object.keys(SEXE_LABELS) as Sexe[]
 const TODAY = new Date().toISOString().slice(0, 10)
 const BIO_MAX = 160
 
-/** Icône de chaque sport dans la grille de sélection. */
-const SPORT_ICONS: Record<Sport, Component> = {
-  musculation: Dumbbell,
-  course_a_pied: PersonStanding,
-  football: Trophy,
-  basketball: Circle,
-  natation: Waves,
-  cyclisme: Bike,
-  yoga: Flower2,
-  boxe: Hand,
-  crossfit: Zap,
-  tennis: Target,
-  autre: Plus,
-}
-
 /** Lettre affichée pour chaque jour, dans les pastilles de disponibilité. */
 const DAY_LETTERS: Record<DayOfWeek, string> = {
-  lundi: 'L',
-  mardi: 'M',
-  mercredi: 'M',
-  jeudi: 'J',
-  vendredi: 'V',
-  samedi: 'S',
-  dimanche: 'D',
+  lundi: 'Lu',
+  mardi: 'Ma',
+  mercredi: 'Me',
+  jeudi: 'Je',
+  vendredi: 'Ve',
+  samedi: 'Sa',
+  dimanche: 'Di',
 }
 
 const me = ref<User | null>(null)
@@ -149,6 +123,18 @@ const initialsText = computed(() => {
 
 const selectedSportCount = computed(() => SPORTS.filter((s) => sportRows[s]?.on).length)
 
+/** Sport principal : affiché sur la carte, à la place de la photo. Toujours parmi les sports cochés (ou vide). */
+const primarySport = ref<Sport | ''>('')
+
+/** Garde le sport principal valide : premier sport coché si celui en cours est décoché. */
+watch(
+  () => SPORTS.filter((s) => sportRows[s]?.on).join(','),
+  () => {
+    const selected = SPORTS.filter((s) => sportRows[s]?.on)
+    if (!selected.includes(primarySport.value as Sport)) primarySport.value = selected[0] ?? ''
+  },
+)
+
 /** Complétion du profil : prénom, nom, bio, au moins un sport, au moins une disponibilité. */
 const completion = computed(() => {
   const checks = [
@@ -193,6 +179,8 @@ function fillForm(profile: User | null) {
   for (const practice of profile?.sports ?? []) {
     sportRows[practice.sport] = { on: true, level: practice.level }
   }
+  // Sans sport marqué isPrimary, le premier de la liste fait office de principal.
+  primarySport.value = profile?.sports.find((p) => p.isPrimary)?.sport ?? profile?.sports[0]?.sport ?? ''
 }
 
 onMounted(async () => {
@@ -244,6 +232,7 @@ async function save() {
     sports: SPORTS.filter((s) => sportRows[s]?.on).map((s) => ({
       sport: s,
       level: sportRows[s]!.level,
+      isPrimary: s === primarySport.value,
     })),
     availability: availability.value,
     ...(avatarDraft.value ? { avatarUrl: avatarDraft.value } : {}),
@@ -296,6 +285,13 @@ async function onLogout() {
             @click="fileInput?.click()"
           >
             <img v-if="displayAvatar" :src="displayAvatar" :alt="firstName" />
+            <component
+              :is="SPORT_ICONS[primarySport]"
+              v-else-if="primarySport"
+              :size="32"
+              :stroke-width="2"
+              aria-hidden="true"
+            />
             <template v-else>{{ initialsText }}</template>
             <span class="profile-card__camera" aria-hidden="true"><Camera :size="12" /></span>
           </button>
@@ -324,11 +320,6 @@ async function onLogout() {
           Ton profil n'est pas encore dans BINOFIT : enregistre-le pour apparaître dans les recherches.
         </p>
 
-        <RouterLink :to="{ name: 'activities' }" class="activities-link">
-          <span class="activities-link__icon"><CalendarDays :size="18" aria-hidden="true" /></span>
-          <span>Mes activités</span>
-          <ChevronRight :size="18" aria-hidden="true" class="activities-link__chevron" />
-        </RouterLink>
         </aside>
 
         <form class="profile__form" @submit.prevent="save">
@@ -419,6 +410,28 @@ async function onLogout() {
                 <option v-for="l in LEVELS" :key="l" :value="l">{{ LEVEL_LABELS[l] }}</option>
               </select>
             </div>
+
+            <div class="form-row">
+              <label for="primarySport">Sport principal</label>
+              <select
+                id="primarySport"
+                v-model="primarySport"
+                class="primary-select"
+                :disabled="selectedSportCount === 0"
+              >
+                <option value="" disabled>
+                  {{ selectedSportCount === 0 ? 'Coche d\'abord un sport' : 'Choisis ton sport principal' }}
+                </option>
+                <option
+                  v-for="s in SPORTS.filter((x) => sportRows[x]?.on)"
+                  :key="s"
+                  :value="s"
+                >
+                  {{ SPORT_LABELS[s] }}
+                </option>
+              </select>
+              <p class="field-hint">Affiché sur ta carte, à la place de ta photo.</p>
+            </div>
           </fieldset>
 
           <!-- Disponibilités : jours sélectionnables, puis créneaux détaillés -->
@@ -486,7 +499,7 @@ async function onLogout() {
 }
 
 .profile__top h1 {
-  font-size: 28px;
+  font-size: 25px;
   font-weight: 800;
 }
 
@@ -501,7 +514,7 @@ async function onLogout() {
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -513,7 +526,7 @@ async function onLogout() {
   gap: 10px;
   padding: 48px 0;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .profile-card {
@@ -540,7 +553,7 @@ async function onLogout() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   flex-shrink: 0;
 }
@@ -576,7 +589,7 @@ async function onLogout() {
 }
 
 .profile-card__info strong {
-  font-size: 17px;
+  font-size: 15.5px;
   font-weight: 800;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -590,14 +603,14 @@ async function onLogout() {
   background: transparent;
   color: var(--color-lime);
   font: inherit;
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .profile-card__status {
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: 11.5px;
 }
 
 .progress {
@@ -616,35 +629,6 @@ async function onLogout() {
   transition: width 0.3s ease;
 }
 
-.activities-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.activities-link__icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: var(--color-lime-soft);
-  color: var(--color-lime);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.activities-link__chevron {
-  margin-left: auto;
-  color: var(--color-text-muted);
-}
-
 .profile__form {
   display: flex;
   flex-direction: column;
@@ -659,7 +643,7 @@ async function onLogout() {
 
 .field-counter {
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: 11.5px;
 }
 
 textarea {
@@ -669,7 +653,7 @@ textarea {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text);
-  font-size: 16px;
+  font-size: 14.5px;
   padding: 13px 14px;
   font-family: inherit;
   resize: vertical;
@@ -716,7 +700,7 @@ textarea:focus {
 }
 
 .section legend {
-  font-size: 17px;
+  font-size: 15.5px;
   font-weight: 800;
   color: var(--color-text);
   padding: 0;
@@ -740,7 +724,7 @@ textarea:focus {
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
   color: var(--color-text);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   text-align: center;
   cursor: pointer;
@@ -781,18 +765,22 @@ textarea:focus {
   border-radius: var(--radius-md);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 600;
+}
+
+.primary-select {
+  width: 100%;
 }
 
 .level-row select {
   width: auto;
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .field-label {
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -853,7 +841,7 @@ textarea:focus {
 .slot select,
 .slot input {
   padding: 10px 8px;
-  font-size: 14px;
+  font-size: 12.5px;
   min-width: 0;
 }
 
@@ -884,7 +872,7 @@ textarea:focus {
   background: var(--color-lime);
   color: var(--primary-foreground);
   font: inherit;
-  font-size: 17px;
+  font-size: 15.5px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(23, 138, 46, 0.25);

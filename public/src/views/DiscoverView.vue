@@ -1,12 +1,32 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, toRef } from 'vue'
 import { RouterLink } from 'vue-router'
-import { Bell, Bike, Dumbbell, Flower2, PersonStanding, Search, SlidersHorizontal, Target } from 'lucide-vue-next'
+import {
+  Bell,
+  Bike,
+  Circle,
+  Dumbbell,
+  Flower2,
+  Hand,
+  MapPin,
+  PersonStanding,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  Target,
+  Trophy,
+  Waves,
+  Zap,
+} from 'lucide-vue-next'
 import logoUrl from '../assets/logo-binofit-horizontal.png'
 import { useAuth } from '../composables/useAuth'
 import AthleteCard from '../components/AthleteCard.vue'
 import { api } from '../services/api'
-import { DEFAULT_RADIUS_KM, centerOf } from '../services/location'
+import { SPORT_LABELS } from '../services/labels'
+import { centerOf } from '../services/location'
+import { useSearchFilters } from '../composables/useSearchFilters'
+import { useToast } from '../composables/useToast'
+import { FETCH_RADIUS_KM, matchesFilters } from '../services/searchFilters'
 import { fetchUser } from '../services/users'
 import type { Sport, User, UserSearchResult } from '../types/api'
 
@@ -23,21 +43,52 @@ const quickSports: { label: string; sport: Sport; icon: typeof Dumbbell }[] = [
   { label: 'Tennis', sport: 'tennis', icon: Target },
   { label: 'Yoga', sport: 'yoga', icon: Flower2 },
   { label: 'Muscu', sport: 'musculation', icon: Dumbbell },
+  { label: 'Natation', sport: 'natation', icon: Waves },
+  { label: 'Football', sport: 'football', icon: Trophy },
+  { label: 'Basket', sport: 'basketball', icon: Circle },
+  { label: 'Boxe', sport: 'boxe', icon: Hand },
+  { label: 'CrossFit', sport: 'crossfit', icon: Zap },
+  { label: 'Autre', sport: 'autre', icon: Plus },
 ]
 
 /** Sport sélectionné dans les raccourcis ; null = pas de filtre. */
-const selectedSport = ref<Sport | null>(null)
+/** Sport choisi dans les raccourcis : même critère partagé avec Recherche et la Carte. */
+const { filters } = useSearchFilters()
+const selectedSport = toRef(filters, 'sport')
 
 function toggleSport(sport: Sport) {
   selectedSport.value = selectedSport.value === sport ? null : sport
 }
 
-/** Profils affichés : tous, ou seulement ceux qui pratiquent le sport sélectionné. */
-const visibleProfiles = computed(() =>
-  selectedSport.value
-    ? profiles.value.filter((p) => p.sports.some((practice) => practice.sport === selectedSport.value))
-    : profiles.value,
-)
+/** Texte de recherche : prénom, nom ou libellé d'un sport (sans accents ni casse). */
+const query = ref('')
+
+function normalize(text: string): string {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+}
+
+/** Profils affichés : filtre sport (sport principal) puis recherche texte. */
+const visibleProfiles = computed(() => {
+  const q = normalize(query.value)
+  return profiles.value.filter((p) => {
+    if (!matchesFilters(p, filters)) return false
+    if (!q) return true
+    const name = normalize(`${p.firstName} ${p.lastName}`)
+    const sportMatch = p.sports.some((practice) => normalize(SPORT_LABELS[practice.sport]).includes(q))
+    return name.includes(q) || sportMatch
+  })
+})
+
+/** Cloche : liste des alertes récentes ; la pastille compte celles reçues depuis la dernière ouverture. */
+const { history: notifications } = useToast()
+const notifOpen = ref(false)
+const seenCount = ref(0)
+const unseenNotifications = computed(() => Math.max(0, notifications.length - seenCount.value))
+
+function toggleNotifications() {
+  notifOpen.value = !notifOpen.value
+  if (notifOpen.value) seenCount.value = notifications.length
+}
 
 const greetingName = computed(
   () => me.value?.firstName ?? user.value?.email?.split('@')[0] ?? '',
@@ -53,7 +104,7 @@ async function load() {
     const results = await api.searchUsers({
       lat: center.lat,
       lng: center.lng,
-      maxKm: DEFAULT_RADIUS_KM,
+      maxKm: FETCH_RADIUS_KM,
     })
     profiles.value = results.filter((p) => p.id !== uid)
   } catch (error) {
@@ -72,9 +123,27 @@ onMounted(load)
     <div class="screen__inner discover">
       <header class="discover__top">
         <img :src="logoUrl" alt="BINOFIT" class="discover__logo" />
-        <button type="button" class="icon-btn" aria-label="Notifications">
-          <Bell :size="18" aria-hidden="true" />
-        </button>
+        <div class="discover__bell">
+          <button
+            type="button"
+            class="icon-btn"
+            aria-label="Notifications"
+            :aria-expanded="notifOpen"
+            @click="toggleNotifications"
+          >
+            <Bell :size="18" aria-hidden="true" />
+            <span v-if="unseenNotifications > 0" class="discover__bell-dot" aria-hidden="true"></span>
+          </button>
+          <div v-if="notifOpen" class="discover__notifs" role="region" aria-label="Notifications récentes">
+            <p v-if="notifications.length === 0" class="discover__notifs-empty">Aucune notification pour l'instant.</p>
+            <ul v-else class="discover__notifs-list">
+              <li v-for="(n, i) in notifications" :key="i">
+                <span>{{ n.message }}</span>
+                <small>{{ new Date(n.at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) }}</small>
+              </li>
+            </ul>
+          </div>
+        </div>
       </header>
 
       <div class="discover__intro">
@@ -85,7 +154,7 @@ onMounted(load)
       <div class="discover__search">
         <label class="discover__input">
           <Search :size="18" aria-hidden="true" />
-          <input type="search" placeholder="Un sport, un prénom…" aria-label="Rechercher un sportif" />
+          <input v-model="query" type="search" placeholder="Un sport, un prénom…" aria-label="Rechercher un sportif" />
         </label>
         <RouterLink :to="{ name: 'recherche' }" class="discover__filter" aria-label="Filtrer">
           <SlidersHorizontal :size="18" aria-hidden="true" />
@@ -110,10 +179,13 @@ onMounted(load)
         </button>
       </div>
 
-      <div class="discover__banner">
-        <p>Rencontrez des partenaires sportifs près de chez vous</p>
-        <RouterLink :to="{ name: 'carte' }" class="discover__banner-link">Voir la carte</RouterLink>
-      </div>
+      <RouterLink :to="{ name: 'carte' }" class="discover__banner" aria-label="Rencontrez des partenaires sportifs près de chez vous : voir la carte">
+        <img src="/assets/banner-decouvrir.png" alt="" class="discover__banner-img" />
+        <span class="discover__banner-link">
+          <MapPin :size="18" aria-hidden="true" />
+          Voir la carte
+        </span>
+      </RouterLink>
 
       <p v-if="!me && !loading" class="field-hint">
         Ton profil n'est pas encore enregistré : recherche autour de Lyon.
@@ -135,7 +207,7 @@ onMounted(load)
       </div>
 
       <p v-else-if="visibleProfiles.length === 0" class="state">
-        {{ selectedSport ? 'Personne pratiquant ce sport dans ce rayon.' : 'Personne dans ce rayon pour l\'instant.' }}
+        {{ selectedSport || query ? 'Aucun sportif ne correspond dans ce rayon.' : 'Personne dans ce rayon pour l\'instant.' }}
       </p>
 
       <ul v-else class="athlete-list">
@@ -160,7 +232,7 @@ onMounted(load)
 }
 
 .discover__logo {
-  height: 40px;
+  height: 28px;
   width: auto;
 }
 
@@ -171,14 +243,78 @@ onMounted(load)
 }
 
 .discover__intro h1 {
-  font-size: 28px;
+  font-size: 25px;
   line-height: 1.15;
   font-weight: 800;
 }
 
-.discover__greeting {
+.discover__bell {
+  position: relative;
+}
+
+.discover__bell-dot {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #E5484D;
+  border: 2px solid var(--color-surface);
+}
+
+.discover__notifs {
+  position: absolute;
+  top: 46px;
+  right: 0;
+  z-index: 50;
+  width: min(300px, 80vw);
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 10px 30px rgba(18, 21, 18, 0.14);
+}
+
+.discover__notifs-empty {
+  margin: 0;
+  padding: 8px;
   color: var(--color-text-muted);
-  font-size: 15px;
+  font-size: 13px;
+}
+
+.discover__notifs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.discover__notifs-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--color-surface-2);
+  font-size: 13px;
+}
+
+.discover__notifs-list small {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.discover__greeting {
+  color: var(--color-lime-dark);
+  font-family: 'Caveat', cursive;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.1;
 }
 
 .text-lime {
@@ -211,8 +347,16 @@ onMounted(load)
   background: transparent;
   color: var(--color-text);
   font: inherit;
-  font-size: 15px;
+  font-size: 13.5px;
   outline: none;
+}
+
+/* Pas de halo vert au focus : le champ garde sa bordure grise */
+.discover__input input:focus,
+.discover__input input:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
 }
 
 .discover__filter {
@@ -245,7 +389,7 @@ onMounted(load)
   border: 0;
   padding: 0;
   color: var(--color-text);
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -269,29 +413,38 @@ onMounted(load)
 }
 
 .discover__banner {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 18px;
+  position: relative;
+  display: block;
   border-radius: var(--radius-lg);
-  background: var(--color-lime-soft);
-  color: var(--color-text);
-}
-
-.discover__banner p {
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.discover__banner-link {
-  align-self: flex-start;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: var(--color-lime);
-  color: var(--primary-foreground);
-  font-size: 14px;
-  font-weight: 700;
+  overflow: hidden;
   text-decoration: none;
+}
+
+.discover__banner-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Bouton blanc en bas à gauche, comme sur l'illustration de référence */
+.discover__banner-link {
+  position: absolute;
+  left: 5%;
+  bottom: 8%;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: #FFFFFF;
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(18, 21, 18, 0.12);
+}
+
+.discover__banner-link svg {
+  color: var(--color-lime-dark);
 }
 
 .discover__section-head {
@@ -302,13 +455,13 @@ onMounted(load)
 }
 
 .discover__section-head h2 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
 }
 
 .discover__more {
   color: var(--color-lime);
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 700;
   text-decoration: none;
 }
@@ -320,17 +473,26 @@ onMounted(load)
   gap: 10px;
   padding: 32px 0;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
   text-align: center;
 }
 
 .athlete-list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 0 8px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Une carte par défilement horizontal, chacune à demi-largeur ou presque */
+.athlete-list > li {
+  flex: 0 0 min(230px, 70%);
+  scroll-snap-align: start;
 }
 
 /* Desktop : grille de profils sur trois colonnes */
@@ -340,7 +502,7 @@ onMounted(load)
   }
 
   .discover__intro h1 {
-    font-size: 40px;
+    font-size: 36px;
   }
 
   .discover__search {
@@ -352,16 +514,6 @@ onMounted(load)
     overflow: visible;
   }
 
-  .discover__banner {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
 
-  .athlete-list {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-  }
 }
 </style>

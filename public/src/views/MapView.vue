@@ -1,16 +1,39 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, h, nextTick, onBeforeUnmount, onMounted, ref, render, toRef, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { LocateFixed, Search } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
+import { useSearchFilters } from '../composables/useSearchFilters'
 import { api } from '../services/api'
-import { LEVEL_LABELS, SPORT_LABELS } from '../services/labels'
+import { DAYS, DAY_LABELS, LEVEL_LABELS, SEXE_LABELS, SPORT_LABELS } from '../services/labels'
 import { formatDistance, initials } from '../services/format'
-import { DEFAULT_RADIUS_KM, centerOf } from '../services/location'
+import { SPORT_ICONS } from '../services/sportIcons'
+import { centerOf } from '../services/location'
+import { FETCH_RADIUS_KM, matchesFilters } from '../services/searchFilters'
 import { fetchUser } from '../services/users'
-import type { GeoPoint, Level, Sport, UserSearchParams, UserSearchResult } from '../types/api'
+import type { DayOfWeek, GeoPoint, Level, Sexe, Sport, UserSearchResult } from '../types/api'
+
+/** Initiale affichée pour chaque jour dans la fiche sportif. */
+const DAY_LETTERS: Record<DayOfWeek, string> = {
+  lundi: 'Lu', mardi: 'Ma', mercredi: 'Me', jeudi: 'Je', vendredi: 'Ve', samedi: 'Sa', dimanche: 'Di',
+}
+
+/** Jours où le sportif est disponible (d'après ses créneaux). */
+function availableDays(p: UserSearchResult): Set<DayOfWeek> {
+  return new Set(p.availability.map((slot) => slot.dayOfWeek))
+}
+
+/** Créneaux groupés par jour, dans l'ordre de la semaine : « Lundi : 18:00–20:00, 12:00–13:00 ». */
+function slotsByDay(p: UserSearchResult): { day: DayOfWeek; ranges: string[] }[] {
+  return DAYS.flatMap((day) => {
+    const ranges = p.availability
+      .filter((slot) => slot.dayOfWeek === day)
+      .map((slot) => `${slot.startTime}–${slot.endTime}`)
+    return ranges.length ? [{ day, ranges }] : []
+  })
+}
 
 const { user } = useAuth()
 
@@ -18,6 +41,8 @@ const mapEl = ref<HTMLElement | null>(null)
 const selected = ref<UserSearchResult | null>(null)
 /** Sportifs proches, affichés dans la liste latérale (desktop). */
 const people = ref<UserSearchResult[]>([])
+/** Tous les sportifs du rayon maximal, avant application des critères. */
+const rawPeople = ref<UserSearchResult[]>([])
 const loading = ref(true)
 const errorMessage = ref('')
 let map: L.Map | null = null
@@ -31,18 +56,77 @@ let requestId = 0
 const RADIUS_OPTIONS = [1, 5, 10, 20]
 const SPORTS = Object.keys(SPORT_LABELS) as Sport[]
 const LEVELS = Object.keys(LEVEL_LABELS) as Level[]
-const radiusKm = ref(DEFAULT_RADIUS_KM)
-const sportFilter = ref<Sport | ''>('')
-const levelFilter = ref<Level | ''>('')
+const SEXES = Object.keys(SEXE_LABELS) as Sexe[]
+const { filters } = useSearchFilters()
+/** Rayon, sport et niveau : critères partagés avec Recherche et Découvrir. */
+const radiusKm = toRef(filters, 'maxKm')
+const sportFilter = computed<Sport | ''>({
+  get: () => filters.sport ?? '',
+  set: (value) => {
+    filters.sport = value || null
+  },
+})
+const levelFilter = computed<Level | ''>({
+  get: () => filters.level ?? '',
+  set: (value) => {
+    filters.level = value || null
+  },
+})
+/** Jour, sexe et âge : mêmes critères que la page Recherche. */
+const dayFilter = computed<DayOfWeek | ''>({
+  get: () => filters.day ?? '',
+  set: (value) => {
+    filters.day = value || null
+  },
+})
+const sexeFilter = computed<Sexe | ''>({
+  get: () => filters.sexe ?? '',
+  set: (value) => {
+    filters.sexe = value || null
+  },
+})
+const ageMinFilter = computed<number | ''>({
+  get: () => filters.ageMin ?? '',
+  set: (value) => {
+    filters.ageMin = value === '' || value === null ? null : Number(value)
+  },
+})
+const ageMaxFilter = computed<number | ''>({
+  get: () => filters.ageMax ?? '',
+  set: (value) => {
+    filters.ageMax = value === '' || value === null ? null : Number(value)
+  },
+})
 
 function escapeAttr(value: string): string {
   return value.replace(/[&"<>]/g, (ch) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' })[ch] ?? ch)
 }
 
+/** HTML de l'icône d'un sport (rendu Vue synchrone, mis en cache), pour les marqueurs Leaflet. */
+const sportIconCache = new Map<string, string>()
+function sportIconHtml(sport: Sport): string {
+  let html = sportIconCache.get(sport)
+  if (html === undefined) {
+    const container = document.createElement('div')
+    render(h(SPORT_ICONS[sport], { size: 20, strokeWidth: 2, 'aria-hidden': 'true' }), container)
+    html = container.innerHTML
+    render(null, container)
+    sportIconCache.set(sport, html)
+  }
+  return html
+}
+
+/** Contenu d'un marqueur : photo, sinon icône du sport principal, sinon initiales. */
+function pinContent(p: UserSearchResult): string {
+  if (p.avatarUrl) return `<img src="${escapeAttr(p.avatarUrl)}" alt="" />`
+  const primary = p.sports[0]?.sport
+  return primary ? sportIconHtml(primary) : initials(p.firstName, p.lastName)
+}
+
 function pinIcon(p: UserSearchResult) {
   return L.divIcon({
     className: 'binofit-pin-wrap',
-    html: `<div class="binofit-pin">${p.avatarUrl ? `<img src="${escapeAttr(p.avatarUrl)}" alt="" />` : initials(p.firstName, p.lastName)}</div>`,
+    html: `<div class="binofit-pin">${pinContent(p)}</div>`,
     iconSize: [40, 40],
     iconAnchor: [20, 20],
   })
@@ -62,42 +146,45 @@ function drawRadius() {
   }).addTo(map)
 }
 
-/** Charge les sportifs autour du centre, selon le rayon et les filtres, et redessine la carte. */
+/** Charge les sportifs autour du centre (rayon maximal), puis applique les critères partagés. */
 async function load() {
   if (!map) return
   const id = ++requestId
   loading.value = true
   errorMessage.value = ''
   try {
-    const uid = user.value?.uid
-    const params: UserSearchParams = {
+    const results = await api.searchUsers({
       lat: centerPoint.lat,
       lng: centerPoint.lng,
-      maxKm: radiusKm.value,
-    }
-    if (sportFilter.value) params.sport = sportFilter.value
-    if (levelFilter.value) params.level = levelFilter.value
-    const results = await api.searchUsers(params)
+      maxKm: FETCH_RADIUS_KM,
+    })
     if (id !== requestId) return
-    people.value = results.filter((p) => p.id !== uid)
-    markers?.clearLayers()
-    for (const p of people.value) {
-      L.marker([p.location.lat, p.location.lng], { icon: pinIcon(p), title: p.firstName })
-        .on('click', () => {
-          selected.value = p
-        })
-        .addTo(markers!)
-    }
-    if (selected.value && !people.value.some((p) => p.id === selected.value?.id)) {
-      selected.value = null
-    }
-    drawRadius()
+    rawPeople.value = results
+    applyFilters()
   } catch (error) {
     if (id !== requestId) return
     errorMessage.value = error instanceof Error ? error.message : 'Impossible de charger la carte.'
   } finally {
     if (id === requestId) loading.value = false
   }
+}
+
+/** Sportifs affichés : ceux qui respectent les critères partagés. Redessine marqueurs et rayon. */
+function applyFilters() {
+  const uid = user.value?.uid
+  people.value = rawPeople.value.filter((p) => p.id !== uid && matchesFilters(p, filters))
+  markers?.clearLayers()
+  for (const p of people.value) {
+    L.marker([p.location.lat, p.location.lng], { icon: pinIcon(p), title: p.firstName })
+      .on('click', () => {
+        selected.value = p
+      })
+      .addTo(markers!)
+  }
+  if (selected.value && !people.value.some((p) => p.id === selected.value?.id)) {
+    selected.value = null
+  }
+  drawRadius()
 }
 
 /** « Me localiser » : recentre la carte sur la localisation de votre profil. */
@@ -109,9 +196,7 @@ async function locate() {
   await load()
 }
 
-watch([radiusKm, sportFilter, levelFilter], () => {
-  void load()
-})
+watch(filters, () => applyFilters(), { deep: true })
 
 onMounted(async () => {
   try {
@@ -159,6 +244,7 @@ onBeforeUnmount(() => {
       >
         <span class="avatar map-list__avatar">
           <img v-if="p.avatarUrl" :src="p.avatarUrl" alt="" />
+          <component :is="SPORT_ICONS[p.sports[0].sport]" v-else-if="p.sports[0]" :size="20" :stroke-width="2" aria-hidden="true" />
           <template v-else>{{ initials(p.firstName, p.lastName) }}</template>
         </span>
         <span class="map-list__who">
@@ -195,6 +281,16 @@ onBeforeUnmount(() => {
           <option value="">Tous les sports</option>
           <option v-for="sport in SPORTS" :key="sport" :value="sport">{{ SPORT_LABELS[sport] }}</option>
         </select>
+        <select v-model="dayFilter" class="map-chip map-chip--select" aria-label="Jour">
+          <option value="">Tous les jours</option>
+          <option v-for="d in DAYS" :key="d" :value="d">{{ DAY_LABELS[d] }}</option>
+        </select>
+        <select v-model="sexeFilter" class="map-chip map-chip--select" aria-label="Sexe">
+          <option value="">Tous sexes</option>
+          <option v-for="x in SEXES" :key="x" :value="x">{{ SEXE_LABELS[x] }}</option>
+        </select>
+        <input v-model.number="ageMinFilter" type="number" min="16" max="99" class="map-chip map-chip--input" placeholder="Âge min" aria-label="Âge minimum" />
+        <input v-model.number="ageMaxFilter" type="number" min="16" max="99" class="map-chip map-chip--input" placeholder="Âge max" aria-label="Âge maximum" />
         <select v-model="levelFilter" class="map-chip map-chip--select" aria-label="Niveau">
           <option value="">Tous niveaux</option>
           <option v-for="level in LEVELS" :key="level" :value="level">{{ LEVEL_LABELS[level] }}</option>
@@ -209,6 +305,7 @@ onBeforeUnmount(() => {
       <div class="map-sheet__head">
         <div class="avatar map-sheet__avatar">
           <img v-if="selected.avatarUrl" :src="selected.avatarUrl" :alt="selected.firstName" />
+          <component :is="SPORT_ICONS[selected.sports[0].sport]" v-else-if="selected.sports[0]" :size="28" :stroke-width="2" aria-hidden="true" />
           <template v-else>{{ initials(selected.firstName, selected.lastName) }}</template>
         </div>
         <div class="map-sheet__who">
@@ -221,12 +318,27 @@ onBeforeUnmount(() => {
         </div>
         <strong class="map-sheet__distance">{{ formatDistance(selected.distanceKm) }}</strong>
       </div>
+      <div class="map-sheet__days" role="list" aria-label="Disponibilités">
+        <span
+          v-for="d in DAYS"
+          :key="d"
+          role="listitem"
+          class="map-sheet__day"
+          :class="{ 'is-on': availableDays(selected).has(d) }"
+          :aria-label="`${DAY_LABELS[d]} : ${availableDays(selected).has(d) ? 'disponible' : 'non disponible'}`"
+        >{{ DAY_LETTERS[d] }}</span>
+      </div>
+      <ul v-if="selected.availability.length" class="map-sheet__slots">
+        <li v-for="group in slotsByDay(selected)" :key="group.day">
+          <strong>{{ DAY_LABELS[group.day] }}</strong> {{ group.ranges.join(', ') }}
+        </li>
+      </ul>
       <div class="map-sheet__actions">
         <RouterLink :to="{ name: 'athlete', params: { id: selected.id } }" class="map-btn map-btn--outline">
           Voir le profil
         </RouterLink>
-        <RouterLink :to="{ name: 'athlete', params: { id: selected.id } }" class="map-btn map-btn--primary">
-          Écrire →
+        <RouterLink :to="{ name: 'activity-new', query: { guestId: selected.id } }" class="map-btn map-btn--primary">
+          Proposer une activité
         </RouterLink>
       </div>
     </div>
@@ -307,7 +419,7 @@ onBeforeUnmount(() => {
   background: transparent;
   color: var(--color-text);
   font: inherit;
-  font-size: 15px;
+  font-size: 13.5px;
   outline: none;
 }
 
@@ -325,6 +437,10 @@ onBeforeUnmount(() => {
   cursor: pointer;
 }
 
+.map-chip--input {
+  width: 92px;
+}
+
 .map-chips {
   display: flex;
   gap: 8px;
@@ -339,7 +455,7 @@ onBeforeUnmount(() => {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   color: var(--color-text);
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(18, 21, 18, 0.06);
 }
@@ -352,7 +468,7 @@ onBeforeUnmount(() => {
   padding: 8px 14px;
   background-image: none;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   line-height: 1.2;
   height: auto;
@@ -394,10 +510,49 @@ onBeforeUnmount(() => {
   gap: 12px;
 }
 
+.map-sheet__days {
+  display: flex;
+  gap: 6px;
+}
+
+.map-sheet__slots {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 96px;
+  overflow-y: auto;
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}
+
+.map-sheet__slots strong {
+  color: var(--color-text);
+}
+
+.map-sheet__day {
+  flex: 1;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.map-sheet__day.is-on {
+  background: var(--color-lime-soft);
+  border-color: var(--color-lime);
+  color: var(--color-lime-dark);
+}
+
 .map-sheet__avatar {
   width: 56px;
   height: 56px;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .map-sheet__avatar img {
@@ -413,7 +568,7 @@ onBeforeUnmount(() => {
 }
 
 .map-sheet__who h2 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
 }
 
@@ -423,12 +578,12 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
   gap: 6px;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .map-sheet__distance {
   color: var(--color-lime);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
 }
 
@@ -445,7 +600,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   border-radius: var(--radius-md);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 13.5px;
   text-decoration: none;
 }
 
@@ -470,7 +625,7 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
   text-align: center;
   box-shadow: 0 8px 20px rgba(18, 21, 18, 0.1);
 }
@@ -494,13 +649,13 @@ onBeforeUnmount(() => {
   }
 
   .map-list h2 {
-    font-size: 24px;
+    font-size: 21.5px;
     font-weight: 800;
   }
 
   .map-list__count {
     margin-bottom: 8px;
-    font-size: 14px;
+    font-size: 12.5px;
     color: var(--color-text-muted);
   }
 
@@ -526,7 +681,7 @@ onBeforeUnmount(() => {
   .map-list__avatar {
     width: 44px;
     height: 44px;
-    font-size: 15px;
+    font-size: 13.5px;
     flex-shrink: 0;
   }
 
@@ -538,18 +693,18 @@ onBeforeUnmount(() => {
   }
 
   .map-list__who strong {
-    font-size: 15px;
+    font-size: 13.5px;
   }
 
   .map-list__who small {
-    font-size: 13px;
+    font-size: 11.5px;
     color: var(--color-text-muted);
   }
 
   .map-list__km {
     color: var(--color-lime);
     font-weight: 800;
-    font-size: 14px;
+    font-size: 12.5px;
   }
 }
 </style>
@@ -576,7 +731,7 @@ onBeforeUnmount(() => {
   background: var(--color-lime);
   color: var(--primary-foreground);
   font-weight: 800;
-  font-size: 14px;
+  font-size: 12.5px;
   display: flex;
   align-items: center;
   justify-content: center;

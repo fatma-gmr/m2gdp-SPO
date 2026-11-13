@@ -64,7 +64,7 @@ async function getGooglePublicKeys(): Promise<Record<string, CryptoKey>> {
   return keys
 }
 
-async function verifyFirebaseIdToken(env: Env, idToken: string): Promise<FirebaseTokenPayload> {
+export async function verifyFirebaseIdToken(env: Env, idToken: string): Promise<FirebaseTokenPayload> {
   const parts = idToken.split('.')
   if (parts.length !== 3) {
     throw new ApiError(401, 'invalid_token', "Jeton d'authentification invalide")
