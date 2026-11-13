@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Button } from '@/components/ui/button'
 import { RouterLink } from 'vue-router'
 import { LEVEL_LABELS, SPORT_LABELS } from '../services/labels'
 import { formatDistance } from '../services/format'
@@ -19,6 +18,7 @@ const hiddenCount = computed(() => Math.max(0, props.profile.sports.length - 1 -
 
 <template>
   <li class="athlete-card">
+    <RouterLink :to="{ name: 'athlete', params: { id: profile.id } }" class="athlete-card__link">
     <div class="athlete-card__top">
       <div
         v-if="primary"
@@ -51,9 +51,7 @@ const hiddenCount = computed(() => Math.max(0, props.profile.sports.length - 1 -
         <strong>{{ formatDistance(profile.distanceKm) }}</strong>
       </div>
     </div>
-    <Button as-child variant="outline"><RouterLink :to="{ name: 'athlete', params: { id: profile.id } }">
-      Voir le profil
-    </RouterLink></Button>
+    </RouterLink>
   </li>
 </template>
 
@@ -148,7 +146,21 @@ const hiddenCount = computed(() => Math.max(0, props.profile.sports.length - 1 -
   white-space: nowrap;
 }
 
-.athlete-card > a {
+.athlete-card__link {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: inherit;
   text-decoration: none;
+  border-radius: var(--radius-md);
+}
+
+.athlete-card__link:focus-visible {
+  outline: 2px solid var(--color-lime);
+  outline-offset: 2px;
+}
+
+.athlete-card:has(.athlete-card__link:hover) {
+  border-color: var(--color-lime);
 }
 </style>

@@ -327,10 +327,19 @@ onMounted(load)
 .athlete-list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 0 8px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Une carte par défilement horizontal, chacune à demi-largeur ou presque */
+.athlete-list > li {
+  flex: 0 0 min(280px, 80%);
+  scroll-snap-align: start;
 }
 
 /* Desktop : grille de profils sur trois colonnes */
@@ -358,10 +367,5 @@ onMounted(load)
     justify-content: space-between;
   }
 
-  .athlete-list {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-  }
 }
 </style>

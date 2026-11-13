@@ -1,11 +1,56 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { Send } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import { api } from '../services/api'
 import { formatTime, formatDate } from '../services/format'
 import { getUserCached } from '../services/users'
-import type { Conversation } from '../types/api'
+import type { Conversation, User } from '../types/api'
+
+const route = useRoute()
+const router = useRouter()
+
+/** Messages suggérés pour démarrer la conversation ; le texte reste modifiable. */
+const STARTERS = [
+  'Salut ! Tu serais partant pour une séance cette semaine ?',
+  'Bonjour ! Tu t’entraînes souvent près de chez toi ?',
+  'Hello, ça te dit un match ce week-end ?',
+  'Salut ! On se fait une séance à deux ?',
+]
+const MESSAGE_MAX = 2000
+
+/** Sportif avec qui démarrer une conversation (?to=<id>, venant de la carte). */
+const recipientId = computed(() => (typeof route.query.to === 'string' ? route.query.to : ''))
+const recipient = ref<User | null>(null)
+const draft = ref('')
+const sending = ref(false)
+const sendError = ref('')
+
+watch(
+  recipientId,
+  async (id) => {
+    recipient.value = id ? await getUserCached(id) : null
+  },
+  { immediate: true },
+)
+
+/** Crée la conversation, y dépose le premier message, puis ouvre le chat. */
+async function startWithRecipient() {
+  const body = draft.value.trim()
+  if (!body || !recipientId.value || sending.value) return
+  sending.value = true
+  sendError.value = ''
+  try {
+    const conversation = await api.createConversation({ participantId: recipientId.value })
+    await api.sendMessage({ conversationId: conversation.id, text: body })
+    router.push({ name: 'conversation', params: { id: conversation.id } })
+  } catch (error) {
+    sendError.value = error instanceof Error ? error.message : 'Impossible d’ouvrir la conversation.'
+  } finally {
+    sending.value = false
+  }
+}
 
 const { user } = useAuth()
 
@@ -66,6 +111,41 @@ onMounted(async () => {
       <header class="messages__head">
         <h1>Messages</h1>
       </header>
+
+      <section v-if="recipientId" class="start">
+        <h2>
+          Démarrer la conversation<span v-if="recipient"> avec {{ recipient.firstName }}</span>
+        </h2>
+        <div class="start__chips">
+          <button
+            v-for="(msg, i) in STARTERS"
+            :key="i"
+            type="button"
+            class="start__chip"
+            @click="draft = msg"
+          >
+            {{ msg }}
+          </button>
+        </div>
+        <textarea
+          v-model="draft"
+          class="start__field"
+          rows="3"
+          :maxlength="MESSAGE_MAX"
+          aria-label="Premier message"
+          placeholder="Écris ton premier message…"
+        ></textarea>
+        <p v-if="sendError" class="start__error">{{ sendError }}</p>
+        <button
+          type="button"
+          class="start__send"
+          :disabled="sending || !draft.trim()"
+          @click="startWithRecipient"
+        >
+          <Send :size="18" aria-hidden="true" />
+          {{ sending ? 'Envoi…' : 'Envoyer et ouvrir la conversation' }}
+        </button>
+      </section>
 
       <div class="segmented" role="tablist" aria-label="Type de messages">
         <button
@@ -373,5 +453,83 @@ onMounted(async () => {
     padding: 0 28px;
     width: auto;
   }
+}
+
+.start {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.start h2 {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.start__chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.start__chip {
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.start__chip:hover {
+  border-color: var(--color-lime);
+  background: var(--color-lime-soft);
+}
+
+.start__field {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 16px;
+  resize: vertical;
+}
+
+.start__field:focus {
+  outline: none;
+  border-color: var(--color-lime);
+  box-shadow: 0 0 0 3px var(--color-lime-soft);
+}
+
+.start__error {
+  color: var(--color-danger, #b42318);
+  font-size: 14px;
+}
+
+.start__send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: var(--color-lime-dark);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.start__send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>

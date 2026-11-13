@@ -285,6 +285,13 @@ async function onLogout() {
             @click="fileInput?.click()"
           >
             <img v-if="displayAvatar" :src="displayAvatar" :alt="firstName" />
+            <component
+              :is="SPORT_ICONS[primarySport]"
+              v-else-if="primarySport"
+              :size="32"
+              :stroke-width="2"
+              aria-hidden="true"
+            />
             <template v-else>{{ initialsText }}</template>
             <span class="profile-card__camera" aria-hidden="true"><Camera :size="12" /></span>
           </button>
@@ -397,23 +404,33 @@ async function onLogout() {
                 <span>{{ SPORT_LABELS[s] }}</span>
               </label>
             </div>
-            <p v-if="selectedSportCount > 0" class="field-hint">
-              Le sport principal s'affiche sur ta carte, à la place de ta photo.
-            </p>
             <div v-for="s in SPORTS.filter((x) => sportRows[x]?.on)" :key="s" class="level-row">
               <span>{{ SPORT_LABELS[s] }}</span>
-              <button
-                type="button"
-                class="primary-toggle"
-                :class="{ 'is-primary': primarySport === s }"
-                :aria-pressed="primarySport === s"
-                @click="primarySport = s"
-              >
-                {{ primarySport === s ? 'Principal' : 'Définir principal' }}
-              </button>
               <select v-model="sportRows[s]!.level" :aria-label="`Niveau en ${SPORT_LABELS[s]}`">
                 <option v-for="l in LEVELS" :key="l" :value="l">{{ LEVEL_LABELS[l] }}</option>
               </select>
+            </div>
+
+            <div class="form-row">
+              <label for="primarySport">Sport principal</label>
+              <select
+                id="primarySport"
+                v-model="primarySport"
+                class="primary-select"
+                :disabled="selectedSportCount === 0"
+              >
+                <option value="" disabled>
+                  {{ selectedSportCount === 0 ? 'Coche d\'abord un sport' : 'Choisis ton sport principal' }}
+                </option>
+                <option
+                  v-for="s in SPORTS.filter((x) => sportRows[x]?.on)"
+                  :key="s"
+                  :value="s"
+                >
+                  {{ SPORT_LABELS[s] }}
+                </option>
+              </select>
+              <p class="field-hint">Affiché sur ta carte, à la place de ta photo.</p>
             </div>
           </fieldset>
 
@@ -752,23 +769,8 @@ textarea:focus {
   font-weight: 600;
 }
 
-.primary-toggle {
-  margin-left: auto;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.primary-toggle.is-primary {
-  border-color: var(--color-lime);
-  background: var(--color-lime-soft);
-  color: var(--color-lime-dark);
+.primary-select {
+  width: 100%;
 }
 
 .level-row select {

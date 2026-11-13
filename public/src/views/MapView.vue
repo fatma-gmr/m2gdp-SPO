@@ -1,16 +1,37 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { h, nextTick, onBeforeUnmount, onMounted, ref, render, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { LocateFixed, Search } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import { api } from '../services/api'
-import { LEVEL_LABELS, SPORT_LABELS } from '../services/labels'
+import { DAYS, DAY_LABELS, LEVEL_LABELS, SPORT_LABELS } from '../services/labels'
 import { formatDistance, initials } from '../services/format'
+import { SPORT_ICONS } from '../services/sportIcons'
 import { DEFAULT_RADIUS_KM, centerOf } from '../services/location'
 import { fetchUser } from '../services/users'
-import type { GeoPoint, Level, Sport, UserSearchParams, UserSearchResult } from '../types/api'
+import type { DayOfWeek, GeoPoint, Level, Sport, UserSearchParams, UserSearchResult } from '../types/api'
+
+/** Initiale affichée pour chaque jour dans la fiche sportif. */
+const DAY_LETTERS: Record<DayOfWeek, string> = {
+  lundi: 'L', mardi: 'M', mercredi: 'M', jeudi: 'J', vendredi: 'V', samedi: 'S', dimanche: 'D',
+}
+
+/** Jours où le sportif est disponible (d'après ses créneaux). */
+function availableDays(p: UserSearchResult): Set<DayOfWeek> {
+  return new Set(p.availability.map((slot) => slot.dayOfWeek))
+}
+
+/** Créneaux groupés par jour, dans l'ordre de la semaine : « Lundi : 18:00–20:00, 12:00–13:00 ». */
+function slotsByDay(p: UserSearchResult): { day: DayOfWeek; ranges: string[] }[] {
+  return DAYS.flatMap((day) => {
+    const ranges = p.availability
+      .filter((slot) => slot.dayOfWeek === day)
+      .map((slot) => `${slot.startTime}–${slot.endTime}`)
+    return ranges.length ? [{ day, ranges }] : []
+  })
+}
 
 const { user } = useAuth()
 
@@ -39,10 +60,31 @@ function escapeAttr(value: string): string {
   return value.replace(/[&"<>]/g, (ch) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' })[ch] ?? ch)
 }
 
+/** HTML de l'icône d'un sport (rendu Vue synchrone, mis en cache), pour les marqueurs Leaflet. */
+const sportIconCache = new Map<string, string>()
+function sportIconHtml(sport: Sport): string {
+  let html = sportIconCache.get(sport)
+  if (html === undefined) {
+    const container = document.createElement('div')
+    render(h(SPORT_ICONS[sport], { size: 20, strokeWidth: 2, 'aria-hidden': 'true' }), container)
+    html = container.innerHTML
+    render(null, container)
+    sportIconCache.set(sport, html)
+  }
+  return html
+}
+
+/** Contenu d'un marqueur : photo, sinon icône du sport principal, sinon initiales. */
+function pinContent(p: UserSearchResult): string {
+  if (p.avatarUrl) return `<img src="${escapeAttr(p.avatarUrl)}" alt="" />`
+  const primary = p.sports[0]?.sport
+  return primary ? sportIconHtml(primary) : initials(p.firstName, p.lastName)
+}
+
 function pinIcon(p: UserSearchResult) {
   return L.divIcon({
     className: 'binofit-pin-wrap',
-    html: `<div class="binofit-pin">${p.avatarUrl ? `<img src="${escapeAttr(p.avatarUrl)}" alt="" />` : initials(p.firstName, p.lastName)}</div>`,
+    html: `<div class="binofit-pin">${pinContent(p)}</div>`,
     iconSize: [40, 40],
     iconAnchor: [20, 20],
   })
@@ -159,6 +201,7 @@ onBeforeUnmount(() => {
       >
         <span class="avatar map-list__avatar">
           <img v-if="p.avatarUrl" :src="p.avatarUrl" alt="" />
+          <component :is="SPORT_ICONS[p.sports[0].sport]" v-else-if="p.sports[0]" :size="20" :stroke-width="2" aria-hidden="true" />
           <template v-else>{{ initials(p.firstName, p.lastName) }}</template>
         </span>
         <span class="map-list__who">
@@ -209,6 +252,7 @@ onBeforeUnmount(() => {
       <div class="map-sheet__head">
         <div class="avatar map-sheet__avatar">
           <img v-if="selected.avatarUrl" :src="selected.avatarUrl" :alt="selected.firstName" />
+          <component :is="SPORT_ICONS[selected.sports[0].sport]" v-else-if="selected.sports[0]" :size="28" :stroke-width="2" aria-hidden="true" />
           <template v-else>{{ initials(selected.firstName, selected.lastName) }}</template>
         </div>
         <div class="map-sheet__who">
@@ -221,12 +265,27 @@ onBeforeUnmount(() => {
         </div>
         <strong class="map-sheet__distance">{{ formatDistance(selected.distanceKm) }}</strong>
       </div>
+      <div class="map-sheet__days" role="list" aria-label="Disponibilités">
+        <span
+          v-for="d in DAYS"
+          :key="d"
+          role="listitem"
+          class="map-sheet__day"
+          :class="{ 'is-on': availableDays(selected).has(d) }"
+          :aria-label="`${DAY_LABELS[d]} : ${availableDays(selected).has(d) ? 'disponible' : 'non disponible'}`"
+        >{{ DAY_LETTERS[d] }}</span>
+      </div>
+      <ul v-if="selected.availability.length" class="map-sheet__slots">
+        <li v-for="group in slotsByDay(selected)" :key="group.day">
+          <strong>{{ DAY_LABELS[group.day] }}</strong> {{ group.ranges.join(', ') }}
+        </li>
+      </ul>
       <div class="map-sheet__actions">
         <RouterLink :to="{ name: 'athlete', params: { id: selected.id } }" class="map-btn map-btn--outline">
           Voir le profil
         </RouterLink>
-        <RouterLink :to="{ name: 'athlete', params: { id: selected.id } }" class="map-btn map-btn--primary">
-          Écrire →
+        <RouterLink :to="{ name: 'messages', query: { to: selected.id } }" class="map-btn map-btn--primary">
+          Écrire
         </RouterLink>
       </div>
     </div>
@@ -392,6 +451,45 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.map-sheet__days {
+  display: flex;
+  gap: 6px;
+}
+
+.map-sheet__slots {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 96px;
+  overflow-y: auto;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.map-sheet__slots strong {
+  color: var(--color-text);
+}
+
+.map-sheet__day {
+  flex: 1;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.map-sheet__day.is-on {
+  background: var(--color-lime-soft);
+  border-color: var(--color-lime);
+  color: var(--color-lime-dark);
 }
 
 .map-sheet__avatar {
