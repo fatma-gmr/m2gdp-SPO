@@ -106,7 +106,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="screen discover-page">
+  <div class="screen">
     <div class="screen__inner discover">
       <header class="discover__top">
         <img :src="logoUrl" alt="BINOFIT" class="discover__logo" />
@@ -184,11 +184,6 @@ onMounted(load)
 </template>
 
 <style scoped>
-/* Fond blanc pour la page Découvrir uniquement */
-.discover-page {
-  background: #FFFFFF;
-}
-
 .discover {
   display: flex;
   flex-direction: column;
