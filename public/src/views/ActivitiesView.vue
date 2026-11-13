@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
 import { computed, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { ArrowLeft, MapPin } from 'lucide-vue-next'
+import { MapPin } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import { api } from '../services/api'
 import { ACTIVITY_STATUS_LABELS, SPORT_LABELS } from '../services/labels'
@@ -10,7 +9,6 @@ import { formatDateTime } from '../services/format'
 import { getUserCached } from '../services/users'
 import type { Activity, ActivityStatus } from '../types/api'
 
-const router = useRouter()
 const { user } = useAuth()
 
 const activities = ref<Activity[]>([])
@@ -90,12 +88,6 @@ onMounted(async () => {
 <template>
   <div class="screen">
     <div class="screen__inner">
-      <div class="top-bar">
-        <button type="button" class="icon-btn" aria-label="Retour" @click="router.back()">
-          <ArrowLeft :size="18" aria-hidden="true" />
-        </button>
-      </div>
-
       <div class="header-block">
         <h1>Mes activités</h1>
       </div>
