@@ -185,7 +185,7 @@ watch(athleteId, load)
   gap: 10px;
   padding: 48px 0;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
   text-align: center;
 }
 
@@ -196,7 +196,7 @@ watch(athleteId, load)
 }
 
 .athlete__section h2 {
-  font-size: 17px;
+  font-size: 15.5px;
 }
 
 .athlete__bio {
@@ -206,7 +206,7 @@ watch(athleteId, load)
 
 .athlete__muted {
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .athlete__actions {

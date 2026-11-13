@@ -419,7 +419,7 @@ onBeforeUnmount(() => {
   background: transparent;
   color: var(--color-text);
   font: inherit;
-  font-size: 15px;
+  font-size: 13.5px;
   outline: none;
 }
 
@@ -455,7 +455,7 @@ onBeforeUnmount(() => {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   color: var(--color-text);
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(18, 21, 18, 0.06);
 }
@@ -468,7 +468,7 @@ onBeforeUnmount(() => {
   padding: 8px 14px;
   background-image: none;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   line-height: 1.2;
   height: auto;
@@ -521,7 +521,7 @@ onBeforeUnmount(() => {
   list-style: none;
   max-height: 96px;
   overflow-y: auto;
-  font-size: 13px;
+  font-size: 11.5px;
   color: var(--color-text-muted);
 }
 
@@ -539,7 +539,7 @@ onBeforeUnmount(() => {
   border: 1px solid var(--color-border);
   background: var(--color-surface);
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -552,7 +552,7 @@ onBeforeUnmount(() => {
 .map-sheet__avatar {
   width: 56px;
   height: 56px;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .map-sheet__avatar img {
@@ -568,7 +568,7 @@ onBeforeUnmount(() => {
 }
 
 .map-sheet__who h2 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
 }
 
@@ -578,12 +578,12 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
   gap: 6px;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .map-sheet__distance {
   color: var(--color-lime);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
 }
 
@@ -600,7 +600,7 @@ onBeforeUnmount(() => {
   justify-content: center;
   border-radius: var(--radius-md);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 13.5px;
   text-decoration: none;
 }
 
@@ -625,7 +625,7 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-md);
   background: var(--color-surface);
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
   text-align: center;
   box-shadow: 0 8px 20px rgba(18, 21, 18, 0.1);
 }
@@ -649,13 +649,13 @@ onBeforeUnmount(() => {
   }
 
   .map-list h2 {
-    font-size: 24px;
+    font-size: 21.5px;
     font-weight: 800;
   }
 
   .map-list__count {
     margin-bottom: 8px;
-    font-size: 14px;
+    font-size: 12.5px;
     color: var(--color-text-muted);
   }
 
@@ -681,7 +681,7 @@ onBeforeUnmount(() => {
   .map-list__avatar {
     width: 44px;
     height: 44px;
-    font-size: 15px;
+    font-size: 13.5px;
     flex-shrink: 0;
   }
 
@@ -693,18 +693,18 @@ onBeforeUnmount(() => {
   }
 
   .map-list__who strong {
-    font-size: 15px;
+    font-size: 13.5px;
   }
 
   .map-list__who small {
-    font-size: 13px;
+    font-size: 11.5px;
     color: var(--color-text-muted);
   }
 
   .map-list__km {
     color: var(--color-lime);
     font-weight: 800;
-    font-size: 14px;
+    font-size: 12.5px;
   }
 }
 </style>
@@ -731,7 +731,7 @@ onBeforeUnmount(() => {
   background: var(--color-lime);
   color: var(--primary-foreground);
   font-weight: 800;
-  font-size: 14px;
+  font-size: 12.5px;
   display: flex;
   align-items: center;
   justify-content: center;

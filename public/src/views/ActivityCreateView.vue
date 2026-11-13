@@ -292,7 +292,7 @@ async function submit() {
   gap: 10px;
   padding: 48px 0;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .sent__text {
@@ -318,7 +318,7 @@ textarea {
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text);
-  font-size: 16px;
+  font-size: 14.5px;
   padding: 13px 14px;
   font-family: inherit;
   resize: vertical;
@@ -348,7 +348,7 @@ textarea::placeholder {
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
-  font-size: 13px;
+  font-size: 11.5px;
   cursor: pointer;
 }
 

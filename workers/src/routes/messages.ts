@@ -54,7 +54,7 @@ messagesRoute.post('/', async (c) => {
   )
 
   unwrap(await supabase.from('conversations').update({ updated_at: sentAt }).eq('id', conversationId), 'conversations')
-  await notifyUsers(c.env, conversation.participantIds, { type: 'message', conversationId })
+  await notifyUsers(c.env, conversation.participantIds, { type: 'message', conversationId, senderId: authUser.uid })
 
   return c.json(rowToMessage(row as MessageRow), 201)
 })

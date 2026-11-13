@@ -499,7 +499,7 @@ async function onLogout() {
 }
 
 .profile__top h1 {
-  font-size: 28px;
+  font-size: 25px;
   font-weight: 800;
 }
 
@@ -514,7 +514,7 @@ async function onLogout() {
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -526,7 +526,7 @@ async function onLogout() {
   gap: 10px;
   padding: 48px 0;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .profile-card {
@@ -553,7 +553,7 @@ async function onLogout() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   flex-shrink: 0;
 }
@@ -589,7 +589,7 @@ async function onLogout() {
 }
 
 .profile-card__info strong {
-  font-size: 17px;
+  font-size: 15.5px;
   font-weight: 800;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -603,14 +603,14 @@ async function onLogout() {
   background: transparent;
   color: var(--color-lime);
   font: inherit;
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .profile-card__status {
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: 11.5px;
 }
 
 .progress {
@@ -643,7 +643,7 @@ async function onLogout() {
 
 .field-counter {
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: 11.5px;
 }
 
 textarea {
@@ -653,7 +653,7 @@ textarea {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text);
-  font-size: 16px;
+  font-size: 14.5px;
   padding: 13px 14px;
   font-family: inherit;
   resize: vertical;
@@ -700,7 +700,7 @@ textarea:focus {
 }
 
 .section legend {
-  font-size: 17px;
+  font-size: 15.5px;
   font-weight: 800;
   color: var(--color-text);
   padding: 0;
@@ -724,7 +724,7 @@ textarea:focus {
   background: var(--color-surface);
   border: 1.5px solid var(--color-border);
   color: var(--color-text);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   text-align: center;
   cursor: pointer;
@@ -765,7 +765,7 @@ textarea:focus {
   border-radius: var(--radius-md);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 600;
 }
 
@@ -776,11 +776,11 @@ textarea:focus {
 .level-row select {
   width: auto;
   padding: 8px 12px;
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .field-label {
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -841,7 +841,7 @@ textarea:focus {
 .slot select,
 .slot input {
   padding: 10px 8px;
-  font-size: 14px;
+  font-size: 12.5px;
   min-width: 0;
 }
 
@@ -872,7 +872,7 @@ textarea:focus {
   background: var(--color-lime);
   color: var(--primary-foreground);
   font: inherit;
-  font-size: 17px;
+  font-size: 15.5px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(23, 138, 46, 0.25);

@@ -89,7 +89,7 @@ onBeforeUnmount(() => {
   border-radius: 999px;
   background: #E5484D;
   color: #FFFFFF;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   line-height: 18px;
   text-align: center;
@@ -125,7 +125,7 @@ onBeforeUnmount(() => {
   padding: 0 8px;
   border-radius: 999px;
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   text-decoration: none;
   transition: color 0.2s ease;
@@ -182,7 +182,7 @@ onBeforeUnmount(() => {
     gap: 0;
     height: 40px;
     padding: 0 18px;
-    font-size: 15px;
+    font-size: 13.5px;
     color: var(--color-text);
   }
 

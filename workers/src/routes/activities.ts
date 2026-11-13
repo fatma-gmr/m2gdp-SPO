@@ -49,7 +49,14 @@ activitiesRoute.post('/', requireProfile(), async (c) => {
   )
 
   const created = rowToActivity(row as unknown as ActivityRow)
-  await notifyUsers(c.env, [input.guestId], { type: 'activity', activityId: created.id, status: created.status })
+  await notifyUsers(c.env, [input.guestId], {
+    type: 'activity',
+    activityId: created.id,
+    status: created.status,
+    actorId: authUser.uid,
+    creatorId: authUser.uid,
+    guestId: input.guestId,
+  })
   return c.json(created, 201)
 })
 
@@ -117,6 +124,9 @@ activitiesRoute.patch('/:id/status', async (c) => {
     type: 'activity',
     activityId: result.id,
     status: result.status,
+    actorId: authUser.uid,
+    creatorId: activity.createdBy,
+    guestId: activity.guestId,
   })
   return c.json(result)
 })

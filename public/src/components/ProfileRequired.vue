@@ -42,7 +42,7 @@ onMounted(async () => {
 .profile-required__list {
   margin: 0;
   padding-left: 18px;
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .profile-required__link {

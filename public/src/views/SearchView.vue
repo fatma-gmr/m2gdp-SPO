@@ -263,7 +263,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 13px;
+  font-size: 11.5px;
   color: var(--color-text-muted);
 }
 
@@ -275,7 +275,7 @@ onMounted(async () => {
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
-  font-size: 15px;
+  font-size: 13.5px;
 }
 
 .age-range__sep {
@@ -290,7 +290,7 @@ onMounted(async () => {
 }
 
 .filter__title {
-  font-size: 15px;
+  font-size: 13.5px;
 }
 
 .chips {
@@ -318,7 +318,7 @@ onMounted(async () => {
   color: var(--color-text-muted);
   border-radius: 999px;
   padding: 8px 14px;
-  font-size: 14px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -349,7 +349,7 @@ onMounted(async () => {
   gap: 10px;
   padding: 24px 0;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
   text-align: center;
 }
 
@@ -367,7 +367,7 @@ onMounted(async () => {
 
 /* Une carte par défilement horizontal, comme sur la page Découvrir */
 .athlete-list > li {
-  flex: 0 0 min(280px, 80%);
+  flex: 0 0 min(230px, 70%);
   scroll-snap-align: start;
 }
 </style>

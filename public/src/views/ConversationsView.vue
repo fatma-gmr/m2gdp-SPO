@@ -65,7 +65,6 @@ const conversations = ref<Conversation[]>([])
 const names = reactive<Record<string, { firstName: string; lastName: string; avatarUrl: string | null }>>({})
 const loading = ref(true)
 const errorMessage = ref('')
-const tab = ref<'conversations' | 'demandes'>('conversations')
 
 const uid = computed(() => user.value?.uid ?? '')
 
@@ -169,37 +168,12 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
         </button>
       </section>
 
-      <div class="segmented" role="tablist" aria-label="Type de messages">
-        <button
-          type="button"
-          role="tab"
-          class="segmented__item"
-          :aria-selected="tab === 'conversations'"
-          @click="tab = 'conversations'"
-        >
-          Conversations
-        </button>
-        <button
-          type="button"
-          role="tab"
-          class="segmented__item"
-          :aria-selected="tab === 'demandes'"
-          @click="tab = 'demandes'"
-        >
-          Demandes
-        </button>
-      </div>
-
       <div v-if="loading" class="state">
         <span class="spinner spinner--muted" aria-hidden="true"></span>
         <span>Chargement…</span>
       </div>
 
       <div v-else-if="errorMessage" class="alert alert-error">{{ errorMessage }}</div>
-
-      <template v-else-if="tab === 'demandes'">
-        <p class="state">Les demandes de binôme arrivent bientôt.</p>
-      </template>
 
       <template v-else-if="conversations.length === 0">
         <section class="empty">
@@ -254,6 +228,12 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 </template>
 
 <style scoped>
+.messages__col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .messages {
   display: flex;
   flex-direction: column;
@@ -268,7 +248,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 }
 
 .messages__head h1 {
-  font-size: 28px;
+  font-size: 25px;
   font-weight: 800;
 }
 
@@ -298,7 +278,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   background: transparent;
   color: var(--color-text-muted);
   font: inherit;
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -316,7 +296,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   gap: 10px;
   padding: 32px 0;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
   text-align: center;
 }
 
@@ -335,13 +315,13 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 }
 
 .empty__body h2 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
 }
 
 .empty__body p {
   color: var(--color-text-muted);
-  font-size: 15px;
+  font-size: 13.5px;
 }
 
 .empty__cta {
@@ -354,7 +334,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   background: var(--color-lime);
   color: var(--primary-foreground);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 13.5px;
   text-decoration: none;
 }
 
@@ -382,7 +362,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 .convo__avatar {
   width: 48px;
   height: 48px;
-  font-size: 16px;
+  font-size: 14.5px;
   flex-shrink: 0;
   border: none;
 }
@@ -403,7 +383,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 }
 
 .convo__time {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--color-text-muted);
   flex-shrink: 0;
 }
@@ -420,7 +400,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   border-radius: 999px;
   background: #E5484D;
   color: #FFFFFF;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   line-height: 22px;
   text-align: center;
@@ -428,7 +408,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 }
 
 .convo__preview {
-  font-size: 14px;
+  font-size: 12.5px;
   color: var(--color-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -479,7 +459,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   }
 
   .messages__panel-body h2 {
-    font-size: 26px;
+    font-size: 23.5px;
     font-weight: 800;
   }
 
@@ -489,7 +469,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 
   .messages__panel-script {
     font-family: 'Caveat', cursive;
-    font-size: 28px;
+    font-size: 25px;
     font-weight: 700;
     color: var(--color-lime);
   }
@@ -509,7 +489,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 }
 
 .start h2 {
-  font-size: 16px;
+  font-size: 14.5px;
   font-weight: 800;
 }
 
@@ -527,7 +507,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
-  font-size: 14px;
+  font-size: 12.5px;
   cursor: pointer;
 }
 
@@ -544,7 +524,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
-  font-size: 16px;
+  font-size: 14.5px;
   resize: vertical;
 }
 
@@ -556,7 +536,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 
 .start__error {
   color: var(--color-danger, #b42318);
-  font-size: 14px;
+  font-size: 12.5px;
 }
 
 .start__send {

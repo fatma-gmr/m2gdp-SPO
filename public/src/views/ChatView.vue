@@ -174,7 +174,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 
 .chat__title {
   font-weight: 800;
-  font-size: 16px;
+  font-size: 14.5px;
   color: var(--color-text);
   text-decoration: none;
 }
@@ -199,7 +199,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 .chat__empty {
   text-align: center;
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 12.5px;
   margin: auto;
 }
 
@@ -214,13 +214,13 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 }
 
 .bubble p {
-  font-size: 15px;
+  font-size: 13.5px;
   line-height: 1.4;
   white-space: pre-line;
 }
 
 .bubble__time {
-  font-size: 11px;
+  font-size: 10px;
   opacity: 0.7;
   align-self: flex-end;
 }
@@ -242,7 +242,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 
 .chat__error {
   color: var(--color-danger);
-  font-size: 13px;
+  font-size: 11.5px;
   padding: 0 16px;
 }
 

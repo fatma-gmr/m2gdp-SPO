@@ -10,8 +10,13 @@ import { auth } from '../firebase'
 export interface RealtimeEvent {
   type: 'message' | 'activity'
   conversationId?: string
+  senderId?: string
   activityId?: string
   status?: string
+  /** Qui a fait l'action, et les deux personnes de la proposition. */
+  actorId?: string
+  creatorId?: string
+  guestId?: string
 }
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
