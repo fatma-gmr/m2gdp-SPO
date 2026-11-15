@@ -1,29 +1,20 @@
 <script setup lang="ts">
-import { computed, h, nextTick, onBeforeUnmount, onMounted, ref, render, toRef, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRef, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { LocateFixed, Search } from 'lucide-vue-next'
+import { LocateFixed, Plus, Search, X } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import { useSearchFilters } from '../composables/useSearchFilters'
 import { api } from '../services/api'
 import { DAYS, DAY_LABELS, LEVEL_LABELS, SEXE_LABELS, SPORT_LABELS } from '../services/labels'
 import { formatDistance, initials } from '../services/format'
-import { SPORT_ICONS } from '../services/sportIcons'
+import SportIcon from '../components/SportIcon.vue'
+import { SPORT_IMAGES } from '../services/sportIcons'
 import { SEARCH_ZONES, centerOf, type SearchZone } from '../services/location'
 import { FETCH_RADIUS_KM, matchesFilters } from '../services/searchFilters'
 import { fetchUser } from '../services/users'
 import type { DayOfWeek, GeoPoint, Level, Sexe, Sport, UserSearchResult } from '../types/api'
-
-/** Initiale affichée pour chaque jour dans la fiche sportif. */
-const DAY_LETTERS: Record<DayOfWeek, string> = {
-  lundi: 'Lu', mardi: 'Ma', mercredi: 'Me', jeudi: 'Je', vendredi: 'Ve', samedi: 'Sa', dimanche: 'Di',
-}
-
-/** Jours où le sportif est disponible (d'après ses créneaux). */
-function availableDays(p: UserSearchResult): Set<DayOfWeek> {
-  return new Set(p.availability.map((slot) => slot.dayOfWeek))
-}
 
 /** Créneaux groupés par jour, dans l'ordre de la semaine : « Lundi : 18:00–20:00, 12:00–13:00 ». */
 function slotsByDay(p: UserSearchResult): { day: DayOfWeek; ranges: string[] }[] {
@@ -102,33 +93,27 @@ function escapeAttr(value: string): string {
   return value.replace(/[&"<>]/g, (ch) => ({ '&': '&amp;', '"': '&quot;', '<': '&lt;', '>': '&gt;' })[ch] ?? ch)
 }
 
-/** HTML de l'icône d'un sport (rendu Vue synchrone, mis en cache), pour les marqueurs Leaflet. */
-const sportIconCache = new Map<string, string>()
-function sportIconHtml(sport: Sport): string {
-  let html = sportIconCache.get(sport)
-  if (html === undefined) {
-    const container = document.createElement('div')
-    render(h(SPORT_ICONS[sport], { size: 20, strokeWidth: 2, 'aria-hidden': 'true' }), container)
-    html = container.innerHTML
-    render(null, container)
-    sportIconCache.set(sport, html)
-  }
-  return html
+function sportIconHtml(sport: Sport): string | null {
+  const src = SPORT_IMAGES[sport]
+  if (!src) return null
+  return `<img class="binofit-pin__sport" src="${src}" alt="" />`
 }
 
 /** Contenu d'un marqueur : photo, sinon icône du sport principal, sinon initiales. */
 function pinContent(p: UserSearchResult): string {
   if (p.avatarUrl) return `<img src="${escapeAttr(p.avatarUrl)}" alt="" />`
   const primary = p.sports[0]?.sport
-  return primary ? sportIconHtml(primary) : initials(p.firstName, p.lastName)
+  if (!primary) return initials(p.firstName, p.lastName)
+  // « Autre » n'a pas d'image dans le pack : un Plus vert, sur le cercle blanc.
+  return sportIconHtml(primary) ?? '<svg class="binofit-pin__plus" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>'
 }
 
 function pinIcon(p: UserSearchResult) {
   return L.divIcon({
     className: 'binofit-pin-wrap',
     html: `<div class="binofit-pin">${pinContent(p)}</div>`,
-    iconSize: [40, 40],
-    iconAnchor: [20, 20],
+    iconSize: [46, 46],
+    iconAnchor: [23, 23],
   })
 }
 
@@ -251,6 +236,10 @@ onMounted(async () => {
     if (!mapEl.value) return
 
     map = L.map(mapEl.value, { zoomControl: false }).setView([centerPoint.lat, centerPoint.lng], 13)
+    // Tap sur la carte (hors marqueurs) : ferme la fiche du sportif.
+    map.on('click', () => {
+      selected.value = null
+    })
     L.control.zoom({ position: 'bottomright' }).addTo(map)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -289,14 +278,21 @@ onBeforeUnmount(() => {
       >
         <span class="avatar map-list__avatar">
           <img v-if="p.avatarUrl" :src="p.avatarUrl" alt="" />
-          <component :is="SPORT_ICONS[p.sports[0].sport]" v-else-if="p.sports[0]" :size="20" :stroke-width="2" aria-hidden="true" />
+          <img
+            v-else-if="p.sports[0] && SPORT_IMAGES[p.sports[0].sport]"
+            class="map-list__sport"
+            :src="SPORT_IMAGES[p.sports[0].sport]"
+            alt=""
+            style="width: 96%; height: 96%; border-radius: 0; object-fit: contain"
+          />
+          <Plus v-else-if="p.sports[0]" :size="22" class="map-list__plus" aria-hidden="true" />
           <template v-else>{{ initials(p.firstName, p.lastName) }}</template>
         </span>
         <span class="map-list__who">
           <strong>{{ p.firstName }}</strong>
           <small v-if="p.sports[0]">{{ SPORT_LABELS[p.sports[0].sport] }} · {{ LEVEL_LABELS[p.sports[0].level] }}</small>
+          <span class="map-list__km">{{ formatDistance(p.distanceKm) }}</span>
         </span>
-        <span class="map-list__km">{{ formatDistance(p.distanceKm) }}</span>
       </button>
     </aside>
 
@@ -364,10 +360,13 @@ onBeforeUnmount(() => {
     <!-- Fiche du sportif sélectionné -->
     <div v-if="selected" class="map-sheet">
       <span class="map-sheet__grabber" aria-hidden="true"></span>
+      <button type="button" class="map-sheet__close" aria-label="Fermer la fiche" @click="selected = null">
+        <X :size="16" aria-hidden="true" />
+      </button>
       <div class="map-sheet__head">
         <div class="avatar map-sheet__avatar">
           <img v-if="selected.avatarUrl" :src="selected.avatarUrl" :alt="selected.firstName" />
-          <component :is="SPORT_ICONS[selected.sports[0].sport]" v-else-if="selected.sports[0]" :size="28" :stroke-width="2" aria-hidden="true" />
+          <SportIcon v-else-if="selected.sports[0]" :sport="selected.sports[0].sport" :size="selected.sports[0].sport === 'autre' ? 24 : 48" />
           <template v-else>{{ initials(selected.firstName, selected.lastName) }}</template>
         </div>
         <div class="map-sheet__who">
@@ -379,16 +378,6 @@ onBeforeUnmount(() => {
           </p>
         </div>
         <strong class="map-sheet__distance">{{ formatDistance(selected.distanceKm) }}</strong>
-      </div>
-      <div class="map-sheet__days" role="list" aria-label="Disponibilités">
-        <span
-          v-for="d in DAYS"
-          :key="d"
-          role="listitem"
-          class="map-sheet__day"
-          :class="{ 'is-on': availableDays(selected).has(d) }"
-          :aria-label="`${DAY_LABELS[d]} : ${availableDays(selected).has(d) ? 'disponible' : 'non disponible'}`"
-        >{{ DAY_LETTERS[d] }}</span>
       </div>
       <ul v-if="selected.availability.length" class="map-sheet__slots">
         <li v-for="group in slotsByDay(selected)" :key="group.day">
@@ -612,16 +601,29 @@ onBeforeUnmount(() => {
   background: var(--color-border);
 }
 
+.map-sheet__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .map-sheet__head {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.map-sheet__days {
-  display: flex;
-  gap: 6px;
-}
 
 .map-sheet__slots {
   margin: 0;
@@ -637,30 +639,14 @@ onBeforeUnmount(() => {
   color: var(--color-text);
 }
 
-.map-sheet__day {
-  flex: 1;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
-  font-size: 11px;
-  font-weight: 700;
-}
 
-.map-sheet__day.is-on {
-  background: var(--color-lime-soft);
-  border-color: var(--color-lime);
-  color: var(--color-lime-dark);
-}
 
 .map-sheet__avatar {
   width: 56px;
   height: 56px;
   font-size: 16px;
+  background: #FFFFFF;
+  color: var(--color-lime-dark);
 }
 
 .map-sheet__avatar img {
@@ -786,9 +772,14 @@ onBeforeUnmount(() => {
     background: var(--color-lime-soft);
   }
 
+  .map-list__plus {
+    color: var(--color-lime-dark);
+  }
+
   .map-list__avatar {
-    width: 44px;
-    height: 44px;
+    background: #FFFFFF;
+    width: 52px;
+    height: 52px;
     font-size: 13.5px;
     flex-shrink: 0;
   }
@@ -814,6 +805,27 @@ onBeforeUnmount(() => {
     font-weight: 800;
     font-size: 12.5px;
   }
+
+  /* Cartes alignées à gauche : nom, sport puis distance, en colonne */
+  .map-list__who {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+}
+
+/* Plus vert pour « Autre » dans le marqueur */
+.binofit-pin__plus {
+  color: var(--color-lime-dark);
+}
+
+/* Icône du pack dans le marqueur : fond blanc, image contenue dans le cercle */
+.binofit-pin__sport {
+  width: 96%;
+  height: 96%;
+  object-fit: contain;
+  border-radius: 0;
 }
 </style>
 
@@ -833,11 +845,11 @@ onBeforeUnmount(() => {
 }
 
 .binofit-pin {
-  width: 40px;
-  height: 40px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
-  background: var(--color-lime);
-  color: var(--primary-foreground);
+  background: #FFFFFF;
+  color: var(--color-lime-dark);
   font-weight: 800;
   font-size: 12.5px;
   display: flex;
@@ -845,5 +857,12 @@ onBeforeUnmount(() => {
   justify-content: center;
   border: 3px solid var(--color-surface);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Mobile : pas de boutons +/- (pincement pour zoomer), pour ne pas masquer la fiche du sportif */
+@media (max-width: 1023px) {
+  .leaflet-bottom.leaflet-right .leaflet-control-zoom {
+    display: none;
+  }
 }
 </style>

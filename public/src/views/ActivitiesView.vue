@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button'
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { ChevronRight } from 'lucide-vue-next'
-import { SPORT_ICONS } from '../services/sportIcons'
+import SportIcon from '../components/SportIcon.vue'
 import { useAuth } from '../composables/useAuth'
 import { useUnread } from '../composables/useUnread'
 import { api } from '../services/api'
@@ -188,7 +188,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
 
             <div class="event__card">
               <span class="event__icon" aria-hidden="true">
-                <component :is="SPORT_ICONS[a.sport]" :size="20" />
+                <SportIcon :sport="a.sport" :size="31" />
               </span>
               <div class="event__body">
                 <strong>{{ SPORT_LABELS[a.sport] }} avec {{ counterpartName(a) }}</strong>

@@ -9,7 +9,8 @@ import { api, ApiError } from '../services/api'
 import { formatTime, formatDate } from '../services/format'
 import { getUserCached } from '../services/users'
 import type { RealtimeEvent } from '../services/realtime'
-import type { Conversation, User } from '../types/api'
+import SportIcon from '../components/SportIcon.vue'
+import type { Conversation, Sport, User } from '../types/api'
 
 const route = useRoute()
 const router = useRouter()
@@ -62,7 +63,7 @@ const { user } = useAuth()
 const { isConversationUnread, unreadCountOf, refresh: refreshUnread } = useUnread()
 
 const conversations = ref<Conversation[]>([])
-const names = reactive<Record<string, { firstName: string; lastName: string; avatarUrl: string | null }>>({})
+const names = reactive<Record<string, { firstName: string; lastName: string; avatarUrl: string | null; sport: Sport | null }>>({})
 const loading = ref(true)
 const errorMessage = ref('')
 
@@ -100,7 +101,7 @@ async function loadList() {
     await Promise.all(
       [...new Set(list.map(otherId))].map(async (id) => {
         const profile = await getUserCached(id)
-        if (profile) names[id] = { firstName: profile.firstName, lastName: profile.lastName, avatarUrl: profile.avatarUrl ?? null }
+        if (profile) names[id] = { firstName: profile.firstName, lastName: profile.lastName, avatarUrl: profile.avatarUrl ?? null, sport: profile.sports[0]?.sport ?? null }
       }),
     )
   } catch (error) {
@@ -192,8 +193,9 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
             class="convo"
             :class="{ 'is-unread': isConversationUnread(c) }"
           >
-            <div class="avatar convo__avatar">
+            <div class="avatar convo__avatar" :class="{ 'convo__avatar--icon': !otherAvatar(c) && names[otherId(c)]?.sport }">
               <img v-if="otherAvatar(c)" :src="otherAvatar(c) ?? undefined" alt="" />
+              <SportIcon v-else-if="names[otherId(c)]?.sport" :sport="names[otherId(c)]!.sport!" :size="34" />
               <template v-else>{{ otherInitials(c) }}</template>
             </div>
             <div class="convo__body">
@@ -365,6 +367,11 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   font-size: 14.5px;
   flex-shrink: 0;
   border: none;
+}
+
+/* Icône du sport : cercle blanc */
+.convo__avatar--icon {
+  background: #FFFFFF;
 }
 
 .convo__body {
