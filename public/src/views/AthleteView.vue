@@ -6,7 +6,7 @@ import { ArrowLeft, CalendarPlus, MapPin, MessageCircle } from 'lucide-vue-next'
 import { useAuth } from '../composables/useAuth'
 import { api, ApiError } from '../services/api'
 import { LEVEL_LABELS, SPORT_LABELS } from '../services/labels'
-import { SPORT_ICONS } from '../services/sportIcons'
+import SportIcon from '../components/SportIcon.vue'
 import type { DayOfWeek, User } from '../types/api'
 
 const DAY_LABELS: Record<DayOfWeek, string> = {
@@ -99,10 +99,8 @@ watch(athleteId, load)
         <section class="profile-hero">
           <div class="avatar">
             <img v-if="athlete.avatarUrl" :src="athlete.avatarUrl" :alt="athlete.firstName" />
-            <component
-              :is="SPORT_ICONS[athlete.sports[0].sport]"
-              v-else-if="athlete.sports[0]"
-              :size="32"
+            <SportIcon :sport="athlete.sports[0].sport" v-else-if="athlete.sports[0]"
+              :size="50"
               :stroke-width="2"
               aria-hidden="true"
             />

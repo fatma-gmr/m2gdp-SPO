@@ -13,7 +13,7 @@ import {
 import { useAuth } from '../composables/useAuth'
 import { api, ApiError } from '../services/api'
 import { getProfileByEmail } from '../services/profileStore'
-import { SPORT_ICONS } from '../services/sportIcons'
+import SportIcon from '../components/SportIcon.vue'
 import { DAYS, DAY_LABELS, LEVEL_LABELS, SEXE_LABELS, SPORT_LABELS } from '../services/labels'
 import { SEARCH_ZONES, nearestZone } from '../services/location'
 import { fetchUser } from '../services/users'
@@ -285,10 +285,8 @@ async function onLogout() {
             @click="fileInput?.click()"
           >
             <img v-if="displayAvatar" :src="displayAvatar" :alt="firstName" />
-            <component
-              :is="SPORT_ICONS[primarySport]"
-              v-else-if="primarySport"
-              :size="32"
+            <SportIcon :sport="primarySport" v-else-if="primarySport"
+              :size="50"
               :stroke-width="2"
               aria-hidden="true"
             />
@@ -400,7 +398,7 @@ async function onLogout() {
                 :class="{ 'is-on': sportRows[s]?.on }"
               >
                 <input v-model="sportRows[s]!.on" type="checkbox" class="sr-only" />
-                <component :is="SPORT_ICONS[s]" :size="22" aria-hidden="true" />
+                <SportIcon :sport="s" :size="s === 'autre' ? 22 : 46" />
                 <span>{{ SPORT_LABELS[s] }}</span>
               </label>
             </div>

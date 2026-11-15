@@ -4,7 +4,7 @@ import { RouterLink } from 'vue-router'
 import { ArrowRight, MapPin } from 'lucide-vue-next'
 import { LEVEL_LABELS, SPORT_LABELS } from '../services/labels'
 import { formatDistance, initials } from '../services/format'
-import { SPORT_ICONS } from '../services/sportIcons'
+import SportIcon from './SportIcon.vue'
 import type { UserSearchResult } from '../types/api'
 
 const props = defineProps<{ profile: UserSearchResult }>()
@@ -25,7 +25,7 @@ const primary = computed(() => props.profile.sports[0])
           role="img"
           :aria-label="`Sport principal : ${SPORT_LABELS[primary.sport]}`"
         >
-          <component :is="SPORT_ICONS[primary.sport]" :size="13" aria-hidden="true" />
+          <SportIcon :sport="primary.sport" :size="20" />
         </span>
       </div>
 

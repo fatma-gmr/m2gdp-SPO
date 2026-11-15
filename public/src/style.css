@@ -614,3 +614,12 @@ select:disabled {
   height: auto;
   margin: 0 auto;
 }
+
+/* iOS zoome sur la page quand un champ a une police < 16 px : on garde 16 px sur mobile */
+@media (max-width: 1023px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

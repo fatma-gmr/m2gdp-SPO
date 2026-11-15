@@ -3,24 +3,14 @@ import { computed, onMounted, ref, toRef } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
   Bell,
-  Bike,
-  Circle,
-  Dumbbell,
-  Flower2,
-  Hand,
   MapPin,
-  PersonStanding,
-  Plus,
   Search,
   SlidersHorizontal,
-  Target,
-  Trophy,
-  Waves,
-  Zap,
 } from 'lucide-vue-next'
 import logoUrl from '../assets/logo-binofit-horizontal.png'
 import { useAuth } from '../composables/useAuth'
 import AthleteCard from '../components/AthleteCard.vue'
+import SportIcon from '../components/SportIcon.vue'
 import { api } from '../services/api'
 import { SPORT_LABELS } from '../services/labels'
 import { centerOf } from '../services/location'
@@ -37,18 +27,18 @@ const loading = ref(true)
 const errorMessage = ref('')
 
 /** Raccourcis de sport affichés sous la recherche, avec la valeur d'API correspondante. */
-const quickSports: { label: string; sport: Sport; icon: typeof Dumbbell }[] = [
-  { label: 'Running', sport: 'course_a_pied', icon: PersonStanding },
-  { label: 'Vélo', sport: 'cyclisme', icon: Bike },
-  { label: 'Tennis', sport: 'tennis', icon: Target },
-  { label: 'Yoga', sport: 'yoga', icon: Flower2 },
-  { label: 'Muscu', sport: 'musculation', icon: Dumbbell },
-  { label: 'Natation', sport: 'natation', icon: Waves },
-  { label: 'Football', sport: 'football', icon: Trophy },
-  { label: 'Basket', sport: 'basketball', icon: Circle },
-  { label: 'Boxe', sport: 'boxe', icon: Hand },
-  { label: 'CrossFit', sport: 'crossfit', icon: Zap },
-  { label: 'Autre', sport: 'autre', icon: Plus },
+const quickSports: { label: string; sport: Sport }[] = [
+  { label: 'Running', sport: 'course_a_pied' },
+  { label: 'Vélo', sport: 'cyclisme' },
+  { label: 'Tennis', sport: 'tennis' },
+  { label: 'Yoga', sport: 'yoga' },
+  { label: 'Muscu', sport: 'musculation' },
+  { label: 'Natation', sport: 'natation' },
+  { label: 'Football', sport: 'football' },
+  { label: 'Basket', sport: 'basketball' },
+  { label: 'Boxe', sport: 'boxe' },
+  { label: 'CrossFit', sport: 'crossfit' },
+  { label: 'Autre', sport: 'autre' },
 ]
 
 /** Sport sélectionné dans les raccourcis ; null = pas de filtre. */
@@ -173,7 +163,7 @@ onMounted(load)
           @click="toggleSport(item.sport)"
         >
           <span class="sport-chip__icon">
-            <component :is="item.icon" :size="22" aria-hidden="true" />
+            <SportIcon :sport="item.sport" :size="item.sport === 'autre' ? 26 : 54" />
           </span>
           <span>{{ item.label }}</span>
         </button>
@@ -380,7 +370,7 @@ onMounted(load)
 
 .sport-chip {
   flex: 0 0 auto;
-  width: 72px;
+  width: 76px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -395,8 +385,8 @@ onMounted(load)
 }
 
 .sport-chip__icon {
-  width: 64px;
-  height: 56px;
+  width: 68px;
+  height: 60px;
   border-radius: var(--radius-md);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
