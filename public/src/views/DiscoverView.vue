@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, toRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, toRef } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
   Bell,
@@ -18,7 +18,8 @@ import { useSearchFilters } from '../composables/useSearchFilters'
 import { useToast } from '../composables/useToast'
 import { FETCH_RADIUS_KM, matchesFilters } from '../services/searchFilters'
 import { fetchUser } from '../services/users'
-import type { Sport, User, UserSearchResult } from '../types/api'
+import type { Activity, ActivityStatus, Sport, User, UserSearchResult } from '../types/api'
+import type { RealtimeEvent } from '../services/realtime'
 
 const { user } = useAuth()
 const me = ref<User | null>(null)
@@ -105,7 +106,39 @@ async function load() {
   }
 }
 
-onMounted(load)
+/** Tableau de bord personnel : mes rendez-vous (créés ou reçus) par statut. */
+const activities = ref<Activity[]>([])
+
+const statTiles = computed(() => {
+  const counts: Record<ActivityStatus, number> = { en_attente: 0, acceptee: 0, refusee: 0, terminee: 0 }
+  for (const a of activities.value) counts[a.status]++
+  return [
+    { status: 'en_attente', label: 'En attente', count: counts.en_attente },
+    { status: 'acceptee', label: 'Confirmés', count: counts.acceptee },
+    { status: 'terminee', label: 'Réalisés', count: counts.terminee },
+    { status: 'refusee', label: 'Refusés', count: counts.refusee },
+  ] as const
+})
+
+async function loadActivities() {
+  try {
+    activities.value = await api.listActivities()
+  } catch {
+    // Le tableau de bord reste à zéro si la liste ne charge pas ; le reste de la page fonctionne.
+  }
+}
+
+function onRealtime(event: Event) {
+  const detail = (event as CustomEvent<RealtimeEvent>).detail
+  if (detail.type === 'activity') void loadActivities()
+}
+
+onMounted(() => {
+  void load()
+  void loadActivities()
+  window.addEventListener('binofit:realtime', onRealtime)
+})
+onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime))
 </script>
 
 <template>
@@ -140,6 +173,7 @@ onMounted(load)
         <p class="discover__greeting">Salut {{ greetingName }}</p>
         <h1>Trouve ton <span class="text-lime">binôme</span> près de chez toi</h1>
       </div>
+
 
       <div class="discover__search">
         <label class="discover__input">
@@ -176,6 +210,21 @@ onMounted(load)
           Voir la carte
         </span>
       </RouterLink>
+
+      <section class="discover__stats" aria-label="Mes rendez-vous">
+        <h2>Mes rendez-vous</h2>
+        <ul class="discover__stats-row">
+          <li
+            v-for="tile in statTiles"
+            :key="tile.status"
+            class="stat-chip"
+            :class="`stat-chip--${tile.status}`"
+          >
+            <strong>{{ tile.count }}</strong>
+            <span>{{ tile.label }}</span>
+          </li>
+        </ul>
+      </section>
 
       <p v-if="!me && !loading" class="field-hint">
         Ton profil n'est pas encore enregistré : recherche autour de Lyon.
@@ -230,6 +279,54 @@ onMounted(load)
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.discover__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.discover__stats h2 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.discover__stats-row {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.stat-chip {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.stat-chip strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-lime-dark);
+}
+
+.stat-chip span {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.stat-chip--refusee strong {
+  color: var(--color-text-muted);
 }
 
 .discover__intro h1 {
