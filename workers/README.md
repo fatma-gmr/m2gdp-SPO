@@ -59,8 +59,9 @@ Avec jeton Firebase :
 | GET     | `/favorites`                   | Ses favoris                                                                            |
 | POST    | `/favorites`                   | Ajoute un utilisateur ou une activité en favori (409 si déjà présent)                  |
 | DELETE  | `/favorites/{targetId}`        | Retire un favori                                                                       |
+| GET     | `/venues`                      | Lieux de pratique d'un sport à Lyon (`sport`), lus depuis OpenStreetMap, cache 7 jours |
 
-Soit 16 routes : 3 publiques et 13 protégées. `POST /activities`, `POST /conversations` et
+Soit 17 routes : 3 publiques et 14 protégées. `POST /activities`, `POST /conversations` et
 `POST /favorites` exigent en plus que l'utilisateur ait déjà un profil (ligne dans `users`),
 sinon `403 profile_required` (`src/middleware/profile.ts`).
 
