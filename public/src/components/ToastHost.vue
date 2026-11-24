@@ -51,7 +51,7 @@ const { toasts, dismissToast } = useToast()
 }
 
 .toast--warning {
-  border-left-color: #E5484D;
+  border-left-color: #E62E2E;
 }
 
 .toast__text {

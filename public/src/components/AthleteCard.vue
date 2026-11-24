@@ -17,16 +17,16 @@ const primary = computed(() => props.profile.sports[0])
   <li class="athlete-card">
     <RouterLink :to="{ name: 'athlete', params: { id: profile.id } }" class="athlete-card__link">
       <div class="athlete-card__avatar">
-        <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="profile.firstName" />
-        <template v-else>{{ initials(profile.firstName, profile.lastName) }}</template>
         <span
           v-if="primary"
-          class="athlete-card__badge"
+          class="athlete-card__sport-icon"
           role="img"
           :aria-label="`Sport principal : ${SPORT_LABELS[primary.sport]}`"
         >
-          <SportIcon :sport="primary.sport" :size="20" />
+          <SportIcon :sport="primary.sport" :size="primary.sport === 'autre' ? 20 : 40" />
         </span>
+        <img v-else-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="profile.firstName" />
+        <template v-else>{{ initials(profile.firstName, profile.lastName) }}</template>
       </div>
 
       <strong class="athlete-card__name">{{ profile.firstName }}</strong>
@@ -74,13 +74,16 @@ const primary = computed(() => props.profile.sports[0])
   border-color: var(--color-lime);
 }
 
-/* Avatar rond : photo, sinon initiales ; badge du sport principal en bas à droite */
+/* Avatar rond : icône du sport principal ; sinon photo, sinon initiales */
 .athlete-card__avatar {
   position: relative;
+  box-sizing: border-box;
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: var(--color-lime-soft);
+  background: #FFFFFF;
+  border: 3px solid var(--color-surface);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   color: var(--color-lime-dark);
   display: flex;
   align-items: center;
@@ -97,19 +100,12 @@ const primary = computed(() => props.profile.sports[0])
   object-fit: cover;
 }
 
-.athlete-card__badge {
-  position: absolute;
-  right: -4px;
-  bottom: -2px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  color: var(--color-lime-dark);
+.athlete-card__sport-icon {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .athlete-card__name {

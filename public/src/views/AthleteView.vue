@@ -100,7 +100,7 @@ watch(athleteId, load)
           <div class="avatar">
             <img v-if="athlete.avatarUrl" :src="athlete.avatarUrl" :alt="athlete.firstName" />
             <SportIcon :sport="athlete.sports[0].sport" v-else-if="athlete.sports[0]"
-              :size="50"
+              :size="athlete.sports[0].sport === 'autre' ? 32 : 64"
               :stroke-width="2"
               aria-hidden="true"
             />
@@ -219,8 +219,13 @@ watch(athleteId, load)
   text-decoration: none;
 }
 
+/* Même style que le marqueur de la carte : cercle blanc, bordure et ombre */
 .profile-hero .avatar {
   overflow: hidden;
+  background: #FFFFFF;
+  border: 3px solid var(--color-surface);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  color: var(--color-lime-dark);
 }
 
 .profile-hero .avatar img {
