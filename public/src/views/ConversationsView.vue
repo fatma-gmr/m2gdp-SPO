@@ -405,7 +405,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   height: 22px;
   padding: 0 7px;
   border-radius: 999px;
-  background: #E5484D;
+  background: #E62E2E;
   color: #FFFFFF;
   font-size: 11px;
   font-weight: 700;

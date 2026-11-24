@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, toRef } from 'vue'
 import { RouterLink } from 'vue-router'
 import {
+  ArrowUpRight,
   Bell,
   MapPin,
   Search,
@@ -109,15 +110,41 @@ async function load() {
 /** Tableau de bord personnel : mes rendez-vous (créés ou reçus) par statut. */
 const activities = ref<Activity[]>([])
 
+const RING_RADIUS = 62
+const RING_LENGTH = 2 * Math.PI * RING_RADIUS
+
 const statTiles = computed(() => {
   const counts: Record<ActivityStatus, number> = { en_attente: 0, acceptee: 0, refusee: 0, terminee: 0 }
   for (const a of activities.value) counts[a.status]++
   return [
-    { status: 'en_attente', label: 'En attente', count: counts.en_attente },
-    { status: 'acceptee', label: 'Confirmés', count: counts.acceptee },
-    { status: 'terminee', label: 'Réalisés', count: counts.terminee },
-    { status: 'refusee', label: 'Refusés', count: counts.refusee },
+    // Couleurs à 3:1 minimum sur fond blanc (WCAG 1.4.11) ; le sens reste aussi porté par la légende.
+    { status: 'en_attente', label: 'En attente', count: counts.en_attente, color: '#B7791F' },
+    { status: 'acceptee', label: 'Confirmés', count: counts.acceptee, color: '#2563EB' },
+    { status: 'terminee', label: 'Réalisés', count: counts.terminee, color: '#178A2E' },
+    { status: 'refusee', label: 'Refusés', count: counts.refusee, color: '#E62E2E' },
   ] as const
+})
+
+/** Totaux, taux de réalisation et arcs de l'anneau (un arc par statut non nul, dans l'ordre de la légende). */
+const summary = computed(() => {
+  const total = activities.value.length
+  const done = activities.value.filter((a) => a.status === 'terminee').length
+  const rate = total === 0 ? 0 : Math.round((done / total) * 100)
+  let offset = 0
+  const segments = statTiles.value
+    .filter((tile) => tile.count > 0)
+    .map((tile) => {
+      const length = (tile.count / total) * RING_LENGTH
+      const seg = {
+        status: tile.status,
+        color: tile.color,
+        dash: `${length} ${RING_LENGTH - length}`,
+        offset: -offset,
+      }
+      offset += length
+      return seg
+    })
+  return { total, done, rate, segments }
 })
 
 async function loadActivities() {
@@ -185,46 +212,87 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
         </RouterLink>
       </div>
 
-      <div class="discover__sports" role="list">
-        <button
-          v-for="item in quickSports"
-          :key="item.sport"
-          type="button"
-          role="listitem"
-          class="sport-chip"
-          :class="{ 'is-active': selectedSport === item.sport }"
-          :aria-pressed="selectedSport === item.sport"
-          @click="toggleSport(item.sport)"
-        >
-          <span class="sport-chip__icon">
-            <SportIcon :sport="item.sport" :size="item.sport === 'autre' ? 26 : 54" />
-          </span>
-          <span>{{ item.label }}</span>
-        </button>
-      </div>
+      <ul class="discover__sports" aria-label="Filtrer par sport">
+        <li v-for="item in quickSports" :key="item.sport">
+          <button
+            type="button"
+            class="sport-chip"
+            :class="{ 'is-active': selectedSport === item.sport }"
+            :aria-pressed="selectedSport === item.sport"
+            @click="toggleSport(item.sport)"
+          >
+            <span class="sport-chip__icon">
+              <SportIcon :sport="item.sport" :size="item.sport === 'autre' ? 26 : 54" />
+            </span>
+            <span>{{ item.label }}</span>
+          </button>
+        </li>
+      </ul>
 
-      <RouterLink :to="{ name: 'carte' }" class="discover__banner discover__banner--mobile-only" aria-label="Rencontrez des partenaires sportifs près de chez vous : voir la carte">
+      <section class="rdv-card" aria-labelledby="rdv-card-title">
+        <div class="rdv-card__head">
+          <div>
+            <h2 id="rdv-card-title" class="rdv-card__title">Mes rendez-vous</h2>
+            <p class="rdv-card__subtitle">Vue d'ensemble</p>
+          </div>
+          <RouterLink :to="{ name: 'activities' }" class="rdv-card__link" aria-label="Voir tous mes rendez-vous">
+            <ArrowUpRight :size="20" aria-hidden="true" />
+          </RouterLink>
+        </div>
+
+        <div class="rdv-card__body">
+          <div class="rdv-card__donut" role="img" :aria-label="`${summary.total} rendez-vous, ${summary.done} réalisés sur ${summary.total}`">
+            <svg viewBox="0 0 160 160" aria-hidden="true">
+              <g transform="rotate(-90 80 80)">
+                <circle class="rdv-card__track" cx="80" cy="80" r="62" fill="none" stroke-width="16" />
+                <circle
+                  v-for="seg in summary.segments"
+                  :key="seg.status"
+                  cx="80"
+                  cy="80"
+                  r="62"
+                  fill="none"
+                  :stroke="seg.color"
+                  stroke-width="16"
+                  :stroke-dasharray="seg.dash"
+                  :stroke-dashoffset="seg.offset"
+                />
+              </g>
+            </svg>
+            <div class="rdv-card__center">
+              <span class="rdv-card__total">{{ summary.total }}</span>
+              <span class="rdv-card__total-label">rendez-vous</span>
+            </div>
+          </div>
+
+          <ul class="rdv-card__legend">
+            <li v-for="tile in statTiles" :key="tile.status">
+              <span class="rdv-card__dot" :class="{ 'rdv-card__dot--ring': tile.status === 'acceptee' }" :style="{ '--dot': tile.color }" aria-hidden="true"></span>
+              <span class="rdv-card__legend-label">{{ tile.label }}</span>
+              <span class="rdv-card__legend-count">{{ tile.count }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="rdv-card__rate">
+          <div class="rdv-card__rate-head">
+            <span>Taux de réalisation</span>
+            <span class="rdv-card__rate-value">{{ summary.rate }} %</span>
+          </div>
+          <div class="rdv-card__bar" role="progressbar" :aria-valuenow="summary.rate" aria-valuemin="0" aria-valuemax="100">
+            <div class="rdv-card__bar-fill" :style="{ width: `${summary.rate}%` }"></div>
+          </div>
+          <span class="rdv-card__rate-caption">{{ summary.done }} rendez-vous réalisés sur {{ summary.total }}</span>
+        </div>
+      </section>
+
+      <RouterLink :to="{ name: 'carte' }" class="discover__banner discover__banner--mobile-only">
         <img src="/assets/banner-decouvrir.png" alt="" class="discover__banner-img" />
         <span class="discover__banner-link">
           <MapPin :size="18" aria-hidden="true" />
           Voir la carte
         </span>
       </RouterLink>
-
-      <section class="discover__stats" aria-label="Mes rendez-vous">
-        <h2>Mes rendez-vous</h2>
-        <ul class="discover__stats-row">
-          <li
-            v-for="tile in statTiles"
-            :key="tile.status"
-            class="stat-chip"
-            :class="`stat-chip--${tile.status}`"
-          >
-            <strong>{{ tile.count }}</strong>
-            <span>{{ tile.label }}</span>
-          </li>
-        </ul>
-      </section>
 
       <p v-if="!me && !loading" class="field-hint">
         Ton profil n'est pas encore enregistré : recherche autour de Lyon.
@@ -281,52 +349,187 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   gap: 4px;
 }
 
-.discover__stats {
+/* Carte « Mes rendez-vous » : anneau par statut, légende et taux de réalisation. */
+.rdv-card {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 16px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
 }
 
-.discover__stats h2 {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-text-muted);
+.rdv-card__track {
+  stroke: var(--color-surface-2);
 }
 
-.discover__stats-row {
+.rdv-card__head {
   display: flex;
-  gap: 6px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rdv-card__title {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.rdv-card__subtitle {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.rdv-card__link {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-lime-soft);
+  color: var(--color-lime-dark);
+  text-decoration: none;
+}
+
+.rdv-card__link:focus-visible {
+  outline: 3px solid var(--color-lime-soft);
+  outline-offset: 2px;
+}
+
+.rdv-card__body {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.rdv-card__donut {
+  position: relative;
+  flex-shrink: 0;
+  width: 150px;
+  height: 150px;
+}
+
+.rdv-card__donut svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.rdv-card__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.rdv-card__total {
+  font-size: 34px;
+  font-weight: 800;
+}
+
+.rdv-card__total-label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.rdv-card__legend {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.stat-chip {
-  flex: 1;
+.rdv-card__legend li {
   display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 4px;
-  padding: 6px 8px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  white-space: nowrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
 }
 
-.stat-chip strong {
+.rdv-card__dot {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+.rdv-card__dot--ring {
+  background: transparent;
+  border: 2px solid var(--dot);
+  box-sizing: border-box;
+}
+
+.rdv-card__legend-label {
+  flex: 1;
+  color: var(--color-text-muted);
+}
+
+.rdv-card__legend-count {
+  font-weight: 800;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.rdv-card__rate {
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rdv-card__rate-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   font-size: 14px;
+}
+
+.rdv-card__rate-value {
+  font-size: 18px;
   font-weight: 800;
   color: var(--color-lime-dark);
 }
 
-.stat-chip span {
-  font-size: 11px;
+.rdv-card__bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+
+.rdv-card__bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--color-lime);
+  transition: width 0.4s ease;
+}
+
+.rdv-card__rate-caption {
+  font-size: 12px;
   color: var(--color-text-muted);
 }
 
-.stat-chip--refusee strong {
-  color: var(--color-text-muted);
+@media (prefers-reduced-motion: reduce) {
+  .rdv-card__bar-fill {
+    transition: none;
+  }
 }
 
 .discover__intro h1 {
@@ -346,7 +549,7 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #E5484D;
+  background: #E62E2E;
   border: 2px solid var(--color-surface);
 }
 
@@ -462,7 +665,15 @@ onBeforeUnmount(() => window.removeEventListener('binofit:realtime', onRealtime)
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0 0 4px;
+}
+
+.sport-chip:focus-visible {
+  outline: 3px solid var(--color-lime-soft);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
 }
 
 .sport-chip {
