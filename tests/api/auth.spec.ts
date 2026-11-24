@@ -25,9 +25,9 @@ test.describe('US02 - Connexion : accès à l’API', () => {
 
     const spec = await request.get('/openapi.json')
     expect(spec.status()).toBe(200)
-    // 9 chemins, 13 opérations : les 13 routes protégées.
+    // 10 chemins, 14 opérations : les 14 routes protégées.
     const paths: Record<string, object> = (await spec.json()).paths
-    expect(Object.values(paths).flatMap((ops) => Object.keys(ops))).toHaveLength(13)
+    expect(Object.values(paths).flatMap((ops) => Object.keys(ops))).toHaveLength(14)
 
     const docs = await request.get('/docs')
     expect(docs.status()).toBe(200)
