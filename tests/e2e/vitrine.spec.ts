@@ -52,9 +52,9 @@ test('Vitrine - le menu mène aux 6 pages', async ({ page }) => {
   }
 })
 
-test('Vitrine - page DEV : 16 routes et 71 tests annoncés', async ({ page }) => {
+test('Vitrine - page DEV : 17 routes et 71 tests annoncés', async ({ page }) => {
   await page.goto('/dev.html')
-  await expect(page.locator('td.mono')).toHaveCount(16)
+  await expect(page.locator('td.mono')).toHaveCount(17)
   await expect(page.getByText('71 tests Playwright', { exact: true })).toBeVisible()
   await expect(page.getByText('52 API, 19 de bout en bout.', { exact: false })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Voir le dépôt GitHub' })).toHaveAttribute('href', REPO)

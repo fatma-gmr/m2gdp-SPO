@@ -34,7 +34,7 @@ Application qui connecte des sportifs pour pratiquer ensemble de manière ponctu
 ## Conventions
 
 - Réponses de l'API en camelCase, base de données en snake_case : la conversion se fait uniquement dans workers/src/lib/dbMapper.ts.
-- Toutes les routes de l'API vérifient le jeton Firebase (`Authorization: Bearer <jeton>`, middleware workers/src/middleware/auth.ts), sauf /api/health, /docs et /openapi.json (3 routes publiques, 13 routes protégées).
+- Toutes les routes de l'API vérifient le jeton Firebase (`Authorization: Bearer <jeton>`, middleware workers/src/middleware/auth.ts), sauf /api/health, /docs et /openapi.json (3 routes publiques, 14 routes protégées).
 - Les créations (POST /activities, POST /conversations, POST /favorites) exigent en plus un profil existant (middleware workers/src/middleware/profile.ts, erreur 403 profile_required).
 - Une branche par sujet ; jamais de commit sur main (passer par une pull request).
 - Aucune clé ni secret dans le dépôt : les secrets vont dans .dev.vars (local, ignoré par git) ou dans les secrets Wrangler / variables Vercel.

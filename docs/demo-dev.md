@@ -30,7 +30,7 @@ On montre la ligne « Ce qui est en ligne ».
 
 ### 0:45 – 1:45 · L'API documentée (onglet 2, `/docs`)
 
-1. On montre la liste des routes : 13 routes protégées, plus `/api/health`, `/docs` et `/openapi.json`, qui sont publiques.
+1. On montre la liste des routes : 14 routes protégées, plus `/api/health`, `/docs` et `/openapi.json`, qui sont publiques.
 2. On lance `GET /users` sans jeton : réponse **401 `missing_token`**.
 3. On clique sur **Authorize**, on colle le jeton, puis on lance `GET /users?lat=45.7578&lng=4.832&maxKm=5` : les sportifs sont triés par distance, avec `distanceKm`.
 
@@ -130,7 +130,7 @@ Le backlog ne définit plus de « scénario minimal ». J'ai pris les 10 US du p
    Firebase gère très bien la connexion par lien magique, sans mot de passe à stocker. Supabase nous donne un vrai Postgres relationnel, avec des contraintes et des clés étrangères, hébergé à Paris. Le Worker fait le lien : il vérifie le jeton Firebase et utilise son `uid` comme identifiant dans Postgres.
 
 2. **Comment l'API est-elle sécurisée ?**
-   Les 13 routes protégées vérifient le jeton : signature avec les clés publiques de Google, audience, émetteur et expiration. L'utilisateur vient toujours du jeton, jamais du corps de la requête : on ne modifie que son propre profil et on ne lit que ses conversations. La clé Supabase reste côté Worker, dans un secret Wrangler, et n'est jamais envoyée au navigateur.
+   Les 14 routes protégées vérifient le jeton : signature avec les clés publiques de Google, audience, émetteur et expiration. L'utilisateur vient toujours du jeton, jamais du corps de la requête : on ne modifie que son propre profil et on ne lit que ses conversations. La clé Supabase reste côté Worker, dans un secret Wrangler, et n'est jamais envoyée au navigateur.
 
 3. **Comment calculez-vous la distance ? Est-ce que ça tient la charge ?**
    Avec la formule de Haversine, dans le Worker, depuis la zone choisie (6 zones lyonnaises). Aujourd'hui, l'API charge tous les profils puis filtre : c'est suffisant pour un prototype de 35 profils. Au-delà, on passerait le filtre dans Postgres (PostGIS, ou un cadre géographique).

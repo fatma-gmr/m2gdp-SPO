@@ -41,7 +41,7 @@
     <h1>Ce qui est en ligne</h1>
     <div class="grid grid--4" style="margin-top:12px">
       <div class="panel"><span class="label">Front</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Vue 3</strong><span class="muted" style="font-size:14px">Vue 3 + TypeScript, Vite, Tailwind et shadcn-vue, carte Leaflet. Application mobile-first, hébergée sur Vercel.</span></div>
-      <div class="panel"><span class="label">API</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Cloudflare Workers</strong><span class="muted" style="font-size:14px">API TypeScript (Hono) : 16 routes, documentées en OpenAPI.</span></div>
+      <div class="panel"><span class="label">API</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Cloudflare Workers</strong><span class="muted" style="font-size:14px">API TypeScript (Hono) : 17 routes, documentées en OpenAPI.</span></div>
       <div class="panel"><span class="label">Données</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Supabase</strong><span class="muted" style="font-size:14px">Profils, sports, disponibilités, activités, conversations et messages (Postgres).</span></div>
       <div class="panel"><span class="label">Connexion</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">Firebase Auth</strong><span class="muted" style="font-size:14px">Connexion par lien magique envoyé par e-mail, sans mot de passe.</span></div>
       <div class="panel"><span class="label">Localisation</span><strong style="display:block;font-family:var(--font-title);font-size:20px;margin:6px 0 4px">6 zones lyonnaises</strong><span class="muted" style="font-size:14px">Position choisie parmi 6 zones (Presqu’île, Part-Dieu, Confluence, Villeurbanne, Vénissieux, Caluire-et-Cuire), sans géocodage.</span></div>
@@ -91,7 +91,7 @@
   <section class="block">
     <span class="tag-badge">API</span>
     <h2>Spécification OpenAPI</h2>
-    <p>16 routes : 3 publiques et 13 protégées par le jeton Firebase (<span class="mono">Authorization: Bearer &lt;jeton&gt;</span>). Les 3 créations demandent en plus un profil existant (sinon erreur 403 <span class="mono">profile_required</span>). Les 13 routes protégées sont décrites dans la spécification OpenAPI.</p>
+    <p>17 routes : 3 publiques et 14 protégées par le jeton Firebase (<span class="mono">Authorization: Bearer &lt;jeton&gt;</span>). Les 3 créations demandent en plus un profil existant (sinon erreur 403 <span class="mono">profile_required</span>). Les 14 routes protégées sont décrites dans la spécification OpenAPI.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Méthode</th><th>Route</th><th>Rôle</th><th>Accès</th><th>User stories</th></tr></thead>
@@ -112,6 +112,7 @@
           <tr><td><span class="method m-get">GET</span></td><td class="mono">/favorites</td><td>Lister ses favoris</td><td><span class="statut statut--jeton">Protégé</span></td><td>US25</td></tr>
           <tr><td><span class="method m-post">POST</span></td><td class="mono">/favorites</td><td>Ajouter un sportif ou une activité aux favoris</td><td><span class="statut statut--profil">Profil requis</span></td><td>US25</td></tr>
           <tr><td><span class="method m-delete">DELETE</span></td><td class="mono">/favorites/{targetId}</td><td>Retirer un favori</td><td><span class="statut statut--jeton">Protégé</span></td><td>US25</td></tr>
+          <tr><td><span class="method m-get">GET</span></td><td class="mono">/venues</td><td>Lister les lieux de pratique d’un sport à Lyon</td><td><span class="statut statut--jeton">Protégé</span></td><td>US16</td></tr>
         </tbody>
       </table>
     </div>
