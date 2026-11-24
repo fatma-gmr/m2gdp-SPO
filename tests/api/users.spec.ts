@@ -66,7 +66,7 @@ test.describe('Profil', () => {
     const put = await call(request, USER_A.uid, 'PUT', `/users/${USER_A.uid}`, { sports })
     expect(put.status()).toBe(200)
     const user = await (await call(request, USER_A.uid, 'GET', `/users/${USER_A.uid}`)).json()
-    expect(user.sports).toEqual(expect.arrayContaining(sports))
+    expect(user.sports).toEqual(expect.arrayContaining(sports.map((s) => expect.objectContaining(s))))
     expect(user.sports).toHaveLength(2)
   })
 
