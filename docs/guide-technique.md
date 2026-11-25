@@ -48,7 +48,7 @@ données : [`specs/data-model.md`](../specs/data-model.md), diagrammes
                                           ▼
                               Supabase Postgres (Paris)
                               users, user_sports, user_availability, activities,
-                              conversations, participants, messages, favorites
+                              conversations, participants, messages, favorites, reviews
 ```
 
 Le front ne parle jamais directement à la base : toutes les données passent par l'API.
@@ -70,7 +70,7 @@ profils, activités, conversations, messages et favoris sont dans Supabase Postg
 | `specs/`                           | `openapi.json` (contrat de l'API), `schema.sql`, `data-model.md` |
 | `docs/`                            | Documentation technique (ce guide, diagrammes)                  |
 | `BINOFIT v4 Wireframes.dc.html`    | Maquettes                                                       |
-| `tests/`, `design/`                | N'existent pas encore dans le dépôt (tests Playwright prévus)   |
+| `tests/`                             | Tests Playwright (54 API + 19 e2e)                              |
 | `agents.md`                        | Stack, structure et conventions du projet                       |
 | `docs/guide-technique.md`          | Ce guide                                                        |
 | `docs/diagramme-uml.md`            | Diagramme de classes UML des 8 entités                          |
@@ -173,7 +173,7 @@ Pour utiliser l'API locale, `VITE_API_BASE_URL` pointe vers `http://localhost:87
 
 Appliquer la migration dans Supabase avant de déployer le Worker : sur une base créée
 avant l'ajout de `sexe` et `birth_date`, exécuter
-`specs/migrations/2026-11-01-sexe-birth-date.sql` dans **SQL Editor** (idempotent).
+`specs/migrations/2026-11-01-sexe-birth-date.sql` puis `specs/migrations/2026-11-12-sport-principal.sql` dans **SQL Editor** (idempotents).
 
 ```bash
 cd workers
@@ -221,7 +221,7 @@ toujours présents.
 
 Le schéma de référence est `specs/schema.sql`. Rien n'est appliqué automatiquement : le
 SQL est exécuté à la main dans Supabase. Sur une base existante, appliquer d'abord les
-fichiers de `specs/migrations/` (aujourd'hui `2026-11-01-sexe-birth-date.sql`), puis
+fichiers de `specs/migrations/` (aujourd'hui `2026-11-01-sexe-birth-date.sql` et `2026-11-12-sport-principal.sql`), puis
 déployer l'API.
 
 1. Sur une base vide, dans le tableau de bord Supabase, ouvrir **SQL Editor**, coller le contenu de
@@ -283,13 +283,11 @@ Noms seulement : aucune valeur ne doit figurer dans le dépôt.
 
 ## Limites connues
 
-### Firebase Authentication : 5 e-mails de connexion par jour
+### Firebase Authentication
 
-Le projet Firebase est sur l'offre gratuite, qui n'envoie que 5 e-mails de lien magique
-par jour pour tout le projet (inscriptions et connexions confondues, tous utilisateurs).
-Au-delà, Firebase refuse l'envoi avec l'erreur `QUOTA_EXCEEDED` jusqu'au lendemain. Pour
-les tests, réutiliser une session déjà ouverte ou un jeton de test
-(`workers/scripts/get-test-token.mjs`, voir `workers/README.md`).
+Le projet Firebase est sur l'offre Blaze (facturation à l'usage). La limite de 5 e-mails
+par jour de l'offre gratuite ne s'applique plus. Pour les tests automatisés, utiliser un
+jeton de test (`workers/scripts/get-test-token.mjs`, voir `workers/README.md`).
 
 ### Cloudflare Workers : 100 000 requêtes par jour
 
@@ -307,5 +305,5 @@ chargent leurs données uniquement à l'ouverture.
   messages sans être rechargée.
 - **Profil obligatoire côté écrans** : l'API renvoie `403 profile_required` sans profil,
   mais le front ne redirige pas encore vers l'écran Profil.
-- **Tests automatiques** : aucun test dans le dépôt (tests Playwright prévus).
+- **Tests automatiques** : 54 tests API et 19 tests e2e (Playwright), voir `tests/`.
 - **Passage éventuel à Supabase Auth** à la place de Firebase Authentication.
