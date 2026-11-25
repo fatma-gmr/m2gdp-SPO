@@ -25,11 +25,15 @@
 - **Carte** : sportifs sur une carte Leaflet, filtres rayon, sport et niveau, bouton « Me localiser ».
 - **Messages** : conversations 1-à-1, badge et notification des messages non lus.
 - **Activités** : proposer une séance (sport, date, lieu), l'accepter, la refuser ou la terminer.
-- **Profil** : photo, bio, sexe, date de naissance, sports et niveaux, disponibilités.
+- **Profil** : photo, bio, sexe, date de naissance, sports et niveaux, disponibilités, sport principal.
+- **Favoris** : ajouter ou retirer un sportif de ses favoris.
+- **Avis** : noter et commenter un partenaire après une séance.
+- **Lieux** : lieux de pratique d'un sport à Lyon via OpenStreetMap.
+- **Temps réel** : notifications instantanées via WebSocket (nouveau message, activité acceptée…).
 
 ## Stack
 
-Vue 3 + Vite + TypeScript (Vercel) · API Hono sur Cloudflare Workers · Supabase Postgres (Paris) · Firebase Authentication (lien magique par e-mail, connexion uniquement)
+Vue 3 + Vite + TypeScript (Vercel) · API Hono sur Cloudflare Workers · Cloudflare Durable Objects (temps réel) · Supabase Postgres (Paris) · Firebase Authentication (lien magique par e-mail) · OpenStreetMap Nominatim (lieux de pratique)
 
 ## Démarrage rapide
 
@@ -50,8 +54,10 @@ Une commande par terminal. Renseigner d'abord `workers/.dev.vars` et `public/.en
 | [Diagramme de classes UML](docs/diagramme-uml.md)      | Les 8 entités du modèle                                  |
 | [Modèle de données](specs/data-model.md)               | Champs, colonnes Postgres et champs de l'API             |
 | [Contrat OpenAPI](specs/openapi.json)                  | Routes de l'API (source de vérité)                       |
+| [Page développeurs](public/public/dev.html)            | Routes, statuts, liens rapides                           |
+| [README API](workers/README.md)                        | Routes de l'API, déploiement, tests                      |
 
 ## Équipe
 
 Projet du cours **Gestion de Projet — M2CIM, 2026/27** : Ali (UX), Fatma (PO),
-Hossein et Mohammad (développement).
+Hossein (développement front-end) et Siamak (développement back-end).
